@@ -1,8 +1,27 @@
+# mkbuild {{{
 project := fstore
 version := 0.1.0
 
-include $(DEVROOT)/include/mkbuild/base.mk
+install := $(project)
+targets := $(install)
 
+extensions := cli
+
+$(project).type = executable
+define $(project).libs
+ color++
+ commline
+ pqxx
+ pq
+ uuid
+endef
+$(project).deps = cli
+
+include $(DEVROOT)/include/mkbuild/base.mk
+include $(DEVROOT)/include/mkbuild/cli.mk
+# }}}
+
+# sql {{{
 sql := db
 sql.schemata := $(sql)/schemata
 sql.schemata.files := $(wildcard $(sql.schemata)/*.sql)
@@ -26,3 +45,4 @@ db.init:
 	$(db.client) --username=DB_SUPERUSER --file=$(db.init)
 
 schemata: $(addprefix schema.,$(sql.schemata.items))
+# }}}

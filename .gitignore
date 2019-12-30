@@ -1,1 +1,7 @@
 *.swp
+
+# Files removed by 'make clean' {{{
+bin
+obj
+src/fstore/include/commline/commands.h
+# }}}
