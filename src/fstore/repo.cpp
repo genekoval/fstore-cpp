@@ -32,7 +32,7 @@ namespace repo::db {
 }
 
 namespace repo::db::bucket {
-    void create(const string& name) {
+    bool create(const string& name) {
         pqxx::work transaction(connect());
 
         try {
@@ -41,13 +41,24 @@ namespace repo::db::bucket {
                 generate_uuid(),
                 name
             );
-
             transaction.commit();
+
+            return true;
         }
         catch (const pqxx::unique_violation& ex) {
-            throw entity_exists_exception(
-                "bucket named '" + name + "' already exists"
-            );
+            return false;
         }
+    }
+
+    bool remove(const string& name) {
+        pqxx::work transaction(connect());
+
+        auto deleted = transaction.exec_params1(
+            "SELECT storage.delete_bucket($1)",
+            name
+        )[0].as<bool>();
+        transaction.commit();
+
+        return deleted;
     }
 }

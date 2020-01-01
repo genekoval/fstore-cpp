@@ -50,7 +50,10 @@ CREATE FUNCTION storage.create_bucket(
     bucket_name     varchar(128)
 ) RETURNS void AS $$
 BEGIN
-    INSERT INTO storage.bucket (id, name) VALUES (
+    INSERT INTO storage.bucket (
+        id,
+        name
+    ) VALUES (
         bucket_id,
         bucket_name
     );
@@ -62,11 +65,32 @@ CREATE FUNCTION storage.create_object(
     obj_len         bigint
 ) RETURNS char(65) AS $$
 BEGIN
-    INSERT INTO storage.object (hash, len) VALUES (
+    INSERT INTO storage.object (
+        hash,
+        len
+    ) VALUES (
         obj_hash,
         obj_len
     );
 
     RETURN obj_hash;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION storage.delete_bucket(
+    bucket_name     varchar(128)
+) RETURNS boolean as $$
+DECLARE
+    rows_affected   integer;
+BEGIN
+    WITH deleted AS (
+        DELETE FROM storage.bucket
+        WHERE name = bucket_name
+        RETURNING *
+    )
+    SELECT count(*) INTO rows_affected
+    FROM deleted;
+
+    RETURN rows_affected > 0;
 END;
 $$ LANGUAGE plpgsql;

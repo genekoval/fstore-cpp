@@ -3,17 +3,29 @@
 #include <commline/commands.h>
 #include <iostream>
 
-void commline::commands::bucket(const commline::cli& cli) {
+using std::string;
+
+const string& get_name(const commline::cli& cli) {
     if (cli.args().empty())
         throw commline::cli_error("no bucket name given");
 
-    const auto& name = cli.args().front();
+    return cli.args().front();
+}
 
-    try {
-        repo::db::bucket::create(name);
+void commline::commands::create(const commline::cli& cli) {
+    const auto& name = get_name(cli);
+
+    if (repo::db::bucket::create(name))
         std::cout << "created new bucket: " << name << std::endl;
-    }
-    catch (const repo::db::entity_exists_exception& ex) {
-        throw commline::cli_error(ex.what());
-    }
+    else
+        throw commline::cli_error("bucket '" + name + "' already exists");
+}
+
+void commline::commands::remove(const commline::cli& cli) {
+    const auto& name = get_name(cli);
+
+    if (repo::db::bucket::remove(name))
+        std::cout << "deleted bucket: " << name << std::endl;
+    else
+        throw commline::cli_error("bucket '" + name + "' does not exist");
 }

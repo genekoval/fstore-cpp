@@ -1,3 +1,5 @@
 commands:
-  - name: bucket
+  - name: create
     description: Create a bucket.
+  - name: remove
+    description: Delete a bucket.

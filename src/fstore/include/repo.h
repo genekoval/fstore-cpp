@@ -10,7 +10,8 @@ namespace repo {
         };
 
         namespace bucket {
-            void create(const std::string& name);
+            bool create(const std::string& name);
+            bool remove(const std::string& name);
         }
     }
 }
