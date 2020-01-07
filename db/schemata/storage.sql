@@ -9,8 +9,10 @@ CREATE TABLE bucket (
 )
 
 CREATE TABLE object (
+    id              uuid PRIMARY KEY,
+
     -- SHA256 checksum of the file contents.
-    hash            char(65) PRIMARY KEY,
+    hash            char(65) UNIQUE NOT NULL,
 
     -- Length of the file contents in bytes.
     len             bigint NOT NULL,
@@ -21,7 +23,7 @@ CREATE TABLE object (
 
 CREATE TABLE bucket_object (
     bucket_id       uuid REFERENCES bucket(id) ON DELETE CASCADE,
-    object_id       char(65) REFERENCES object(hash) ON DELETE CASCADE,
+    object_id       uuid REFERENCES object(id) ON DELETE CASCADE,
     date_added      timestamptz DEFAULT NOW(),
 
     PRIMARY KEY (bucket_id, object_id)
@@ -40,7 +42,11 @@ BEGIN
             FROM storage.bucket
             WHERE name = bucket_name
         ),
-        obj_hash
+        (
+            SELECT id
+            FROM storage.object
+            WHERE hash = obj_hash
+        )
     );
 END;
 $$ LANGUAGE plpgsql;
@@ -61,14 +67,17 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION storage.create_object(
+    obj_id          uuid,
     obj_hash        char(65),
     obj_len         bigint
 ) RETURNS char(65) AS $$
 BEGIN
     INSERT INTO storage.object (
+        id,
         hash,
         len
     ) VALUES (
+        obj_id,
         obj_hash,
         obj_len
     );
