@@ -2,16 +2,23 @@
 
 #include <pqxx/pqxx>
 #include <stdexcept>
+#include <string>
 
 namespace repo {
-    namespace db {
-        struct entity_exists_exception : std::runtime_error {
-            entity_exists_exception(const std::string& message);
-        };
+    using uuid = std::string;
 
+    namespace db {
         namespace bucket {
             bool create(const std::string& name);
             bool remove(const std::string& name);
+        }
+
+        namespace object {
+            uuid add(
+                const std::string& bucket,
+                const std::string& checksum,
+                std::uintmax_t size
+            );
         }
     }
 }

@@ -12,6 +12,7 @@
 #include <string>
 
 namespace fs = std::filesystem;
+namespace object = repo::db::object;
 
 using std::cout;
 using std::endl;
@@ -39,13 +40,16 @@ string sha256sum(string& sink, const fs::path& file) {
 }
 
 void commline::commands::add(const commline::cli& cli) {
-    if (cli.args().empty())
-        throw commline::cli_error("no filename given");
+    if (cli.args().size() < 2)
+        throw commline::cli_error("bucket and filename missing");
 
-    auto file = cli.args().front();
+    const auto& bucket = cli.args()[0];
+    const fs::directory_entry file(cli.args()[1]);
+
     string checksum;
+    sha256sum(checksum, file.path());
 
-    sha256sum(checksum, file);
+    object::add(bucket, checksum, file.file_size());
 
-    cout << checksum << "  " << file << endl;
+    cout << checksum << "  " << file.path() << endl;
 }

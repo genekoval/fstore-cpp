@@ -33,7 +33,7 @@ CREATE TABLE bucket_object (
 
 CREATE FUNCTION storage.add_object(
     bucket_name     varchar(128),
-    obj_hash        char(65)
+    obj_id          uuid
 ) RETURNS void AS $$
 BEGIN
     INSERT INTO storage.bucket_object (bucket_id, object_id) VALUES (
@@ -42,11 +42,7 @@ BEGIN
             FROM storage.bucket
             WHERE name = bucket_name
         ),
-        (
-            SELECT id
-            FROM storage.object
-            WHERE hash = obj_hash
-        )
+        obj_id
     );
 END;
 $$ LANGUAGE plpgsql;
@@ -70,7 +66,7 @@ CREATE FUNCTION storage.create_object(
     obj_id          uuid,
     obj_hash        char(65),
     obj_len         bigint
-) RETURNS char(65) AS $$
+) RETURNS uuid AS $$
 BEGIN
     INSERT INTO storage.object (
         id,
@@ -82,7 +78,7 @@ BEGIN
         obj_len
     );
 
-    RETURN obj_hash;
+    RETURN obj_id;
 END;
 $$ LANGUAGE plpgsql;
 
