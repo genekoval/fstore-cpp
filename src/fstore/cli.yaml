@@ -1,4 +1,6 @@
 commands:
+  - name: add
+    description: Add a file to a bucket.
   - name: create
     description: Create a bucket.
   - name: remove

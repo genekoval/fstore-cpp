@@ -11,6 +11,7 @@ $(project).type = executable
 define $(project).libs
  color++
  commline
+ cryptopp
  pqxx
  pq
  uuid
