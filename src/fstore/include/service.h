@@ -1,8 +1,8 @@
 #pragma once
 
 #include <filesystem>
-#include <string_view>
+#include <string>
 
 namespace service {
-    void add_object(std::string_view bucket, const std::filesystem::path& path);
+    void add_object(const std::string& bucket, const std::filesystem::path& path);
 }
