@@ -1,21 +1,18 @@
 #pragma once
 
-#include <util.h>
+#include <fstore/types.h>
 
-#include <pqxx/pqxx>
-#include <stdexcept>
-#include <string>
-
-namespace repo {
+namespace fstore::repo {
     namespace db {
         namespace bucket {
-            bool create(const std::string& name);
-            bool remove(const std::string& name);
+            void create(const uuid& id, const std::string& name);
+            void remove(const std::string& name);
         }
 
         namespace object {
-            util::uuid::uuid add(
+            void add(
                 const std::string& bucket,
+                const uuid& id,
                 const std::string& checksum,
                 std::uintmax_t size
             );

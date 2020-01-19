@@ -21,7 +21,7 @@ $(foreach item,$(sql.schemata.items),$(eval $(call sql.schemata.item,$(item))))
 .PHONY: db schemata
 
 db:
-	$(db.project)
+	@$(db.project)
 
 db.init:
 	$(db.client) --username=DB_SUPERUSER --file=$(db.init)
