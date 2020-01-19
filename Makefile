@@ -1,8 +1,8 @@
-project := fstore
-version := 0.1.0
-
 include mk/db.mk
 include mk/internal.mk
+
+project := fstore
+version := 0.1.0
 
 install := $(project)
 targets := $(install) $(internal.libs)
@@ -10,7 +10,7 @@ targets := $(install) $(internal.libs)
 extensions := cli
 
 $(project).type = executable
-$(project).deps = $(core) $(extensions)
+$(project).deps = cli $(service)
 define $(project).libs
  $(internal)
  color++

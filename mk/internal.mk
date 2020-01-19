@@ -1,12 +1,16 @@
 # Definitions for all internal static libraries
 
 repo = librepo
-core = libcore
+service = libservice
+util = libutil
 
 $(repo).type = static
+$(repo).deps = $(util)
 
-$(core).type = static
-$(core).deps = $(repo)
+$(service).type = static
+$(service).deps = $(util) $(repo)
 
-internal = repo core
+$(util).type = static
+
+internal = repo service util
 internal.libs = $(addprefix lib,$(internal))

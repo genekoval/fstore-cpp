@@ -1,57 +1,77 @@
-#include <database.h>
-
-#include <fstore/repo.h>
+#include <repo.h>
 
 #include <string>
 #include <uuid/uuid.h>
 
+namespace uuid = util::uuid;
+
+using std::runtime_error;
 using std::string;
 using std::string_view;
 using std::uintmax_t;
 
-namespace fstore::repo::db {
+namespace repo::db {
+    pqxx::connection& connect() {
+        static pqxx::connection connection(
+            "postgresql://fstore@localhost/fstore"
+        );
+
+        return connection;
+    }
+
     namespace bucket {
-        void create(const uuid& id, const string& name) {
+        bool create(const string& name) {
             pqxx::work transaction(connect());
 
-            transaction.exec_params(
-                "SELECT storage.create_bucket($1, $2)",
-                id,
-                name
-            );
-            transaction.commit();
+            try {
+                transaction.exec_params(
+                    "SELECT storage.create_bucket($1, $2)",
+                    uuid::generate(),
+                    name
+                );
+                transaction.commit();
+
+                return true;
+            }
+            catch (const pqxx::unique_violation& ex) {
+                return false;
+            }
         }
 
-        void remove(const string& name) {
+        bool remove(const string& name) {
             pqxx::work transaction(connect());
 
-            transaction.exec_params1(
+            auto deleted = transaction.exec_params1(
                 "SELECT storage.delete_bucket($1)",
                 name
             )[0].as<bool>();
             transaction.commit();
+
+            return deleted;
         }
     }
 
     namespace object {
-        void add(
+        uuid::uuid add(
             const string& bucket,
-            const uuid& id,
             const string& checksum,
             uintmax_t size
         ) {
             pqxx::work transaction(connect());
+            auto obj_id = uuid::generate();
 
             transaction.exec_params(
                 "SELECT storage.add_object($1, ("
                     "SELECT storage.create_object($2, $3, $4)"
                 "))",
                 bucket,
-                id,
+                obj_id,
                 checksum,
                 size
             );
             transaction.commit();
+
+            return obj_id;
         }
     }
 }

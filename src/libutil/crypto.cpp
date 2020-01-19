@@ -1,4 +1,4 @@
-#include <crypto.h>
+#include <util.h>
 
 #include <algorithm>
 #include <cctype>
@@ -6,10 +6,10 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/sha.h>
 
-namespace fs = std::filesystem;
+using std::string;
 
-namespace fstore::crypto {
-    void sha256sum(std::string& checksum, const fs::path& path) {
+namespace util::crypto {
+    void sha256sum(string& sink, const string& path) {
         using namespace CryptoPP;
 
         SHA256 hash;
@@ -19,11 +19,11 @@ namespace fstore::crypto {
             true,
             new HashFilter(
                 hash,
-                new HexEncoder(new StringSink(checksum))
+                new HexEncoder(new StringSink(sink))
             )
         );
 
-        std::transform(checksum.begin(), checksum.end(), checksum.begin(),
+        std::transform(sink.begin(), sink.end(), sink.begin(),
             [](unsigned char c) -> unsigned char { return std::tolower(c); });
     }
 }
