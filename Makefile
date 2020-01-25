@@ -12,13 +12,13 @@ extensions := cli
 $(project).type = executable
 $(project).deps = $(core) $(extensions)
 define $(project).libs
- $(internal)
  color++
  commline
  cryptopp
  pqxx
  pq
  uuid
+ $(internal)
 endef
 
 include $(DEVROOT)/include/mkbuild/base.mk

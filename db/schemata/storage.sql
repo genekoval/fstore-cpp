@@ -32,17 +32,13 @@ CREATE TABLE bucket_object (
 ;
 
 CREATE FUNCTION storage.add_object(
-    bucket_name     varchar(128),
-    obj_id          uuid
+    bucket_id       uuid,
+    object_id       uuid
 ) RETURNS void AS $$
 BEGIN
     INSERT INTO storage.bucket_object (bucket_id, object_id) VALUES (
-        (
-            SELECT id
-            FROM storage.bucket
-            WHERE name = bucket_name
-        ),
-        obj_id
+        bucket_id,
+        object_id
     );
 END;
 $$ LANGUAGE plpgsql;
@@ -83,19 +79,21 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION storage.delete_bucket(
-    bucket_name     varchar(128)
-) RETURNS boolean as $$
-DECLARE
-    rows_affected   integer;
+    bucket_id       uuid
+) RETURNS void AS $$
 BEGIN
-    WITH deleted AS (
-        DELETE FROM storage.bucket
-        WHERE name = bucket_name
-        RETURNING *
-    )
-    SELECT count(*) INTO rows_affected
-    FROM deleted;
+    DELETE FROM bucket
+    WHERE id = bucket_id;
+END;
+$$ LANGUAGE plpgsql;
 
-    RETURN rows_affected > 0;
+CREATE FUNCTION storage.rename_bucket(
+    bucket_id       uuid,
+    bucket_name     varchar(128)
+) RETURNS void AS $$
+BEGIN
+    UPDATE bucket
+    SET name = bucket_name
+    WHERE id = bucket_id;
 END;
 $$ LANGUAGE plpgsql;

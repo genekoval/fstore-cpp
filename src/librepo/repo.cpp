@@ -10,48 +10,88 @@ using std::string_view;
 using std::uintmax_t;
 
 namespace fstore::repo::db {
-    namespace bucket {
-        void create(const uuid& id, const string& name) {
-            pqxx::work transaction(connect());
+    has_id::has_id(const uuid& id) : m_id(id) {}
 
-            transaction.exec_params(
-                "SELECT storage.create_bucket($1, $2)",
-                id,
-                name
-            );
-            transaction.commit();
-        }
+    uuid has_id::id() const { return m_id; }
 
-        void remove(const string& name) {
-            pqxx::work transaction(connect());
+    object_entity::object_entity(
+        const uuid& id,
+        std::string_view hash,
+        uintmax_t size
+    ) :
+        has_id(id),
+        m_hash(hash),
+        m_size(size)
+    {}
 
-            transaction.exec_params1(
-                "SELECT storage.delete_bucket($1)",
-                name
-            )[0].as<bool>();
-            transaction.commit();
-        }
+    std::string_view object_entity::hash() const { return m_hash; }
+
+    uintmax_t object_entity::size() const { return m_size; }
+
+    bucket_entity::bucket_entity(const uuid& id, std::string_view name) :
+        has_id(id),
+        m_name(name)
+    {
+        pqxx::work transaction(connect());
+
+        transaction.exec_params(
+            "SELECT create_bucket($1, $2)",
+            id,
+            std::string(name)
+        );
+        transaction.commit();
     }
 
-    namespace object {
-        void add(
-            const string& bucket,
-            const uuid& id,
-            const string& checksum,
-            uintmax_t size
-        ) {
-            pqxx::work transaction(connect());
+    bucket_entity::bucket_entity(std::string_view name) : m_name(name) {
+        pqxx::work transaction(connect());
 
-            transaction.exec_params(
-                "SELECT storage.add_object($1, ("
-                    "SELECT storage.create_object($2, $3, $4)"
-                "))",
-                bucket,
-                id,
-                checksum,
-                size
-            );
-            transaction.commit();
-        }
+        auto row = transaction.exec_params1(
+            "SELECT id "
+            "FROM bucket "
+            "WHERE name = $1",
+            std::string(name)
+        );
+
+        m_id = row[0].as<uuid>();
+    }
+
+    void bucket_entity::add_object(const core::object& obj) {
+        pqxx::work transaction(connect());
+
+        transaction.exec_params(
+            "SELECT add_object($1, ("
+                "SELECT create_object($2, $3, $4)"
+            "))",
+            m_id,
+            obj.id(),
+            std::string(obj.hash()),
+            obj.size()
+        );
+
+        transaction.commit();
+    }
+
+    void bucket_entity::destroy() {
+        pqxx::work transaction(connect());
+
+        transaction.exec_params(
+            "SELECT delete_bucket($1)",
+            m_id
+        );
+        transaction.commit();
+    }
+
+    std::string_view bucket_entity::name() { return m_name; }
+
+    void bucket_entity::name(std::string_view name) {
+        pqxx::work transaction(connect());
+
+        transaction.exec_params(
+            "SELECT rename_bucket($1, $2)",
+            m_id,
+            std::string(name)
+        );
+
+        transaction.commit();
     }
 }

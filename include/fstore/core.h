@@ -4,6 +4,7 @@
 
 #include <filesystem> // std::filesystem::path
 #include <memory> // std::unique_ptr
+#include <optional> // std::optional
 #include <stdexcept> // std::runtime_error
 #include <string_view> // std::string_view
 
@@ -19,26 +20,32 @@ namespace fstore::core {
          * returns: This object's id.
          */
         virtual uuid id() const = 0;
+
+        /**
+         * Returns a value obtained by hashing the contents of this object.
+         *
+         * returns: The hash of this object's contents.
+         */
+        virtual std::string_view hash() const = 0;
+
+        /**
+         * Returns the size (in bytes) of this object's contents.
+         *
+         * returns: The size of this object's contents.
+         */
+        virtual uintmax_t size() const = 0;
     };
 
     struct bucket {
         /**
-         * Creates a new bucket with the specified name.
-         *
-         * param: name The name of the new bucket.
-         * returns: The bucket that was created.
-         * exception: fstore::core::fstore_error
-         *      when: A bucket with the given name already exists.
-         */
-        static std::unique_ptr<bucket> create(std::string_view name);
-
-        /**
          * Creates a new object from the file pointed to by the specified
-         * path and adds it to this bucket.
+         * path and adds it to this bucket as an object.
          *
-         * param file The file from which to create the object.
+         * params:
+         *      - name: file
+         *        desc: The file from which to create the object.
          */
-        virtual void add(const std::filesystem::path& path) = 0;
+        virtual void add_object(const std::filesystem::path& path) = 0;
 
         /**
          * Returns the name of this bucket.
@@ -50,13 +57,48 @@ namespace fstore::core {
         /**
          * Sets the name of this bucket to the specified name.
          *
-         * param: name The new name for this bucket.
+         * params:
+         *      - name: name
+         *        desc: The new name for this bucket.
          */
-        // virtual void name(std::string_view new_name) = 0;
+         virtual void name(std::string_view new_name) = 0;
 
         /**
          * Deletes this bucket and all of its objects.
          */
-        virtual void remove() = 0;
+        virtual void destroy() = 0;
+    };
+
+    struct bucket_provider {
+        /**
+         * Creates a new bucket with the specified name. If creation
+         * is successful, an optional containing the new bucket is returned.
+         * If the bucket creation fails, an empty optional is returned.
+         *
+         * Bucket creation fails if a bucket with the specified name already
+         * exists.
+         *
+         * params:
+         *      - name: name
+         *        desc: The name of the new bucket.
+         * returns: The newly created bucket.
+         */
+        static std::optional<std::unique_ptr<bucket>> create(
+            std::string_view name
+        );
+
+        /**
+         * Returns an optional containing an existing bucket with the
+         * specified name. If the bucket does not exist, an empty optional is
+         * returned.
+         *
+         * params:
+         *      - name: name
+         *        desc: The name of the bucket to retrieve.
+         * returns: An existing bucket with the specified name.
+         */
+        static std::optional<std::unique_ptr<bucket>> fetch(
+            std::string_view name
+        );
     };
 }

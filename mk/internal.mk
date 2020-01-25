@@ -8,5 +8,5 @@ $(repo).type = static
 $(core).type = static
 $(core).deps = $(repo)
 
-internal = repo core
+internal = core repo
 internal.libs = $(addprefix lib,$(internal))

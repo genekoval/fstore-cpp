@@ -18,13 +18,18 @@ const string& get_name(const commline::cli& cli) {
 void commline::commands::create(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
-    auto bucket = core::bucket::create(name);
-    std::cout << "created new bucket: " << bucket->name() << std::endl;
+    auto bucket_opt = core::bucket_provider::create(name);
+    if (!bucket_opt) {
+        throw new commline::cli_error("bucket '" + name + "' already exists");
+    }
+
+    auto& bucket = bucket_opt.value();
+        std::cout << "created new bucket: " << bucket->name() << std::endl;
 }
 
 void commline::commands::remove(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
-    fstore::repo::db::bucket::remove(name);
+    core::bucket_provider::fetch(name).value()->destroy();
     std::cout << "deleted bucket: " << name << std::endl;
 }

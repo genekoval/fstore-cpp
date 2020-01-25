@@ -9,21 +9,24 @@
 namespace fs = std::filesystem;
 
 namespace fstore::crypto {
-    void sha256sum(std::string& checksum, const fs::path& path) {
+    std::string sha256sum(const fs::path& path) {
         using namespace CryptoPP;
 
         SHA256 hash;
+        std::string sum;
 
         FileSource(
             path.c_str(),
             true,
             new HashFilter(
                 hash,
-                new HexEncoder(new StringSink(checksum))
+                new HexEncoder(new StringSink(sum))
             )
         );
 
-        std::transform(checksum.begin(), checksum.end(), checksum.begin(),
+        std::transform(sum.begin(), sum.end(), sum.begin(),
             [](unsigned char c) -> unsigned char { return std::tolower(c); });
+
+        return sum;
     }
 }

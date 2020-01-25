@@ -1,30 +1,41 @@
 #include <core.h>
 #include <crypto.h>
 
-#include <fstore/repo.h>
-
 namespace fs = std::filesystem;
 
 namespace fstore::core {
-    namespace db = repo::db;
+    // bucket_core {{{
+    bucket_core::bucket_core(const uuid& id, std::string_view name) :
+        entity(id, name)
+    {}
 
-    std::unique_ptr<bucket> bucket::create(std::string_view name) {
-        db::bucket::create(generate_uuid(), std::string(name));
-        return std::unique_ptr<bucket>(new bucket_impl(name));
+    bucket_core::bucket_core(std::string_view name) : entity(name) {}
+
+    void bucket_core::add_object(const std::filesystem::path& path) {
+        object_core obj(path);
+        entity.add_object(obj);
+    }
+    // }}}
+
+    // bucket_provider {{{
+    std::optional<std::unique_ptr<bucket>> bucket_provider::create(
+        std::string_view name
+    ) {
+        try {
+            return std::unique_ptr<bucket>(new bucket_core(
+                generate_uuid(),
+                name
+            ));
+        }
+        catch (const fstore_error& error) {
+            return {};
+        }
     }
 
-    bucket_impl::bucket_impl(std::string_view name) : _name(name) {}
-
-    void bucket_impl::add(const fs::path& path) {
-        const fs::directory_entry file(path);
-
-        std::string checksum;
-        crypto::sha256sum(checksum, file.path());
-
-        db::object::add(_name, generate_uuid(), checksum, file.file_size());
+    std::optional<std::unique_ptr<bucket>> bucket_provider::fetch(
+        std::string_view name
+    ) {
+        return std::unique_ptr<bucket>(new bucket_core(name));
     }
-
-    std::string_view bucket_impl::name() const { return _name; }
-
-    void bucket_impl::remove() { db::bucket::remove(_name); }
+    // }}}
 }
