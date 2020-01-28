@@ -15,6 +15,12 @@ namespace fstore::core {
         object_core obj(path);
         entity.add_object(obj);
     }
+
+    void bucket_core::destroy() { entity.destroy(); }
+
+    std::string_view bucket_core::name() const { return entity.name(); }
+
+    void bucket_core::name(std::string_view new_name) { entity.name(new_name); }
     // }}}
 
     // bucket_provider {{{

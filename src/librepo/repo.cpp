@@ -81,7 +81,7 @@ namespace fstore::repo::db {
         transaction.commit();
     }
 
-    std::string_view bucket_entity::name() { return m_name; }
+    std::string_view bucket_entity::name() const { return m_name; }
 
     void bucket_entity::name(std::string_view name) {
         pqxx::work transaction(connect());

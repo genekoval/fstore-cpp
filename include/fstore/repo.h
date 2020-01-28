@@ -23,7 +23,7 @@ namespace fstore::repo {
 
             void add_object(const core::object& obj);
             void destroy();
-            std::string_view name();
+            std::string_view name() const;
             void name(std::string_view name);
         };
 
