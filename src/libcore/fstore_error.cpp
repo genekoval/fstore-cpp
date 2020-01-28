@@ -1,4 +1,4 @@
-#include <core.h>
+#include <fstore/core.h>
 
 using std::runtime_error;
 using std::string;

@@ -1,15 +1,16 @@
 #include <database.h>
 
+#include <fstore/core.h>
 #include <fstore/repo.h>
-
-#include <string>
-#include <uuid/uuid.h>
+#include <fstore/service.h>
 
 using std::string;
 using std::string_view;
 using std::uintmax_t;
 
 namespace fstore::repo::db {
+    using core::uuid;
+
     has_id::has_id(const uuid& id) : m_id(id) {}
 
     uuid has_id::id() const { return m_id; }
@@ -34,12 +35,20 @@ namespace fstore::repo::db {
     {
         pqxx::work transaction(connect());
 
-        transaction.exec_params(
-            "SELECT create_bucket($1, $2)",
-            id,
-            std::string(name)
-        );
-        transaction.commit();
+        try {
+            transaction.exec_params(
+                "SELECT create_bucket($1, $2)",
+                id,
+                std::string(name)
+            );
+            transaction.commit();
+        }
+        catch (const pqxx::unique_violation& ex) {
+            throw fstore::core::fstore_error(
+                "failed to create bucket ‘" + std::string(name) + "‘: "
+                "bucket exists"
+            );
+        }
     }
 
     bucket_entity::bucket_entity(std::string_view name) : m_name(name) {
@@ -55,7 +64,7 @@ namespace fstore::repo::db {
         m_id = row[0].as<uuid>();
     }
 
-    void bucket_entity::add_object(const core::object& obj) {
+    void bucket_entity::add_object(const service::object& obj) {
         pqxx::work transaction(connect());
 
         transaction.exec_params(

@@ -1,27 +1,26 @@
 #pragma once
 
-#include <fstore/core.h>
-#include <fstore/types.h>
+#include <fstore/service.h>
 
 namespace fstore::repo {
     namespace db {
         class has_id {
         protected:
-            uuid m_id;
+            fstore::core::uuid m_id;
 
             has_id() = default;
-            has_id(const uuid& id);
+            has_id(const fstore::core::uuid& id);
         public:
-            uuid id() const;
+            fstore::core::uuid id() const;
         };
 
         class bucket_entity : public has_id {
             std::string m_name;
         public:
-            bucket_entity(const uuid& id, std::string_view name);
+            bucket_entity(const fstore::core::uuid& id, std::string_view name);
             bucket_entity(std::string_view name);
 
-            void add_object(const core::object& obj);
+            void add_object(const service::object& obj);
             void destroy();
             std::string_view name() const;
             void name(std::string_view name);
@@ -32,7 +31,7 @@ namespace fstore::repo {
             uintmax_t m_size;
         public:
             object_entity(
-                const uuid& id,
+                const fstore::core::uuid& id,
                 std::string_view hash,
                 uintmax_t size
             );

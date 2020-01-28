@@ -10,7 +10,7 @@ targets := $(install) $(internal.libs)
 extensions := cli
 
 $(project).type = executable
-$(project).deps = $(core) $(extensions)
+$(project).deps = $(service) $(extensions)
 define $(project).libs
  color++
  commline

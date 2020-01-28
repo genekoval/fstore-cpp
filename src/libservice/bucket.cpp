@@ -1,11 +1,14 @@
-#include <core.h>
+#include <service.h>
 #include <crypto.h>
 
 namespace fs = std::filesystem;
 
-namespace fstore::core {
+namespace fstore::service {
     // bucket_core {{{
-    bucket_core::bucket_core(const uuid& id, std::string_view name) :
+    bucket_core::bucket_core(
+        const core::uuid& id,
+        std::string_view name
+    ) :
         entity(id, name)
     {}
 
@@ -29,11 +32,11 @@ namespace fstore::core {
     ) {
         try {
             return std::unique_ptr<bucket>(new bucket_core(
-                generate_uuid(),
+                core::generate_uuid(),
                 name
             ));
         }
-        catch (const fstore_error& error) {
+        catch (const core::fstore_error& error) {
             return {};
         }
     }

@@ -1,10 +1,10 @@
-#include <fstore/core.h>
+#include <fstore/service.h>
 #include <fstore/repo.h>
 
 #include <commline/commands.h>
 #include <iostream>
 
-namespace core = fstore::core;
+namespace service = fstore::service;
 
 using std::string;
 
@@ -18,18 +18,19 @@ const string& get_name(const commline::cli& cli) {
 void commline::commands::create(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
-    auto bucket_opt = core::bucket_provider::create(name);
-    if (!bucket_opt) {
-        throw new commline::cli_error("bucket '" + name + "' already exists");
+    const auto bucket = service::bucket_provider::create(name);
+    if (!bucket) {
+        throw commline::cli_error(
+            "cannot create bucket ‘" + name + "‘: bucket already exists"
+        );
     }
 
-    auto& bucket = bucket_opt.value();
-        std::cout << "created new bucket: " << bucket->name() << std::endl;
+    std::cout << "created new bucket: " << bucket.value()->name() << std::endl;
 }
 
 void commline::commands::remove(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
-    core::bucket_provider::fetch(name).value()->destroy();
+    service::bucket_provider::fetch(name).value()->destroy();
     std::cout << "deleted bucket: " << name << std::endl;
 }
