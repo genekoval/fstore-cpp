@@ -39,7 +39,12 @@ namespace fstore::service {
     std::optional<std::unique_ptr<bucket>> bucket_provider::fetch(
         std::string_view name
     ) {
-        return std::unique_ptr<bucket>(new bucket_core(name));
+        try {
+            return std::unique_ptr<bucket>(new bucket_core(name));
+        }
+        catch (const fstore::core::fstore_error& ex) {
+            return {};
+        }
     }
     // }}}
 }

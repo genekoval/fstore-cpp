@@ -5,3 +5,5 @@ commands:
     description: Create a bucket.
   - name: remove
     description: Delete a bucket.
+  - name: rename
+    description: Rename a bucket.

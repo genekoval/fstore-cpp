@@ -56,17 +56,27 @@ namespace fstore::repo::db {
         }
     }
 
-    bucket_entity::bucket_entity(std::string_view name) : m_name(name) {
+    bucket_entity::bucket_entity(std::string_view name) :
+        m_name(nova::ext::string::trim(std::string(name)))
+    {
         pqxx::work transaction(connect());
 
-        auto row = transaction.exec_params1(
-            "SELECT id "
-            "FROM bucket "
-            "WHERE name = $1",
-            std::string(name)
-        );
+        try {
+            auto row = transaction.exec_params1(
+                "SELECT id "
+                "FROM bucket "
+                "WHERE name = $1",
+                m_name
+            );
 
-        m_id = row[0].as<uuid>();
+            m_id = row[0].as<uuid>();
+        }
+        catch (const pqxx::unexpected_rows& ex) {
+            throw fstore::core::fstore_error(
+                "failed to fetch bucket " QUOTE(m_name) ": "
+                "bucket does not exist"
+            );
+        }
     }
 
     void bucket_entity::add_object(const service::object& obj) {
@@ -98,14 +108,29 @@ namespace fstore::repo::db {
     std::string_view bucket_entity::name() const { return m_name; }
 
     void bucket_entity::name(std::string_view name) {
+        auto new_name = nova::ext::string::trim(std::string(name));
+
         pqxx::work transaction(connect());
 
-        transaction.exec_params(
-            "SELECT rename_bucket($1, $2)",
-            m_id,
-            std::string(name)
-        );
-
-        transaction.commit();
+        try {
+            transaction.exec_params(
+                "SELECT rename_bucket($1, $2)",
+                m_id,
+                new_name
+            );
+            transaction.commit();
+            m_name = new_name;
+        }
+        catch (const pqxx::unique_violation& ex) {
+            throw fstore::core::fstore_error(
+                "cannot rename bucket: bucket named "
+                QUOTE(new_name) " already exists"
+            );
+        }
+        catch (const pqxx::check_violation& ex) {
+            throw fstore::core::fstore_error(
+                "cannot rename bucket: name empty"
+            );
+        }
     }
 }
