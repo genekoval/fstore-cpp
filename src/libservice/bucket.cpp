@@ -27,18 +27,13 @@ namespace fstore::service {
     // }}}
 
     // bucket_provider {{{
-    std::optional<std::unique_ptr<bucket>> bucket_provider::create(
+    std::unique_ptr<bucket> bucket_provider::create(
         std::string_view name
     ) {
-        try {
-            return std::unique_ptr<bucket>(new bucket_core(
-                core::generate_uuid(),
-                name
-            ));
-        }
-        catch (const core::fstore_error& error) {
-            return {};
-        }
+        return std::unique_ptr<bucket>(new bucket_core(
+            core::generate_uuid(),
+            name
+        ));
     }
 
     std::optional<std::unique_ptr<bucket>> bucket_provider::fetch(

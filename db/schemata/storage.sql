@@ -4,7 +4,7 @@ CREATE SCHEMA storage
 
 CREATE TABLE bucket (
     id              uuid PRIMARY KEY,
-    name            varchar(128) UNIQUE NOT NULL,
+    name            varchar(128) UNIQUE NOT NULL CHECK (length(trim(name)) <> 0),
     date_created    timestamptz DEFAULT NOW()
 )
 

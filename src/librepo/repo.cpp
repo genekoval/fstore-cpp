@@ -3,6 +3,7 @@
 #include <fstore/core.h>
 #include <fstore/repo.h>
 #include <fstore/service.h>
+#include <nova/ext/string.h>
 
 using std::string;
 using std::string_view;
@@ -31,7 +32,7 @@ namespace fstore::repo::db {
 
     bucket_entity::bucket_entity(const uuid& id, std::string_view name) :
         has_id(id),
-        m_name(name)
+        m_name(nova::ext::string::trim(std::string(name)))
     {
         pqxx::work transaction(connect());
 
@@ -39,14 +40,18 @@ namespace fstore::repo::db {
             transaction.exec_params(
                 "SELECT create_bucket($1, $2)",
                 id,
-                std::string(name)
+                m_name
             );
             transaction.commit();
         }
         catch (const pqxx::unique_violation& ex) {
             throw fstore::core::fstore_error(
-                "failed to create bucket ‘" + std::string(name) + "‘: "
-                "bucket exists"
+                "cannot create bucket " QUOTE(m_name) ": bucket exists"
+            );
+        }
+        catch (const pqxx::check_violation& ex) {
+            throw fstore::core::fstore_error(
+                "cannot create bucket: bucket name empty"
             );
         }
     }

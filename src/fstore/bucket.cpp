@@ -18,14 +18,13 @@ const string& get_name(const commline::cli& cli) {
 void commline::commands::create(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
-    const auto bucket = service::bucket_provider::create(name);
-    if (!bucket) {
-        throw commline::cli_error(
-            "cannot create bucket ‘" + name + "‘: bucket already exists"
-        );
+    try {
+        const auto bucket = service::bucket_provider::create(name);
+        std::cout << "created bucket: " << bucket->name() << std::endl;
     }
-
-    std::cout << "created new bucket: " << bucket.value()->name() << std::endl;
+    catch (const fstore::core::fstore_error& ex) {
+        throw commline::cli_error(ex.what());
+    }
 }
 
 void commline::commands::remove(const commline::cli& cli) {

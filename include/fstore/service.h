@@ -78,9 +78,7 @@ namespace fstore::service {
          *        desc: The name of the new bucket.
          * returns: The newly created bucket.
          */
-        static std::optional<std::unique_ptr<bucket>> create(
-            std::string_view name
-        );
+        static std::unique_ptr<bucket> create(std::string_view name);
 
         /**
          * Returns an optional containing an existing bucket with the
