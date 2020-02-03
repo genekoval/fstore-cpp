@@ -18,12 +18,15 @@ namespace fstore::core {
         value(value_str);
     }
 
-    uuid& uuid::operator=(const std::string& str) {
+    uuid& uuid::operator=(std::string_view str) {
         value(str);
         return *this;
     }
 
-    void uuid::clear() { uuid_clear(m_value); }
+    void uuid::clear() {
+        uuid_clear(m_value);
+        set_string();
+    }
 
     bool uuid::is_null() const { return uuid_is_null(m_value) == 1; }
 

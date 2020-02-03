@@ -17,7 +17,7 @@ namespace fstore::core {
         uuid(const uuid& other);
         uuid(std::string_view value_str);
 
-        uuid& operator=(const std::string& str);
+        uuid& operator=(std::string_view str);
 
         void clear();
         bool is_null() const;

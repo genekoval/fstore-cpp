@@ -10,15 +10,17 @@ using std::string_view;
 using std::uintmax_t;
 
 namespace fstore::repo::db {
-    has_uuid::has_uuid(std::string_view uuid) : m_uuid(uuid) {}
+    has_uuid::has_uuid(std::string_view uuid) : m_id(uuid) {}
 
-    has_uuid::has_uuid(const core::uuid& uuid) : m_uuid(uuid) {}
+    has_uuid::has_uuid(const core::uuid& uuid) : m_id(uuid) {}
 
-    bool has_uuid::is_valid() const { return m_uuid.is_null(); }
+    bool has_uuid::is_valid() const { return m_id.is_null(); }
 
-    void has_uuid::nullify() { m_uuid.clear(); }
+    void has_uuid::nullify() { m_id.clear(); }
 
-    std::string_view has_uuid::id() const { return m_uuid.to_string(); }
+    std::string_view has_uuid::id() const { return m_id.to_string(); }
+
+    void has_uuid::id(std::string_view new_id) { m_id = std::string(new_id); }
 
     object_entity::object_entity(
         const core::uuid& id,
@@ -73,7 +75,7 @@ namespace fstore::repo::db {
                 m_name
             );
 
-            m_uuid = row[0].as<std::string>();
+            id(row[0].as<std::string>());
         }
         catch (const pqxx::unexpected_rows& ex) {
             throw fstore::core::fstore_error(
@@ -107,6 +109,8 @@ namespace fstore::repo::db {
             std::string(id())
         );
         transaction.commit();
+
+        nullify();
     }
 
     std::string_view bucket_entity::name() const { return m_name; }

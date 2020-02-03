@@ -41,8 +41,9 @@ void commline::commands::create(const commline::cli& cli) {
 void commline::commands::remove(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
-    service::bucket_provider::fetch(name).value()->destroy();
-    std::cout << "deleted bucket: " << name << std::endl;
+    auto bucket = fetch(name);
+    bucket->destroy();
+    std::cout << "deleted bucket: " << bucket->name() << std::endl;
 }
 
 void commline::commands::rename(const commline::cli& cli) {

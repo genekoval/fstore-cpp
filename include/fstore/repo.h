@@ -5,17 +5,17 @@
 namespace fstore::repo {
     namespace db {
         class has_uuid {
+            core::uuid m_id;
         protected:
-            fstore::core::uuid m_uuid;
-
             has_uuid() = default;
             has_uuid(std::string_view uuid);
             has_uuid(const core::uuid& uuid);
 
+            void id(std::string_view new_id);
             void nullify();
         public:
-            bool is_valid() const;
             std::string_view id() const;
+            bool is_valid() const;
         };
 
         class bucket_entity : public has_uuid {

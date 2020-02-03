@@ -31,7 +31,7 @@ namespace fstore::service {
         std::string_view name
     ) {
         return std::unique_ptr<bucket>(new bucket_core(
-            core::uuid(),
+            core::uuid{},
             name
         ));
     }
