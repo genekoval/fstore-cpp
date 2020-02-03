@@ -4,20 +4,24 @@
 
 namespace fstore::repo {
     namespace db {
-        class has_id {
+        class has_uuid {
         protected:
-            fstore::core::uuid m_id;
+            fstore::core::uuid m_uuid;
 
-            has_id() = default;
-            has_id(const fstore::core::uuid& id);
+            has_uuid() = default;
+            has_uuid(std::string_view uuid);
+            has_uuid(const core::uuid& uuid);
+
+            void nullify();
         public:
-            fstore::core::uuid id() const;
+            bool is_valid() const;
+            std::string_view id() const;
         };
 
-        class bucket_entity : public has_id {
+        class bucket_entity : public has_uuid {
             std::string m_name;
         public:
-            bucket_entity(const fstore::core::uuid& id, std::string_view name);
+            bucket_entity(const core::uuid& uuid, std::string_view name);
             bucket_entity(std::string_view name);
 
             void add_object(const service::object& obj);
@@ -26,7 +30,7 @@ namespace fstore::repo {
             void name(std::string_view name);
         };
 
-        class object_entity : public has_id {
+        class object_entity : public has_uuid {
             std::string m_hash;
             uintmax_t m_size;
         public:

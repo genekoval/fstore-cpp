@@ -14,7 +14,7 @@ namespace fstore::service {
          *
          * returns: This object's id.
          */
-        virtual fstore::core::uuid id() const = 0;
+        virtual std::string_view id() const = 0;
 
         /**
          * Returns a value obtained by hashing the contents of this object.

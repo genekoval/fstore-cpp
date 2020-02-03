@@ -10,18 +10,22 @@ using std::string_view;
 using std::uintmax_t;
 
 namespace fstore::repo::db {
-    using core::uuid;
+    has_uuid::has_uuid(std::string_view uuid) : m_uuid(uuid) {}
 
-    has_id::has_id(const uuid& id) : m_id(id) {}
+    has_uuid::has_uuid(const core::uuid& uuid) : m_uuid(uuid) {}
 
-    uuid has_id::id() const { return m_id; }
+    bool has_uuid::is_valid() const { return m_uuid.is_null(); }
+
+    void has_uuid::nullify() { m_uuid.clear(); }
+
+    std::string_view has_uuid::id() const { return m_uuid.to_string(); }
 
     object_entity::object_entity(
-        const uuid& id,
+        const core::uuid& id,
         std::string_view hash,
         uintmax_t size
     ) :
-        has_id(id),
+        has_uuid(id),
         m_hash(hash),
         m_size(size)
     {}
@@ -30,8 +34,8 @@ namespace fstore::repo::db {
 
     uintmax_t object_entity::size() const { return m_size; }
 
-    bucket_entity::bucket_entity(const uuid& id, std::string_view name) :
-        has_id(id),
+    bucket_entity::bucket_entity(const core::uuid& uuid, std::string_view name) :
+        has_uuid(uuid),
         m_name(nova::ext::string::trim(std::string(name)))
     {
         pqxx::work transaction(connect());
@@ -39,7 +43,7 @@ namespace fstore::repo::db {
         try {
             transaction.exec_params(
                 "SELECT create_bucket($1, $2)",
-                id,
+                std::string(id()),
                 m_name
             );
             transaction.commit();
@@ -69,7 +73,7 @@ namespace fstore::repo::db {
                 m_name
             );
 
-            m_id = row[0].as<uuid>();
+            m_uuid = row[0].as<std::string>();
         }
         catch (const pqxx::unexpected_rows& ex) {
             throw fstore::core::fstore_error(
@@ -86,8 +90,8 @@ namespace fstore::repo::db {
             "SELECT add_object($1, ("
                 "SELECT create_object($2, $3, $4)"
             "))",
-            m_id,
-            obj.id(),
+            std::string(id()),
+            std::string(obj.id()),
             std::string(obj.hash()),
             obj.size()
         );
@@ -100,7 +104,7 @@ namespace fstore::repo::db {
 
         transaction.exec_params(
             "SELECT delete_bucket($1)",
-            m_id
+            std::string(id())
         );
         transaction.commit();
     }
@@ -115,7 +119,7 @@ namespace fstore::repo::db {
         try {
             transaction.exec_params(
                 "SELECT rename_bucket($1, $2)",
-                m_id,
+                std::string(id()),
                 new_name
             );
             transaction.commit();

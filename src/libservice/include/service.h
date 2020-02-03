@@ -23,7 +23,7 @@ namespace fstore::service {
     public:
         object_core(const fs::path& path);
 
-        core::uuid id() const override;
+        std::string_view id() const override;
         std::string_view hash() const override;
         uintmax_t size() const override;
     };
