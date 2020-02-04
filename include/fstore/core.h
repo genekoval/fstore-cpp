@@ -24,6 +24,20 @@ namespace fstore::core {
         std::string_view to_string() const;
     };
 
+    class has_uuid {
+        core::uuid m_id;
+    protected:
+        has_uuid() = default;
+        has_uuid(std::string_view uuid);
+        has_uuid(const core::uuid& uuid);
+
+        void id(std::string_view new_id);
+        void nullify();
+    public:
+        std::string_view id() const;
+        bool is_valid() const;
+    };
+
     struct fstore_error : std::runtime_error {
         fstore_error(const std::string& what_arg);
     };

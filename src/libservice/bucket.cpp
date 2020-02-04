@@ -1,29 +1,52 @@
 #include <service.h>
 #include <crypto.h>
 
+#include <nova/ext/string.h>
+
 namespace fs = std::filesystem;
 
 namespace fstore::service {
     // bucket_core {{{
     bucket_core::bucket_core(
-        const core::uuid& id,
+        const core::uuid& uuid,
         std::string_view name
     ) :
-        entity(id, name)
-    {}
+        has_uuid(uuid),
+        m_name(nova::ext::string::trim(std::string(name)))
+    {
+        repo::db::create_bucket(id(), m_name);
+    }
 
-    bucket_core::bucket_core(std::string_view name) : entity(name) {}
+    bucket_core::bucket_core(std::string_view name) :
+        m_name(nova::ext::string::trim(std::string(name)))
+    {
+        id(repo::db::fetch_bucket(m_name));
+    }
 
     void bucket_core::add_object(const std::filesystem::path& path) {
         object_core obj(path);
-        entity.add_object(obj);
+        repo::db::add_object(
+            id(),
+            obj.id(),
+            obj.hash(),
+            obj.size()
+        );
     }
 
-    void bucket_core::destroy() { entity.destroy(); }
+    void bucket_core::destroy() {
+        repo::db::delete_bucket(id());
+        nullify();
+    }
 
-    std::string_view bucket_core::name() const { return entity.name(); }
+    std::string_view bucket_core::name() const { return m_name; }
 
-    void bucket_core::name(std::string_view new_name) { entity.name(new_name); }
+    void bucket_core::name(std::string_view new_name) {
+        const std::string processed_new_name =
+            nova::ext::string::trim(std::string(new_name));
+
+        repo::db::rename_bucket(id(), processed_new_name);
+        m_name = processed_new_name;
+    }
     // }}}
 
     // bucket_provider {{{

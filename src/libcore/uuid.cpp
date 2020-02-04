@@ -4,6 +4,21 @@ namespace fstore::core {
     // 32 hex digits + 4 hyphens + 1 terminating null character
     constexpr int uuid_len = 37;
 
+    // has_uuid {{{
+    has_uuid::has_uuid(std::string_view uuid) : m_id(uuid) {}
+
+    has_uuid::has_uuid(const core::uuid& uuid) : m_id(uuid) {}
+
+    bool has_uuid::is_valid() const { return m_id.is_null(); }
+
+    void has_uuid::nullify() { m_id.clear(); }
+
+    std::string_view has_uuid::id() const { return m_id.to_string(); }
+
+    void has_uuid::id(std::string_view new_id) { m_id = std::string(new_id); }
+    /// }}}
+
+    // uuid {{{
     uuid::uuid() {
         uuid_generate(m_value);
         set_string();
@@ -42,4 +57,5 @@ namespace fstore::core {
         uuid_parse(std::string(value_str).c_str(), m_value);
         set_string();
     }
+    /// }}}
 }
