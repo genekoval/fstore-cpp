@@ -7,23 +7,26 @@
 
 namespace service = fstore::service;
 
-using std::string;
+namespace fstore {
+    std::unique_ptr<service::bucket> fetch_bucket(
+        const std::string& bucket_name
+    ) {
+        auto bucket = service::bucket_provider::fetch(bucket_name);
 
-const string& get_name(const commline::cli& cli) {
+        if (!bucket) throw commline::cli_error(
+            "bucket " QUOTE(nova::ext::string::trim(bucket_name))
+            " does not exist"
+        );
+
+        return std::move(bucket.value());
+    }
+}
+
+const std::string& get_name(const commline::cli& cli) {
     if (cli.args().empty())
         throw commline::cli_error("no bucket name given");
 
     return cli.args().front();
-}
-
-std::unique_ptr<service::bucket> fetch(const std::string& name) {
-    auto bucket = service::bucket_provider::fetch(name);
-
-    if (!bucket) throw commline::cli_error(
-        "bucket " QUOTE(nova::ext::string::trim(name)) " does not exist"
-    );
-
-    return std::move(bucket.value());
 }
 
 void commline::commands::create(const commline::cli& cli) {
@@ -41,7 +44,7 @@ void commline::commands::create(const commline::cli& cli) {
 void commline::commands::remove(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
-    auto bucket = fetch(name);
+    auto bucket = fstore::fetch_bucket(name);
     bucket->destroy();
     std::cout << "deleted bucket: " << bucket->name() << std::endl;
 }
@@ -53,7 +56,7 @@ void commline::commands::rename(const commline::cli& cli) {
     const auto& old_name = cli.args()[0];
     const auto& new_name = cli.args()[1];
 
-    auto bucket = fetch(old_name);
+    auto bucket = fstore::fetch_bucket(old_name);
 
     const std::string old_bucket(bucket->name());
     bucket->name(new_name);

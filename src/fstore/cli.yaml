@@ -1,6 +1,11 @@
 commands:
   - name: add
     description: Add a file to a bucket.
+    options:
+      - short: b
+        long: bucket
+        has arg?: true
+        description: The bucket to add the object to.
   - name: create
     description: Create a bucket.
   - name: remove
