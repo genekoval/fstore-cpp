@@ -39,8 +39,11 @@ namespace fstore::service {
          * params:
          *      - name: file
          *        desc: The file from which to create the object.
+         * returns: The object that was added.
          */
-        virtual void add_object(const std::filesystem::path& path) = 0;
+        virtual std::unique_ptr<object> add_object(
+            const std::filesystem::path& path
+        ) = 0;
 
         /**
          * Returns the name of this bucket.

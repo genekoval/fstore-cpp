@@ -23,14 +23,17 @@ namespace fstore::service {
         id(repo::db::fetch_bucket(m_name));
     }
 
-    void bucket_core::add_object(const std::filesystem::path& path) {
-        object_core obj(path);
+    std::unique_ptr<object> bucket_core::add_object(
+        const std::filesystem::path& path
+    ) {
+        std::unique_ptr<object> obj(new object_core(path));
         repo::db::add_object(
             id(),
-            obj.id(),
-            obj.hash(),
-            obj.size()
+            obj->id(),
+            obj->hash(),
+            obj->size()
         );
+        return obj;
     }
 
     void bucket_core::destroy() {

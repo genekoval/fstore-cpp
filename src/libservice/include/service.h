@@ -12,7 +12,9 @@ namespace fstore::service {
         bucket_core(const core::uuid& uuid, std::string_view name);
         bucket_core(std::string_view name);
 
-        void add_object(const fs::path& path) override;
+        std::unique_ptr<object> add_object(
+            const fs::path& path
+        ) override;
         void destroy() override;
         std::string_view name() const override;
         void name(std::string_view new_name) override;

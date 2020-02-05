@@ -15,7 +15,7 @@ void commline::commands::add(const commline::cli& cli) {
     );
 
     for (const auto& file : cli.args()) {
-        bucket->add_object(file);
-        std::cout << "object added: " << file << std::endl;
+        auto obj = bucket->add_object(file);
+        std::cout << obj->id() << " " << file << std::endl;
     }
 }
