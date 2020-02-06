@@ -5,7 +5,7 @@
 #include <nova/ext/string.h>
 
 namespace fstore::repo::db {
-    void add_object(
+    std::string add_object(
         std::string_view bucket_id,
         std::string_view object_id,
         std::string_view object_hash,
@@ -13,7 +13,7 @@ namespace fstore::repo::db {
     ) {
         pqxx::work transaction(connect());
 
-        transaction.exec_params(
+        auto row = transaction.exec_params1(
             "SELECT add_object($1, ("
                 "SELECT create_object($2, $3, $4)"
             "))",
@@ -24,6 +24,7 @@ namespace fstore::repo::db {
         );
 
         transaction.commit();
+        return row[0].as<std::string>();
     }
 
     void create_bucket(

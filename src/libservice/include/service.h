@@ -26,6 +26,7 @@ namespace fstore::service {
     public:
         object_core(const fs::path& path);
 
+        void add_to_bucket(const bucket_core& bkt);
         std::string_view id() const override;
         std::string_view hash() const override;
         uintmax_t size() const override;

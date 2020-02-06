@@ -26,13 +26,8 @@ namespace fstore::service {
     std::unique_ptr<object> bucket_core::add_object(
         const std::filesystem::path& path
     ) {
-        std::unique_ptr<object> obj(new object_core(path));
-        repo::db::add_object(
-            id(),
-            obj->id(),
-            obj->hash(),
-            obj->size()
-        );
+        std::unique_ptr<object_core> obj(new object_core(path));
+        obj->add_to_bucket(*this);
         return obj;
     }
 

@@ -4,7 +4,7 @@
 
 namespace fstore::repo {
     namespace db {
-        void add_object(
+        std::string add_object(
             std::string_view bucket_id,
             std::string_view object_id,
             std::string_view object_hash,

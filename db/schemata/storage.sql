@@ -34,12 +34,17 @@ CREATE TABLE bucket_object (
 CREATE FUNCTION storage.add_object(
     bucket_id       uuid,
     object_id       uuid
-) RETURNS void AS $$
+) RETURNS uuid AS $$
 BEGIN
-    INSERT INTO storage.bucket_object (bucket_id, object_id) VALUES (
+    INSERT INTO storage.bucket_object (
         bucket_id,
         object_id
-    );
+    ) VALUES (
+        bucket_id,
+        object_id
+    ) ON CONFLICT DO NOTHING;
+
+    RETURN object_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -63,6 +68,8 @@ CREATE FUNCTION storage.create_object(
     obj_hash        char(65),
     obj_len         bigint
 ) RETURNS uuid AS $$
+DECLARE
+    id_for_hash     uuid;
 BEGIN
     INSERT INTO storage.object (
         id,
@@ -72,9 +79,13 @@ BEGIN
         obj_id,
         obj_hash,
         obj_len
-    );
+    ) ON CONFLICT DO NOTHING;
 
-    RETURN obj_id;
+    SELECT id INTO id_for_hash
+    FROM storage.object
+    WHERE hash = obj_hash;
+
+    RETURN id_for_hash;
 END;
 $$ LANGUAGE plpgsql;
 
