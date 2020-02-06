@@ -1,6 +1,7 @@
 #pragma once
 
-#include <fstore/service.h>
+#include <filesystem>
+#include <string_view>
 
 namespace fstore::repo {
     namespace db {
@@ -24,5 +25,11 @@ namespace fstore::repo {
             std::string_view bucket_id,
             std::string_view new_name
         );
+    }
+
+    namespace fs {
+        std::string hash(const std::filesystem::path& path);
+
+        uintmax_t size(const std::filesystem::path& path);
     }
 }

@@ -1,10 +1,11 @@
 #include <service.h>
-#include <crypto.h>
+
+#include <fstore/repo.h>
 
 namespace fstore::service {
     object_core::object_core(const fs::path& path) :
-        m_hash(crypto::sha256sum(path)),
-        m_size(fs::file_size(path))
+        m_hash(repo::fs::hash(path)),
+        m_size(repo::fs::size(path))
     {}
 
     void object_core::add_to_bucket(const bucket_core& bkt) {
