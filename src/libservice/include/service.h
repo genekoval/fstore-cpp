@@ -3,8 +3,6 @@
 #include <fstore/repo.h>
 #include <fstore/service.h>
 
-namespace fs = std::filesystem;
-
 namespace fstore::service {
     class bucket_core : public core::has_uuid, public bucket {
         std::string m_name;
@@ -13,7 +11,7 @@ namespace fstore::service {
         bucket_core(std::string_view name);
 
         std::unique_ptr<object> add_object(
-            const fs::path& path
+            const std::filesystem::path& file
         ) override;
         void destroy() override;
         std::string_view name() const override;
@@ -24,9 +22,11 @@ namespace fstore::service {
         std::string m_hash;
         uintmax_t m_size;
     public:
-        object_core(const fs::path& path);
+        object_core(
+            const bucket_core& bkt,
+            const std::filesystem::path& path
+        );
 
-        void add_to_bucket(const bucket_core& bkt);
         std::string_view id() const override;
         std::string_view hash() const override;
         uintmax_t size() const override;

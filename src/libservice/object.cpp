@@ -3,20 +3,21 @@
 #include <fstore/repo.h>
 
 namespace fstore::service {
-    object_core::object_core(const fs::path& path) :
+    object_core::object_core(
+        const bucket_core& bkt,
+        const std::filesystem::path& path
+    ) :
         m_hash(repo::fs::hash(path)),
         m_size(repo::fs::size(path))
-    {}
-
-    void object_core::add_to_bucket(const bucket_core& bkt) {
-        const auto id_of_hash = repo::db::add_object(
+    {
+        has_uuid::id(repo::db::add_object(
             bkt.id(),
             id(),
-            hash(),
-            size()
-        );
+            m_hash,
+            m_size
+        ));
 
-        has_uuid::id(id_of_hash);
+        repo::fs::copy_to_store(path, id());
     }
 
     std::string_view object_core::id() const { return has_uuid::id(); }

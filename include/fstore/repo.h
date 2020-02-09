@@ -28,6 +28,11 @@ namespace fstore::repo {
     }
 
     namespace fs {
+        void copy_to_store(
+            const std::filesystem::path& from,
+            std::string_view to
+        );
+
         std::string hash(const std::filesystem::path& path);
 
         uintmax_t size(const std::filesystem::path& path);

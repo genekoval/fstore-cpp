@@ -8,9 +8,13 @@
 #include <string_view> // std::string_view
 
 namespace fstore::service {
+    /**
+     * A representation of data. An object includes the data itself, a
+     * variable amount of metadata, and a unique identifier.
+     */
     struct object {
         /**
-         * Returns this object's id.
+         * Returns this object's unique identifier.
          *
          * returns: This object's id.
          */
@@ -18,32 +22,44 @@ namespace fstore::service {
 
         /**
          * Returns a value obtained by hashing the contents of this object.
+         * Each object has a unique hash value.
          *
          * returns: The hash of this object's contents.
          */
         virtual std::string_view hash() const = 0;
 
         /**
-         * Returns the size (in bytes) of this object's contents.
+         * Returns the amount of data this object represents. The size is
+         * given in bytes.
          *
          * returns: The size of this object's contents.
          */
         virtual uintmax_t size() const = 0;
     };
 
+    /**
+     * A namespace under which objects are stored. A bucket contains zero or
+     * more objects. No two buckets may have the same name. Therefore, buckets
+     * are identified solely by their names.
+     */
     struct bucket {
         /**
-         * Creates a new object from the file pointed to by the specified
-         * path and adds it to this bucket as an object.
+         * Adds the specified file to this bucket as an object. The specified
+         * file is not modified by this operation.
          *
          * params:
          *      - name: file
-         *        desc: The file from which to create the object.
-         * returns: The object that was added.
+         *        desc: The file to add to this bucket.
+         * returns: An object with the same contents as the specified file.
          */
         virtual std::unique_ptr<object> add_object(
-            const std::filesystem::path& path
+            const std::filesystem::path& file
         ) = 0;
+
+        /**
+         * Deletes this bucket.
+         */
+        virtual void destroy() = 0;
 
         /**
          * Returns the name of this bucket.
@@ -60,11 +76,6 @@ namespace fstore::service {
          *        desc: The new name for this bucket.
          */
          virtual void name(std::string_view new_name) = 0;
-
-        /**
-         * Deletes this bucket and all of its objects.
-         */
-        virtual void destroy() = 0;
     };
 
     struct bucket_provider {

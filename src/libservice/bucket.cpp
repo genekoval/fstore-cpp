@@ -1,5 +1,4 @@
 #include <service.h>
-#include <crypto.h>
 
 #include <nova/ext/string.h>
 
@@ -26,9 +25,7 @@ namespace fstore::service {
     std::unique_ptr<object> bucket_core::add_object(
         const std::filesystem::path& path
     ) {
-        std::unique_ptr<object_core> obj(new object_core(path));
-        obj->add_to_bucket(*this);
-        return obj;
+        return std::unique_ptr<object>(new object_core(*this, path));
     }
 
     void bucket_core::destroy() {
