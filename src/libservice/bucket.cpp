@@ -42,6 +42,14 @@ namespace fstore::service {
         repo::db::rename_bucket(id(), processed_new_name);
         m_name = processed_new_name;
     }
+
+    std::unique_ptr<object> bucket_core::remove_object(
+        std::string_view object_id
+    ) {
+        return std::unique_ptr<object>(new object_core(
+            repo::db::remove_object(id(), object_id)
+        ));
+    }
     // }}}
 
     // bucket_provider {{{

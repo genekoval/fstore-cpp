@@ -87,6 +87,32 @@ namespace fstore::repo::db {
         }
     }
 
+    object remove_object(
+        std::string_view bucket_id,
+        std::string_view object_id
+    ) {
+        pqxx::work transaction(connect());
+
+        try {
+            auto row = transaction.exec_params1(
+                "SELECT id, hash, len "
+                "FROM remove_object($1, $2)",
+                std::string(bucket_id),
+                std::string(object_id)
+            );
+            transaction.commit();
+
+            return object{
+                row[0].as<std::string>(),
+                row[1].as<std::string>(),
+                row[2].as<uintmax_t>()
+            };
+        }
+        catch (const pqxx::unexpected_rows& ex) {
+            throw fstore::core::fstore_error("bucket does not contain object");
+        }
+    }
+
     void rename_bucket(
         std::string_view bucket_id,
         std::string_view new_name

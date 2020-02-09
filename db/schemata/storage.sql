@@ -12,7 +12,7 @@ CREATE TABLE object (
     id              uuid PRIMARY KEY,
 
     -- SHA256 checksum of the file contents.
-    hash            char(65) UNIQUE NOT NULL,
+    hash            char(64) UNIQUE NOT NULL,
 
     -- Length of the file contents in bytes.
     len             bigint NOT NULL,
@@ -65,7 +65,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION storage.create_object(
     obj_id          uuid,
-    obj_hash        char(65),
+    obj_hash        char(64),
     obj_len         bigint
 ) RETURNS uuid AS $$
 DECLARE
@@ -95,6 +95,27 @@ CREATE FUNCTION storage.delete_bucket(
 BEGIN
     DELETE FROM bucket
     WHERE id = bucket_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION storage.remove_object(
+    bkt_id          uuid,
+    obj_id          uuid
+) RETURNS SETOF object AS $$
+BEGIN
+    RETURN QUERY
+    WITH deleted AS (
+        DELETE FROM bucket_object
+        WHERE bucket_id = bkt_id AND object_id = obj_id
+        RETURNING object_id, date_added
+    )
+    SELECT
+        object_id,
+        hash,
+        len,
+        deleted.date_added
+    FROM deleted
+        JOIN object ON object_id = object.id;
 END;
 $$ LANGUAGE plpgsql;
 

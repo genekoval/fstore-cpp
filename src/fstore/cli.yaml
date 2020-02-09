@@ -6,6 +6,13 @@ commands:
         long: bucket
         has arg?: true
         description: The bucket to add the object to.
+  - name: object_remove
+    description: Remove an object from a bucket.
+    options:
+      - short: b
+        long: bucket
+        has arg?: true
+        description: The bucket to add the object to.
   - name: create
     description: Create a bucket.
   - name: remove

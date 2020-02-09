@@ -1,6 +1,5 @@
 #include <commline/commands.h>
 #include <fstore/service.h>
-#include <fstore/repo.h>
 #include <iostream>
 #include <nova/ext/string.h>
 #include <utility>

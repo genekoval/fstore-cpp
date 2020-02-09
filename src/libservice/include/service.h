@@ -16,12 +16,16 @@ namespace fstore::service {
         void destroy() override;
         std::string_view name() const override;
         void name(std::string_view new_name) override;
+        std::unique_ptr<object> remove_object(
+            std::string_view
+        ) override;
     };
 
     class object_core : public core::has_uuid, public object {
         std::string m_hash;
         uintmax_t m_size;
     public:
+        object_core(const repo::db::object& data);
         object_core(
             const bucket_core& bkt,
             const std::filesystem::path& path

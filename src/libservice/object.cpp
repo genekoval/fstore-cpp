@@ -3,6 +3,12 @@
 #include <fstore/repo.h>
 
 namespace fstore::service {
+    object_core::object_core(const repo::db::object& data) :
+        has_uuid(data.id),
+        m_hash(data.hash),
+        m_size(data.size)
+    {}
+
     object_core::object_core(
         const bucket_core& bkt,
         const std::filesystem::path& path

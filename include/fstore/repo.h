@@ -5,6 +5,12 @@
 
 namespace fstore::repo {
     namespace db {
+        struct object {
+            std::string id;
+            std::string hash;
+            uintmax_t size;
+        };
+
         std::string add_object(
             std::string_view bucket_id,
             std::string_view object_id,
@@ -20,6 +26,11 @@ namespace fstore::repo {
         void delete_bucket(std::string_view bucket_id);
 
         std::string fetch_bucket(std::string_view bucket_name);
+
+        object remove_object(
+            std::string_view bucket_id,
+            std::string_view object_id
+        );
 
         void rename_bucket(
             std::string_view bucket_id,

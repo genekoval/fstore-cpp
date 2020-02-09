@@ -76,6 +76,10 @@ namespace fstore::service {
          *        desc: The new name for this bucket.
          */
          virtual void name(std::string_view new_name) = 0;
+
+         virtual std::unique_ptr<object> remove_object(
+            std::string_view object_id
+        ) = 0;
     };
 
     struct bucket_provider {
