@@ -29,8 +29,8 @@ namespace fstore::repo {
 
     namespace fs {
         void copy_to_store(
-            const std::filesystem::path& from,
-            std::string_view to
+            const std::filesystem::path& src,
+            const std::filesystem::path& dest_filename
         );
 
         std::string hash(const std::filesystem::path& path);

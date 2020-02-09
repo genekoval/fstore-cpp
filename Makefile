@@ -23,3 +23,5 @@ endef
 
 include $(DEVROOT)/include/mkbuild/base.mk
 include $(DEVROOT)/include/mkbuild/cli.mk
+
+$($(repo)): CXXFLAGS += -DPREFIX='"$(prefix)"'
