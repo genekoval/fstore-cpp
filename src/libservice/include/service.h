@@ -17,7 +17,7 @@ namespace fstore::service {
         std::string_view name() const override;
         void name(std::string_view new_name) override;
         std::unique_ptr<object> remove_object(
-            std::string_view
+            std::string_view object_id
         ) override;
     };
 
@@ -25,6 +25,11 @@ namespace fstore::service {
         std::string m_hash;
         uintmax_t m_size;
     public:
+        static void add_entities(
+            std::vector<std::unique_ptr<object>>& objects,
+            const std::vector<repo::db::object>& entities
+        );
+
         object_core(const repo::db::object& data);
         object_core(
             const bucket_core& bkt,
@@ -34,5 +39,10 @@ namespace fstore::service {
         std::string_view id() const override;
         std::string_view hash() const override;
         uintmax_t size() const override;
+    };
+
+    class object_store_core : public object_store {
+    public:
+        std::vector<std::unique_ptr<object>> prune() const override;
     };
 }

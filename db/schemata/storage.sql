@@ -29,7 +29,16 @@ CREATE TABLE bucket_object (
     PRIMARY KEY (bucket_id, object_id)
 )
 
-;
+CREATE VIEW object_reference AS
+    SELECT
+        id AS object_id,
+        count(object_id) AS reference_count
+    FROM object
+        LEFT OUTER JOIN bucket_object
+            ON bucket_object.object_id = object.id
+    GROUP BY id
+
+; -- END SCHEMA storage
 
 CREATE FUNCTION storage.add_object(
     bucket_id       uuid,
@@ -95,6 +104,16 @@ CREATE FUNCTION storage.delete_bucket(
 BEGIN
     DELETE FROM bucket
     WHERE id = bucket_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION storage.delete_orphan_objects()
+RETURNS SETOF object AS $$
+BEGIN
+    RETURN QUERY
+    DELETE FROM object USING object_reference
+    WHERE id = object_id AND reference_count = 0
+    RETURNING id, hash, len, date_added;
 END;
 $$ LANGUAGE plpgsql;
 

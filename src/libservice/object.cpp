@@ -1,6 +1,6 @@
 #include <service.h>
 
-#include <fstore/repo.h>
+#include <memory>
 
 namespace fstore::service {
     object_core::object_core(const repo::db::object& data) :
@@ -24,6 +24,14 @@ namespace fstore::service {
         ));
 
         repo::fs::copy_to_store(path, id());
+    }
+
+    void object_core::add_entities(
+        std::vector<std::unique_ptr<object>>& objects,
+        const std::vector<repo::db::object>& entities
+    ) {
+        for (const auto& entity : entities)
+            objects.push_back(std::make_unique<object_core>(entity));
     }
 
     std::string_view object_core::id() const { return has_uuid::id(); }

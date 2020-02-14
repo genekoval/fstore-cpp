@@ -9,19 +9,23 @@ namespace fstore::repo::fs {
 
     void copy_to_store(
         const std::filesystem::path& from,
-        const std::filesystem::path& dest_filename
+        std::string_view object_id
     ) {
         std::filesystem::create_directories(object_dir);
 
         std::filesystem::copy_file(
             from,
-            object_dir / dest_filename,
+            object_dir / object_id,
             std::filesystem::copy_options::skip_existing
         );
     }
 
     std::string hash(const std::filesystem::path& path) {
         return crypto::sha256sum(path);
+    }
+
+    void remove_from_store(std::string_view object_id) {
+        std::filesystem::remove(object_dir / object_id);
     }
 
     uintmax_t size(const std::filesystem::path& path) {

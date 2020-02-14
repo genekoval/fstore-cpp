@@ -6,6 +6,7 @@
 #include <memory> // std::unique_ptr
 #include <optional> // std::optional
 #include <string_view> // std::string_view
+#include <vector> // std::vector
 
 namespace fstore::service {
     /**
@@ -35,6 +36,15 @@ namespace fstore::service {
          * returns: The size of this object's contents.
          */
         virtual uintmax_t size() const = 0;
+    };
+
+    struct object_store {
+        static std::unique_ptr<object_store> get();
+
+        /**
+         * Removes all objects that are not referenced by a bucket.
+         */
+        virtual std::vector<std::unique_ptr<object>> prune() const = 0;
     };
 
     /**

@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <string_view>
+#include <vector>
 
 namespace fstore::repo {
     namespace db {
@@ -25,6 +26,8 @@ namespace fstore::repo {
 
         void delete_bucket(std::string_view bucket_id);
 
+        std::vector<object> delete_orphan_objects();
+
         std::string fetch_bucket(std::string_view bucket_name);
 
         object remove_object(
@@ -41,10 +44,12 @@ namespace fstore::repo {
     namespace fs {
         void copy_to_store(
             const std::filesystem::path& src,
-            const std::filesystem::path& dest_filename
+            std::string_view object_id
         );
 
         std::string hash(const std::filesystem::path& path);
+
+        void remove_from_store(std::string_view object_id);
 
         uintmax_t size(const std::filesystem::path& path);
     }

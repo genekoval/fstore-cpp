@@ -66,6 +66,28 @@ namespace fstore::repo::db {
         transaction.commit();
     }
 
+    std::vector<object> delete_orphan_objects() {
+        pqxx::work transaction(connect());
+
+        auto rows = transaction.exec_params(
+            "SELECT id, hash, len "
+            "FROM delete_orphan_objects()"
+        );
+        transaction.commit();
+
+        std::vector<object> deleted_objects;
+
+        for (const auto& row : rows)
+            deleted_objects.push_back(object{
+                row[0].as<std::string>(),
+                row[1].as<std::string>(),
+                row[2].as<uintmax_t>()
+            });
+
+        return deleted_objects;
+
+    }
+
     std::string fetch_bucket(std::string_view bucket_name) {
         pqxx::work transaction(connect());
 

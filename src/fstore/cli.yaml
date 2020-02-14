@@ -19,3 +19,5 @@ commands:
     description: Delete a bucket.
   - name: rename
     description: Rename a bucket.
+  - name: prune
+    description: Remove all objects that don't belong to any bucket.
