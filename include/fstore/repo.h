@@ -7,16 +7,18 @@
 namespace fstore::repo {
     namespace db {
         struct object {
-            std::string id;
-            std::string hash;
-            uintmax_t size;
+            const std::string id;
+            const std::string hash;
+            const std::string mime_type;
+            const uintmax_t size;
         };
 
         std::string add_object(
             std::string_view bucket_id,
             std::string_view object_id,
             std::string_view object_hash,
-            uintmax_t object_size
+            uintmax_t object_size,
+            std::string_view object_mime_type
         );
 
         void create_bucket(
@@ -48,6 +50,8 @@ namespace fstore::repo {
         );
 
         std::string hash(const std::filesystem::path& path);
+
+        std::string mime_type(const std::filesystem::path& path);
 
         void remove_from_store(std::string_view object_id);
 

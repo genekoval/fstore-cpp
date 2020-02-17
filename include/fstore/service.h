@@ -30,6 +30,13 @@ namespace fstore::service {
         virtual std::string_view hash() const = 0;
 
         /**
+         * Returns the mime type of this object's contents.
+         *
+         * returns: The mime type of this object's contents.
+         */
+        virtual std::string_view mime_type() const = 0;
+
+        /**
          * Returns the amount of data this object represents. The size is
          * given in bytes.
          *

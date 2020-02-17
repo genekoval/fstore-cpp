@@ -25,7 +25,7 @@ namespace fstore::service {
     std::unique_ptr<object> bucket_core::add_object(
         const std::filesystem::path& path
     ) {
-        return std::unique_ptr<object>(new object_core(*this, path));
+        return std::make_unique<object_core>(*this, path);
     }
 
     void bucket_core::destroy() {
@@ -46,9 +46,9 @@ namespace fstore::service {
     std::unique_ptr<object> bucket_core::remove_object(
         std::string_view object_id
     ) {
-        return std::unique_ptr<object>(new object_core(
+        return std::make_unique<object_core>(
             repo::db::remove_object(id(), object_id)
-        ));
+        );
     }
     // }}}
 

@@ -6,6 +6,7 @@ namespace fstore::service {
     object_core::object_core(const repo::db::object& data) :
         has_uuid(data.id),
         m_hash(data.hash),
+        m_mime_type(data.mime_type),
         m_size(data.size)
     {}
 
@@ -14,13 +15,15 @@ namespace fstore::service {
         const std::filesystem::path& path
     ) :
         m_hash(repo::fs::hash(path)),
+        m_mime_type(repo::fs::mime_type(path)),
         m_size(repo::fs::size(path))
     {
         has_uuid::id(repo::db::add_object(
             bkt.id(),
             id(),
             m_hash,
-            m_size
+            m_size,
+            m_mime_type
         ));
 
         repo::fs::copy_to_store(path, id());
@@ -28,7 +31,7 @@ namespace fstore::service {
 
     void object_core::add_entities(
         std::vector<std::unique_ptr<object>>& objects,
-        const std::vector<repo::db::object>& entities
+        std::vector<repo::db::object>&& entities
     ) {
         for (const auto& entity : entities)
             objects.push_back(std::make_unique<object_core>(entity));
@@ -37,6 +40,8 @@ namespace fstore::service {
     std::string_view object_core::id() const { return has_uuid::id(); }
 
     std::string_view object_core::hash() const { return m_hash; }
+
+    std::string_view object_core::mime_type() const { return m_mime_type; }
 
     uintmax_t object_core::size() const { return m_size; }
 }

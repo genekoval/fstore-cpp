@@ -9,18 +9,20 @@ namespace fstore::repo::db {
         std::string_view bucket_id,
         std::string_view object_id,
         std::string_view object_hash,
-        uintmax_t object_size
+        uintmax_t object_size,
+        std::string_view object_mime_type
     ) {
         pqxx::work transaction(connect());
 
         auto row = transaction.exec_params1(
             "SELECT add_object($1, ("
-                "SELECT create_object($2, $3, $4)"
+                "SELECT create_object($2, $3, $4, $5)"
             "))",
             std::string(bucket_id),
             std::string(object_id),
             std::string(object_hash),
-            object_size
+            object_size,
+            std::string(object_mime_type)
         );
 
         transaction.commit();
@@ -70,7 +72,7 @@ namespace fstore::repo::db {
         pqxx::work transaction(connect());
 
         auto rows = transaction.exec_params(
-            "SELECT id, hash, len "
+            "SELECT id, hash, len, mime_type "
             "FROM delete_orphan_objects()"
         );
         transaction.commit();
@@ -81,6 +83,7 @@ namespace fstore::repo::db {
             deleted_objects.push_back(object{
                 row[0].as<std::string>(),
                 row[1].as<std::string>(),
+                row[3].as<std::string>(),
                 row[2].as<uintmax_t>()
             });
 
@@ -117,7 +120,7 @@ namespace fstore::repo::db {
 
         try {
             auto row = transaction.exec_params1(
-                "SELECT id, hash, len "
+                "SELECT id, hash, len, mime_type "
                 "FROM remove_object($1, $2)",
                 std::string(bucket_id),
                 std::string(object_id)
@@ -127,6 +130,7 @@ namespace fstore::repo::db {
             return object{
                 row[0].as<std::string>(),
                 row[1].as<std::string>(),
+                row[3].as<std::string>(),
                 row[2].as<uintmax_t>()
             };
         }

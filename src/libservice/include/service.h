@@ -23,11 +23,12 @@ namespace fstore::service {
 
     class object_core : public core::has_uuid, public object {
         std::string m_hash;
+        std::string m_mime_type;
         uintmax_t m_size;
     public:
         static void add_entities(
             std::vector<std::unique_ptr<object>>& objects,
-            const std::vector<repo::db::object>& entities
+            std::vector<repo::db::object>&& entities
         );
 
         object_core(const repo::db::object& data);
@@ -38,6 +39,7 @@ namespace fstore::service {
 
         std::string_view id() const override;
         std::string_view hash() const override;
+        std::string_view mime_type() const override;
         uintmax_t size() const override;
     };
 

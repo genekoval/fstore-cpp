@@ -15,6 +15,7 @@ define $(project).libs
  color++
  commline
  cryptopp
+ magix
  pqxx
  pq
  uuid

@@ -9,15 +9,19 @@ CREATE TABLE bucket (
 )
 
 CREATE TABLE object (
+    -- The object's unique identifier.
     id              uuid PRIMARY KEY,
 
-    -- SHA256 checksum of the file contents.
+    -- SHA256 checksum of the object's contents.
     hash            char(64) UNIQUE NOT NULL,
 
-    -- Length of the file contents in bytes.
+    -- Length of the object's contents in bytes.
     len             bigint NOT NULL,
 
-    -- The time this object was first added to the database.
+    -- Mime type of the object's contents.
+    mime_type       varchar(50) NOT NULL,
+
+    -- The time this object was first added to the object store.
     date_added      timestamptz DEFAULT NOW()
 )
 
@@ -73,9 +77,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION storage.create_object(
-    obj_id          uuid,
-    obj_hash        char(64),
-    obj_len         bigint
+    object_id          uuid,
+    object_hash        char(64),
+    object_len         bigint,
+    object_mime_type   varchar
 ) RETURNS uuid AS $$
 DECLARE
     id_for_hash     uuid;
@@ -83,16 +88,18 @@ BEGIN
     INSERT INTO storage.object (
         id,
         hash,
-        len
+        len,
+        mime_type
     ) VALUES (
-        obj_id,
-        obj_hash,
-        obj_len
+        object_id,
+        object_hash,
+        object_len,
+        object_mime_type
     ) ON CONFLICT DO NOTHING;
 
     SELECT id INTO id_for_hash
     FROM storage.object
-    WHERE hash = obj_hash;
+    WHERE hash = object_hash;
 
     RETURN id_for_hash;
 END;
@@ -113,7 +120,7 @@ BEGIN
     RETURN QUERY
     DELETE FROM object USING object_reference
     WHERE id = object_id AND reference_count = 0
-    RETURNING id, hash, len, date_added;
+    RETURNING id, hash, len, mime_type, date_added;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -132,6 +139,7 @@ BEGIN
         object_id,
         hash,
         len,
+        mime_type,
         deleted.date_added
     FROM deleted
         JOIN object ON object_id = object.id;

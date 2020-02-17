@@ -1,4 +1,5 @@
 #include <crypto.h>
+#include <magix.h>
 
 #include <fstore/repo.h>
 
@@ -22,6 +23,11 @@ namespace fstore::repo::fs {
 
     std::string hash(const std::filesystem::path& path) {
         return crypto::sha256sum(path);
+    }
+
+    std::string mime_type(const std::filesystem::path& path) {
+        magix::magic magic(MAGIC_MIME_TYPE);
+        return magic.file(path);
     }
 
     void remove_from_store(std::string_view object_id) {
