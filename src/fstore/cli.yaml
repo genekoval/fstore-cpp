@@ -15,9 +15,16 @@ commands:
         description: The bucket to add the object to.
   - name: create
     description: Create a bucket.
+  - name: prune
+    description: Remove all objects that don't belong to any bucket.
   - name: remove
     description: Delete a bucket.
   - name: rename
     description: Rename a bucket.
-  - name: prune
-    description: Remove all objects that don't belong to any bucket.
+  - name: status
+    description: Retrieve information about the object store.
+    options:
+      - short: a
+        long: all
+        has arg?: false
+        description: Get information about the entire object store.

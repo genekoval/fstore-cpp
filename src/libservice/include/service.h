@@ -6,8 +6,10 @@
 namespace fstore::service {
     class bucket_core : public core::has_uuid, public bucket {
         std::string m_name;
+        int m_object_count;
+        uintmax_t m_space_used;
     public:
-        bucket_core(const core::uuid& uuid, std::string_view name);
+        bucket_core(repo::db::bucket&& entity);
         bucket_core(std::string_view name);
 
         std::unique_ptr<object> add_object(
@@ -16,9 +18,11 @@ namespace fstore::service {
         void destroy() override;
         std::string_view name() const override;
         void name(std::string_view new_name) override;
+        int object_count() const override;
         std::unique_ptr<object> remove_object(
             std::string_view object_id
         ) override;
+        uintmax_t space_used() const override;
     };
 
     class object_core : public core::has_uuid, public object {
@@ -45,6 +49,17 @@ namespace fstore::service {
 
     class object_store_core : public object_store {
     public:
+        std::unique_ptr<bucket> create_bucket(
+            std::string_view name
+        ) const override;
+        std::optional<std::unique_ptr<bucket>> fetch_bucket(
+            std::string_view name
+        ) const override;
+        std::vector<std::unique_ptr<bucket>> fetch_buckets() const override;
+        std::vector<std::unique_ptr<bucket>> fetch_buckets(
+            const std::vector<std::string>& names
+        ) const override;
+        core::store_totals get_store_totals() const override;
         std::vector<std::unique_ptr<object>> prune() const override;
     };
 }

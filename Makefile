@@ -26,3 +26,7 @@ include $(DEVROOT)/include/mkbuild/base.mk
 include $(DEVROOT)/include/mkbuild/cli.mk
 
 $($(repo)): CXXFLAGS += -DPREFIX='"$(prefix)"'
+
+.PHONY: debug
+debug:
+	gdb -quiet -tui -ex "source .gdb/break" -x .gdb/run $($(project))

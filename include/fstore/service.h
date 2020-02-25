@@ -45,15 +45,6 @@ namespace fstore::service {
         virtual uintmax_t size() const = 0;
     };
 
-    struct object_store {
-        static std::unique_ptr<object_store> get();
-
-        /**
-         * Removes all objects that are not referenced by a bucket.
-         */
-        virtual std::vector<std::unique_ptr<object>> prune() const = 0;
-    };
-
     /**
      * A namespace under which objects are stored. A bucket contains zero or
      * more objects. No two buckets may have the same name. Therefore, buckets
@@ -94,12 +85,18 @@ namespace fstore::service {
          */
          virtual void name(std::string_view new_name) = 0;
 
+         virtual int object_count() const = 0;
+
          virtual std::unique_ptr<object> remove_object(
             std::string_view object_id
         ) = 0;
+
+        virtual uintmax_t space_used() const = 0;
     };
 
-    struct bucket_provider {
+    struct object_store {
+        static std::unique_ptr<object_store> get();
+
         /**
          * Creates a new bucket with the specified name. If creation
          * is successful, an optional containing the new bucket is returned.
@@ -113,7 +110,9 @@ namespace fstore::service {
          *        desc: The name of the new bucket.
          * returns: The newly created bucket.
          */
-        static std::unique_ptr<bucket> create(std::string_view name);
+        virtual std::unique_ptr<bucket> create_bucket(
+            std::string_view name
+        ) const = 0;
 
         /**
          * Returns an optional containing an existing bucket with the
@@ -125,8 +124,21 @@ namespace fstore::service {
          *        desc: The name of the bucket to retrieve.
          * returns: An existing bucket with the specified name.
          */
-        static std::optional<std::unique_ptr<bucket>> fetch(
+        virtual std::optional<std::unique_ptr<bucket>> fetch_bucket(
             std::string_view name
-        );
+        ) const = 0;
+
+        virtual std::vector<std::unique_ptr<bucket>> fetch_buckets() const = 0;
+
+        virtual std::vector<std::unique_ptr<bucket>> fetch_buckets(
+            const std::vector<std::string>& names
+        ) const = 0;
+
+        virtual core::store_totals get_store_totals() const = 0;
+
+        /**
+         * Removes all objects that are not referenced by a bucket.
+         */
+        virtual std::vector<std::unique_ptr<object>> prune() const = 0;
     };
 }

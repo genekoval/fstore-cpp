@@ -33,6 +33,19 @@ CREATE TABLE bucket_object (
     PRIMARY KEY (bucket_id, object_id)
 )
 
+CREATE VIEW bucket_view AS
+    SELECT
+        bucket.id AS bucket_id,
+        name AS bucket_name,
+        count(object_id) AS object_count,
+        COALESCE(sum(len), 0) AS space_used
+    FROM bucket
+        LEFT OUTER JOIN bucket_object
+            ON bucket_id = bucket.id
+        LEFT OUTER JOIN object
+            ON object_id = object.id
+    GROUP BY bucket.id, name
+
 CREATE VIEW object_reference AS
     SELECT
         id AS object_id,
@@ -41,6 +54,15 @@ CREATE VIEW object_reference AS
         LEFT OUTER JOIN bucket_object
             ON bucket_object.object_id = object.id
     GROUP BY id
+
+CREATE VIEW store_totals AS
+    SELECT
+        (SELECT count(*) FROM bucket)
+            AS bucket_count,
+        (SELECT count(*) FROM object)
+            AS object_count,
+        (SELECT COALESCE(sum(len), 0) FROM object)
+            AS space_used
 
 ; -- END SCHEMA storage
 

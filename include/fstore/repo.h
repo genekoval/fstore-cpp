@@ -1,11 +1,20 @@
 #pragma once
 
+#include <fstore/core.h>
+
 #include <filesystem>
 #include <string_view>
 #include <vector>
 
 namespace fstore::repo {
     namespace db {
+        struct bucket {
+            const std::string id;
+            const std::string name;
+            int object_count;
+            uintmax_t space_used;
+        };
+
         struct object {
             const std::string id;
             const std::string hash;
@@ -30,7 +39,15 @@ namespace fstore::repo {
 
         std::vector<object> delete_orphan_objects();
 
-        std::string fetch_bucket(std::string_view bucket_name);
+        bucket fetch_bucket(std::string_view bucket_name);
+
+        std::vector<bucket> fetch_buckets(
+            const std::vector<std::string>& names
+        );
+
+        std::vector<bucket> fetch_buckets();
+
+        core::store_totals get_store_totals();
 
         object remove_object(
             std::string_view bucket_id,

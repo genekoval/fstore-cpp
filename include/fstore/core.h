@@ -6,6 +6,12 @@
 #include <uuid/uuid.h>
 
 namespace fstore::core {
+    struct store_totals {
+        const int bucket_count;
+        const int object_count;
+        const uintmax_t space_used;
+    };
+
     class uuid {
         uuid_t m_value;
         std::string value_string;

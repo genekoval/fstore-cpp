@@ -91,18 +91,23 @@ namespace fstore::repo::db {
 
     }
 
-    std::string fetch_bucket(std::string_view bucket_name) {
+    bucket fetch_bucket(std::string_view bucket_name) {
         pqxx::work transaction(connect());
 
         try {
             auto row = transaction.exec_params1(
-                "SELECT id "
-                "FROM bucket "
-                "WHERE name = $1",
+                "SELECT bucket_id, bucket_name, object_count, space_used "
+                "FROM bucket_view "
+                "WHERE bucket_name = $1",
                 std::string(bucket_name)
             );
 
-            return row[0].as<std::string>();
+            return bucket{
+                row[0].as<std::string>(),
+                row[1].as<std::string>(),
+                row[2].as<int>(),
+                row[3].as<uintmax_t>()
+            };
         }
         catch (const pqxx::unexpected_rows& ex) {
             throw fstore::core::fstore_error(
@@ -110,6 +115,64 @@ namespace fstore::repo::db {
                 "bucket does not exist"
             );
         }
+    }
+
+    std::vector<bucket> fetch_buckets() {
+        pqxx::work transaction(connect());
+
+        auto rows = transaction.exec(
+            "SELECT bucket_id, bucket_name, object_count, space_used "
+            "FROM bucket_view "
+            "ORDER BY object_count DESC"
+        );
+
+        std::vector<bucket> buckets;
+        for (const auto& row : rows)
+            buckets.push_back(bucket{
+                row[0].as<std::string>(),
+                row[1].as<std::string>(),
+                row[2].as<int>(),
+                row[3].as<uintmax_t>()
+            });
+
+        return buckets;
+    }
+
+    std::vector<bucket> fetch_buckets(const std::vector<std::string>& names) {
+        pqxx::work transaction(connect());
+
+        auto rows = transaction.exec(
+            "SELECT bucket_id, bucket_name, object_count, space_used "
+            "FROM bucket_view "
+            "WHERE bucket_name IN (" + quoted_list(names, transaction) + ")"
+            "ORDER BY object_count DESC"
+        );
+
+        std::vector<bucket> buckets;
+        for (const auto& row : rows)
+            buckets.push_back(bucket{
+                row[0].as<std::string>(),
+                row[1].as<std::string>(),
+                row[2].as<int>(),
+                row[3].as<uintmax_t>()
+            });
+
+        return buckets;
+    }
+
+    core::store_totals get_store_totals() {
+        pqxx::work transaction(connect());
+
+        auto row = transaction.exec1(
+            "SELECT bucket_count, object_count, space_used "
+            "FROM store_totals"
+        );
+
+        return core::store_totals{
+            row[0].as<int>(),
+            row[1].as<int>(),
+            row[2].as<uintmax_t>()
+        };
     }
 
     object remove_object(

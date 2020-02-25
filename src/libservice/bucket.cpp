@@ -5,21 +5,17 @@
 namespace fs = std::filesystem;
 
 namespace fstore::service {
-    // bucket_core {{{
-    bucket_core::bucket_core(
-        const core::uuid& uuid,
-        std::string_view name
-    ) :
-        has_uuid(uuid),
-        m_name(nova::ext::string::trim(std::string(name)))
-    {
-        repo::db::create_bucket(id(), m_name);
-    }
+    bucket_core::bucket_core(repo::db::bucket&& entity) :
+        has_uuid(entity.id),
+        m_name(entity.name),
+        m_object_count(entity.object_count),
+        m_space_used(entity.space_used)
+    {}
 
     bucket_core::bucket_core(std::string_view name) :
         m_name(nova::ext::string::trim(std::string(name)))
     {
-        id(repo::db::fetch_bucket(m_name));
+        repo::db::create_bucket(id(), m_name);
     }
 
     std::unique_ptr<object> bucket_core::add_object(
@@ -43,6 +39,8 @@ namespace fstore::service {
         m_name = processed_new_name;
     }
 
+    int bucket_core::object_count() const { return m_object_count; }
+
     std::unique_ptr<object> bucket_core::remove_object(
         std::string_view object_id
     ) {
@@ -50,27 +48,6 @@ namespace fstore::service {
             repo::db::remove_object(id(), object_id)
         );
     }
-    // }}}
 
-    // bucket_provider {{{
-    std::unique_ptr<bucket> bucket_provider::create(
-        std::string_view name
-    ) {
-        return std::unique_ptr<bucket>(new bucket_core(
-            core::uuid{},
-            name
-        ));
-    }
-
-    std::optional<std::unique_ptr<bucket>> bucket_provider::fetch(
-        std::string_view name
-    ) {
-        try {
-            return std::unique_ptr<bucket>(new bucket_core(name));
-        }
-        catch (const fstore::core::fstore_error& ex) {
-            return {};
-        }
-    }
-    // }}}
+    uintmax_t bucket_core::space_used() const { return m_space_used; }
 }
