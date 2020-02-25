@@ -1,11 +1,34 @@
 #pragma once
 
+#include <ostream> // std::ostream
 #include <string> // std::string
 #include <string_view> // std::string_view
 #include <stdexcept> // std::runtime_error
 #include <uuid/uuid.h>
 
 namespace fstore::core {
+    enum byte_multiple {
+        B, KiB, MiB, GiB, TiB
+    };
+
+    std::ostream& operator<<(std::ostream& os, byte_multiple multiple);
+
+    class data_size {
+        static data_size convert_to(long double size, byte_multiple multiple);
+
+        const long double size;
+        const byte_multiple multiple;
+
+        data_size(long double size, byte_multiple multiple);
+    public:
+        friend
+            std::ostream& operator<<(std::ostream& os, const data_size& size);
+
+        static data_size format(uintmax_t bytes);
+    };
+
+    std::string to_string(const data_size& ds);
+
     struct store_totals {
         const int bucket_count;
         const int object_count;

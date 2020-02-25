@@ -3,6 +3,8 @@
 #include <commline/commands.h>
 #include <iostream>
 
+using fstore::core::data_size;
+
 void commline::commands::prune(const commline::cli& cli) {
     const auto object_store = fstore::service::object_store::get();
     const auto removed_objects = object_store->prune();
@@ -20,7 +22,7 @@ void commline::commands::prune(const commline::cli& cli) {
         freed_space += object->size();
         std::cout
             << object->hash() << " "
-            << object->size() << std::endl;
+            << data_size::format(object->size()) << std::endl;
     }
 
     std::cout << "---" << std::endl;
@@ -28,6 +30,5 @@ void commline::commands::prune(const commline::cli& cli) {
         << "deleted: " << removed_objects.size()
         << " object" << (removed_objects.size() == 1 ? "" : "s")
         << std::endl
-        << "freeing: " << freed_space << " B"
-        << std::endl;
+        << "freeing: " << data_size::format(freed_space) << std::endl;
 }

@@ -5,7 +5,10 @@
 #include <nova/ext/string.h>
 #include <utility>
 
+namespace core = fstore::core;
 namespace service = fstore::service;
+
+using core::data_size;
 
 namespace fstore {
     const bucket_table::row_t fstore::bucket_table::headers = {
@@ -15,7 +18,7 @@ namespace fstore {
     void bucket_table::get_data(row_t& entry, value_t&& bucket) {
         entry[0] = bucket->name();
         entry[1] = std::to_string(bucket->object_count());
-        entry[2] = std::to_string(bucket->space_used());
+        entry[2] = core::to_string(data_size::format(bucket->space_used()));
     }
 
     std::unique_ptr<service::bucket> fetch_bucket(
@@ -50,14 +53,14 @@ const std::string& get_name(const commline::cli& cli) {
 }
 
 void commline::commands::create(const commline::cli& cli) {
-    const auto object_store = fstore::service::object_store::get();
+    const auto object_store = service::object_store::get();
     const auto& name = get_name(cli);
 
     try {
         const auto bucket = object_store->create_bucket(name);
         std::cout << "created bucket: " << bucket->name() << std::endl;
     }
-    catch (const fstore::core::fstore_error& ex) {
+    catch (const core::fstore_error& ex) {
         throw commline::cli_error(ex.what());
     }
 }
@@ -89,7 +92,7 @@ void commline::commands::rename(const commline::cli& cli) {
 }
 
 void commline::commands::status(const commline::cli& cli) {
-    const auto object_store = fstore::service::object_store::get();
+    const auto object_store = service::object_store::get();
     const auto show_all_buckets = cli.options().selected("all");
     fstore::bucket_table table;
 
@@ -111,6 +114,7 @@ void commline::commands::status(const commline::cli& cli) {
         std::cout
             << "buckets: " << totals.bucket_count << std::endl
             << "objects: " << totals.object_count << std::endl
-            << "space used: " << totals.space_used << std::endl;
+            << "space used: " << data_size::format(totals.space_used)
+            << std::endl;
     }
 }

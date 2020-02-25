@@ -4,6 +4,8 @@
 #include <fstore/service.h>
 #include <iostream>
 
+using fstore::core::data_size;
+
 void commline::commands::add(const commline::cli& cli) {
     if (!cli.options().selected("bucket"))
         throw commline::cli_error("bucket name required");
@@ -39,7 +41,7 @@ void commline::commands::object_remove(const commline::cli& cli) {
                 << "deleted: "
                 << object->id() << " "
                 << object->hash() << " "
-                << object->size()
+                << data_size::format(object->size())
                 << std::endl;
         }
         catch (const fstore::core::fstore_error& ex) {
