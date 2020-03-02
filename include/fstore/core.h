@@ -30,9 +30,9 @@ namespace fstore::core {
     std::string to_string(const data_size& ds);
 
     struct store_totals {
-        const int bucket_count;
-        const int object_count;
-        const uintmax_t space_used;
+        virtual int bucket_count() const = 0;
+        virtual int object_count() const = 0;
+        virtual uintmax_t space_used() const = 0;
     };
 
     class uuid {

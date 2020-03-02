@@ -35,7 +35,7 @@ namespace fstore::service {
             std::vector<repo::db::object>&& entities
         );
 
-        object_core(const repo::db::object& data);
+        object_core(const repo::db::object& entity);
         object_core(
             const bucket_core& bkt,
             const std::filesystem::path& path
@@ -59,7 +59,7 @@ namespace fstore::service {
         std::vector<std::unique_ptr<bucket>> fetch_buckets(
             const std::vector<std::string>& names
         ) const override;
-        core::store_totals get_store_totals() const override;
+        std::unique_ptr<core::store_totals> get_store_totals() const override;
         std::vector<std::unique_ptr<object>> prune() const override;
     };
 }

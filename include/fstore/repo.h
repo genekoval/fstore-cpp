@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstore/core.h>
+#include <fstore/entities.h>
 
 #include <filesystem>
 #include <string_view>
@@ -8,20 +9,6 @@
 
 namespace fstore::repo {
     namespace db {
-        struct bucket {
-            const std::string id;
-            const std::string name;
-            int object_count;
-            uintmax_t space_used;
-        };
-
-        struct object {
-            const std::string id;
-            const std::string hash;
-            const std::string mime_type;
-            const uintmax_t size;
-        };
-
         std::string add_object(
             std::string_view bucket_id,
             std::string_view object_id,
@@ -47,7 +34,7 @@ namespace fstore::repo {
 
         std::vector<bucket> fetch_buckets();
 
-        core::store_totals get_store_totals();
+        std::unique_ptr<core::store_totals> get_store_totals();
 
         object remove_object(
             std::string_view bucket_id,

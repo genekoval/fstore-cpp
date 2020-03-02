@@ -3,11 +3,11 @@
 #include <memory>
 
 namespace fstore::service {
-    object_core::object_core(const repo::db::object& data) :
-        has_uuid(data.id),
-        m_hash(data.hash),
-        m_mime_type(data.mime_type),
-        m_size(data.size)
+    object_core::object_core(const repo::db::object& entity) :
+        has_uuid(entity.id()),
+        m_hash(entity.hash()),
+        m_mime_type(entity.mime_type()),
+        m_size(entity.size())
     {}
 
     object_core::object_core(

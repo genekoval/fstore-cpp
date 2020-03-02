@@ -112,9 +112,9 @@ void commline::commands::status(const commline::cli& cli) {
         auto totals = object_store->get_store_totals();
 
         std::cout
-            << "buckets: " << totals.bucket_count << std::endl
-            << "objects: " << totals.object_count << std::endl
-            << "space used: " << data_size::format(totals.space_used)
+            << "buckets: " << totals->bucket_count() << std::endl
+            << "objects: " << totals->object_count() << std::endl
+            << "space used: " << data_size::format(totals->space_used())
             << std::endl;
     }
 }

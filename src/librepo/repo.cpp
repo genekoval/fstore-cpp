@@ -80,12 +80,7 @@ namespace fstore::repo::db {
         std::vector<object> deleted_objects;
 
         for (const auto& row : rows)
-            deleted_objects.push_back(object{
-                row[0].as<std::string>(),
-                row[1].as<std::string>(),
-                row[3].as<std::string>(),
-                row[2].as<uintmax_t>()
-            });
+            deleted_objects.push_back(object(row));
 
         return deleted_objects;
 
@@ -95,19 +90,12 @@ namespace fstore::repo::db {
         pqxx::work transaction(connect());
 
         try {
-            auto row = transaction.exec_params1(
+            return bucket(transaction.exec_params1(
                 "SELECT bucket_id, bucket_name, object_count, space_used "
                 "FROM bucket_view "
                 "WHERE bucket_name = $1",
                 std::string(bucket_name)
-            );
-
-            return bucket{
-                row[0].as<std::string>(),
-                row[1].as<std::string>(),
-                row[2].as<int>(),
-                row[3].as<uintmax_t>()
-            };
+            ));
         }
         catch (const pqxx::unexpected_rows& ex) {
             throw fstore::core::fstore_error(
@@ -128,12 +116,7 @@ namespace fstore::repo::db {
 
         std::vector<bucket> buckets;
         for (const auto& row : rows)
-            buckets.push_back(bucket{
-                row[0].as<std::string>(),
-                row[1].as<std::string>(),
-                row[2].as<int>(),
-                row[3].as<uintmax_t>()
-            });
+            buckets.push_back(bucket(row));
 
         return buckets;
     }
@@ -150,29 +133,18 @@ namespace fstore::repo::db {
 
         std::vector<bucket> buckets;
         for (const auto& row : rows)
-            buckets.push_back(bucket{
-                row[0].as<std::string>(),
-                row[1].as<std::string>(),
-                row[2].as<int>(),
-                row[3].as<uintmax_t>()
-            });
+            buckets.push_back(bucket(row));
 
         return buckets;
     }
 
-    core::store_totals get_store_totals() {
+    std::unique_ptr<core::store_totals> get_store_totals() {
         pqxx::work transaction(connect());
 
-        auto row = transaction.exec1(
+        return std::make_unique<store_totals>(transaction.exec1(
             "SELECT bucket_count, object_count, space_used "
             "FROM store_totals"
-        );
-
-        return core::store_totals{
-            row[0].as<int>(),
-            row[1].as<int>(),
-            row[2].as<uintmax_t>()
-        };
+        ));
     }
 
     object remove_object(
@@ -190,12 +162,7 @@ namespace fstore::repo::db {
             );
             transaction.commit();
 
-            return object{
-                row[0].as<std::string>(),
-                row[1].as<std::string>(),
-                row[3].as<std::string>(),
-                row[2].as<uintmax_t>()
-            };
+            return object(row);
         }
         catch (const pqxx::unexpected_rows& ex) {
             throw fstore::core::fstore_error("bucket does not contain object");

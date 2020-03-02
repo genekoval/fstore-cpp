@@ -45,7 +45,8 @@ namespace fstore::service {
         return buckets;
     }
 
-    core::store_totals object_store_core::get_store_totals() const {
+    std::unique_ptr<core::store_totals> object_store_core::get_store_totals()
+    const {
         return repo::db::get_store_totals();
     }
 

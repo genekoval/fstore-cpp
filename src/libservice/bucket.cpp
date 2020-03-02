@@ -6,10 +6,10 @@ namespace fs = std::filesystem;
 
 namespace fstore::service {
     bucket_core::bucket_core(repo::db::bucket&& entity) :
-        has_uuid(entity.id),
-        m_name(entity.name),
-        m_object_count(entity.object_count),
-        m_space_used(entity.space_used)
+        has_uuid(entity.id()),
+        m_name(entity.name()),
+        m_object_count(entity.object_count()),
+        m_space_used(entity.space_used())
     {}
 
     bucket_core::bucket_core(std::string_view name) :

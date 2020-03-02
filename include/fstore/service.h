@@ -134,7 +134,8 @@ namespace fstore::service {
             const std::vector<std::string>& names
         ) const = 0;
 
-        virtual core::store_totals get_store_totals() const = 0;
+        virtual std::unique_ptr<core::store_totals> get_store_totals()
+            const = 0;
 
         /**
          * Removes all objects that are not referenced by a bucket.
