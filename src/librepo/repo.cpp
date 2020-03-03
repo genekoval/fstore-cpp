@@ -2,7 +2,8 @@
 
 #include <fstore/core.h>
 #include <fstore/repo.h>
-#include <nova/ext/string.h>
+
+using entix::query;
 
 namespace fstore::repo::db {
     std::string add_object(
@@ -12,36 +13,38 @@ namespace fstore::repo::db {
         uintmax_t object_size,
         std::string_view object_mime_type
     ) {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
-        auto row = transaction.exec_params1(
-            "SELECT add_object($1, ("
-                "SELECT create_object($2, $3, $4, $5)"
-            "))",
+        return tx.exec_params1(
+            query{}
+                .select(
+                    "add_object($1, ("
+                        "SELECT create_object($2, $3, $4, $5)"
+                    "))"
+                )
+            .str(),
             std::string(bucket_id),
             std::string(object_id),
             std::string(object_hash),
             object_size,
             std::string(object_mime_type)
-        );
-
-        transaction.commit();
-        return row[0].as<std::string>();
+        )[0].as<std::string>();
     }
 
     void create_bucket(
         std::string_view bucket_id,
         std::string_view bucket_name
     ) {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
         try {
-            transaction.exec_params(
-                "SELECT create_bucket($1, $2)",
+            tx.exec_params(
+                query{}
+                    .select("create_bucket($1, $2)")
+                .str(),
                 std::string(bucket_id),
                 std::string(bucket_name)
             );
-            transaction.commit();
         }
         catch (const pqxx::unique_violation& ex) {
             throw core::fstore_error(
@@ -58,42 +61,38 @@ namespace fstore::repo::db {
     }
 
     void delete_bucket(std::string_view bucket_id) {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
-        transaction.exec_params(
-            "SELECT delete_bucket($1)",
+        tx.exec_params(
+            query{}
+                .select("delete_bucket($1)")
+            .str(),
             std::string(bucket_id)
         );
-
-        transaction.commit();
     }
 
     std::vector<object> delete_orphan_objects() {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
-        auto rows = transaction.exec_params(
-            "SELECT id, hash, len, mime_type "
-            "FROM delete_orphan_objects()"
-        );
-        transaction.commit();
-
-        std::vector<object> deleted_objects;
-
-        for (const auto& row : rows)
-            deleted_objects.push_back(object(row));
-
-        return deleted_objects;
-
+        return object::create_from(tx.exec_params(
+            query{}
+                .select<object>()
+                .from("delete_orphan_objects()")
+            .str()
+        ));
     }
 
     bucket fetch_bucket(std::string_view bucket_name) {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
         try {
-            return bucket(transaction.exec_params1(
-                "SELECT bucket_id, bucket_name, object_count, space_used "
-                "FROM bucket_view "
-                "WHERE bucket_name = $1",
+            return bucket(tx.exec_params1(
+                query{}
+                    .select<bucket>()
+                    .from("bucket_view")
+                    .where(bucket::column<bucket::c_name>())
+                        .equals("$1")
+                .str(),
                 std::string(bucket_name)
             ));
         }
@@ -106,44 +105,39 @@ namespace fstore::repo::db {
     }
 
     std::vector<bucket> fetch_buckets() {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
-        auto rows = transaction.exec(
-            "SELECT bucket_id, bucket_name, object_count, space_used "
-            "FROM bucket_view "
-            "ORDER BY object_count DESC"
-        );
-
-        std::vector<bucket> buckets;
-        for (const auto& row : rows)
-            buckets.push_back(bucket(row));
-
-        return buckets;
+        return bucket::create_from(tx.exec(
+            query{}
+                .select<bucket>()
+                .from("bucket_view")
+                .order_by_desc(bucket::column<bucket::c_object_count>())
+            .str()
+        ));
     }
 
     std::vector<bucket> fetch_buckets(const std::vector<std::string>& names) {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
-        auto rows = transaction.exec(
-            "SELECT bucket_id, bucket_name, object_count, space_used "
-            "FROM bucket_view "
-            "WHERE bucket_name IN (" + quoted_list(names, transaction) + ")"
-            "ORDER BY object_count DESC"
-        );
-
-        std::vector<bucket> buckets;
-        for (const auto& row : rows)
-            buckets.push_back(bucket(row));
-
-        return buckets;
+        return bucket::create_from(tx.exec(
+            query{}
+                .select<bucket>()
+                .from("bucket_view")
+                .where(bucket::column<bucket::c_name>())
+                    .in(quote(names, tx))
+                .order_by_asc(bucket::column<bucket::c_name>())
+            .str()
+        ));
     }
 
     std::unique_ptr<core::store_totals> get_store_totals() {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
-        return std::make_unique<store_totals>(transaction.exec1(
-            "SELECT bucket_count, object_count, space_used "
-            "FROM store_totals"
+        return std::make_unique<store_totals>(tx.exec1(
+            query{}
+                .select<store_totals>()
+                .from("store_totals")
+            .str()
         ));
     }
 
@@ -151,18 +145,17 @@ namespace fstore::repo::db {
         std::string_view bucket_id,
         std::string_view object_id
     ) {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
         try {
-            auto row = transaction.exec_params1(
-                "SELECT id, hash, len, mime_type "
-                "FROM remove_object($1, $2)",
+            return object(tx.exec_params1(
+                query{}
+                    .select<object>()
+                    .from("remove_object($1, $2)")
+                .str(),
                 std::string(bucket_id),
                 std::string(object_id)
-            );
-            transaction.commit();
-
-            return object(row);
+            ));
         }
         catch (const pqxx::unexpected_rows& ex) {
             throw fstore::core::fstore_error("bucket does not contain object");
@@ -173,15 +166,16 @@ namespace fstore::repo::db {
         std::string_view bucket_id,
         std::string_view new_name
     ) {
-        pqxx::work transaction(connect());
+        auto tx = pqxx::nontransaction(connect());
 
         try {
-            transaction.exec_params(
-                "SELECT rename_bucket($1, $2)",
+            tx.exec_params(
+                query{}
+                    .select("rename_bucket($1, $2)")
+                .str(),
                 std::string(bucket_id),
                 std::string(new_name)
             );
-            transaction.commit();
         }
         catch (const pqxx::unique_violation& ex) {
             throw fstore::core::fstore_error(

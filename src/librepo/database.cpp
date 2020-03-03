@@ -1,7 +1,6 @@
 #include <database.h>
 
 #include <algorithm>
-#include <nova/ext/string.h>
 
 namespace fstore::repo::db {
     pqxx::connection& connect() {
@@ -12,18 +11,18 @@ namespace fstore::repo::db {
         return connection;
     }
 
-    std::string quoted_list(
+    std::vector<std::string> quote(
         const std::vector<std::string>& elements,
-        const pqxx::work& transaction
+        const pqxx::transaction_base& transaction
     ) {
-        std::vector<std::string> escaped(elements.size());
+        std::vector<std::string> quoted(elements.size());
 
-        std::transform(elements.begin(), elements.end(), escaped.begin(),
+        std::transform(elements.begin(), elements.end(), quoted.begin(),
             [&transaction](const std::string& element) -> std::string {
                 return transaction.quote(element);
             }
         );
 
-        return nova::ext::string::join(escaped, ", ");
+        return quoted;
     }
 }

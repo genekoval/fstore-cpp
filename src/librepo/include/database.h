@@ -7,8 +7,8 @@
 namespace fstore::repo::db {
     pqxx::connection& connect();
 
-    std::string quoted_list(
+    std::vector<std::string> quote(
       const std::vector<std::string>& elements,
-      const pqxx::work& transaction
+      const pqxx::transaction_base& transaction
     );
 }

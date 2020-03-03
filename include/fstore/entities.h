@@ -16,6 +16,7 @@ namespace fstore::repo::db {
     }
 
     struct bucket : public entix::entity<
+        bucket,
         entix::column<bucket_col::id, std::string>,
         entix::column<bucket_col::name, std::string>,
         entix::column<bucket_col::object_count, int>,
@@ -50,6 +51,7 @@ namespace fstore::repo::db {
     }
 
     struct object : public entix::entity<
+        object,
         entix::column<object_col::id, std::string>,
         entix::column<object_col::hash, std::string>,
         entix::column<object_col::mime_type, std::string>,
@@ -83,6 +85,7 @@ namespace fstore::repo::db {
     }
 
     struct store_totals : public core::store_totals, public entix::entity<
+        store_totals,
         entix::column<store_totals_col::bucket_count, int>,
         entix::column<store_totals_col::object_count, int>,
         entix::column<store_totals_col::space_used, uintmax_t>
