@@ -1,21 +1,20 @@
 #pragma once
 
-#include <fstore/repo.h>
+#include <fstore/repo/bucket.h>
+#include <fstore/repo/object.h>
+#include <fstore/repo/object_store.h>
 #include <fstore/service.h>
 
 namespace fstore::service {
-    class bucket_core : public core::has_uuid, public bucket {
-        std::string m_name;
-        int m_object_count;
-        uintmax_t m_space_used;
+    class bucket_core : public bucket {
+        repo::db::bucket entity;
     public:
-        bucket_core(repo::db::bucket&& entity);
-        bucket_core(std::string_view name);
+        bucket_core(const repo::db::bucket&& entity);
 
         std::unique_ptr<object> add_object(
             const std::filesystem::path& file
         ) override;
-        void destroy() override;
+        void drop() override;
         std::string_view name() const override;
         void name(std::string_view new_name) override;
         int object_count() const override;
@@ -25,21 +24,11 @@ namespace fstore::service {
         uintmax_t space_used() const override;
     };
 
-    class object_core : public core::has_uuid, public object {
-        std::string m_hash;
-        std::string m_mime_type;
-        uintmax_t m_size;
+    class object_core : public object {
+        repo::db::object entity;
     public:
-        static void add_entities(
-            std::vector<std::unique_ptr<object>>& objects,
-            std::vector<repo::db::object>&& entities
-        );
-
-        object_core(const repo::db::object& entity);
-        object_core(
-            const bucket_core& bkt,
-            const std::filesystem::path& path
-        );
+        object_core(const repo::db::object&& entity);
+        object_core(const std::filesystem::path& path);
 
         std::string_view id() const override;
         std::string_view hash() const override;
@@ -48,6 +37,7 @@ namespace fstore::service {
     };
 
     class object_store_core : public object_store {
+        repo::db::object_store entity;
     public:
         std::unique_ptr<bucket> create_bucket(
             std::string_view name

@@ -67,7 +67,7 @@ namespace fstore::service {
         /**
          * Deletes this bucket.
          */
-        virtual void destroy() = 0;
+        virtual void drop() = 0;
 
         /**
          * Returns the name of this bucket.

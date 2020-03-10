@@ -69,7 +69,7 @@ void commline::commands::remove(const commline::cli& cli) {
     const auto& name = get_name(cli);
 
     auto bucket = fstore::fetch_bucket(name);
-    bucket->destroy();
+    bucket->drop();
     std::cout << "deleted bucket: " << bucket->name() << std::endl;
 }
 

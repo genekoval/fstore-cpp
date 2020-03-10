@@ -1,7 +1,7 @@
 #include <crypto.h>
 #include <magix.h>
 
-#include <fstore/repo.h>
+#include <fstore/repo/filesystem.h>
 
 namespace fstore::repo::fs {
     const std::filesystem::path prefix(PREFIX);
