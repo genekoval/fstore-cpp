@@ -1,9 +1,10 @@
 #include <fstore/service.h>
 
 #include <commline/commands.h>
+#include <ext/data_size.h>
 #include <iostream>
 
-using fstore::core::data_size;
+using ext::data_size;
 
 void commline::commands::prune(const commline::cli& cli) {
     const auto object_store = fstore::service::object_store::get();

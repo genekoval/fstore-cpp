@@ -1,7 +1,9 @@
 #include <database.h>
 
-#include <fstore/core.h>
+#include <fstore/error.h>
 #include <fstore/repo/object_store.h>
+
+#include <uuid++/uuid.h>
 
 using entix::query;
 
@@ -9,26 +11,27 @@ namespace fstore::repo::db {
     void object_store::create_bucket(std::string_view bucket_name) const {
         auto tx = pqxx::nontransaction(connect());
 
-        auto uuid = core::uuid{};
+        auto uuid = UUID::uuid{};
+        uuid.generate();
 
         try {
             tx.exec_params(
                 query{}
                     .select("create_bucket($1, $2)")
                 .str(),
-                std::string(uuid.to_string()),
+                uuid.string(),
                 std::string(bucket_name)
             );
         }
         catch (const pqxx::unique_violation& ex) {
-            throw core::fstore_error(
+            throw fstore_error(
                 "cannot create bucket "
                 QUOTE_VIEW(bucket_name)
                 ": bucket exists"
             );
         }
         catch (const pqxx::check_violation& ex) {
-            throw fstore::core::fstore_error(
+            throw fstore_error(
                 "cannot create bucket: bucket name empty"
             );
         }
@@ -60,7 +63,7 @@ namespace fstore::repo::db {
             ));
         }
         catch (const pqxx::unexpected_rows& ex) {
-            throw fstore::core::fstore_error(
+            throw fstore_error(
                 "failed to fetch bucket " QUOTE_VIEW(bucket_name) ": "
                 "bucket does not exist"
             );

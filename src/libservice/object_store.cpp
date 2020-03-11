@@ -1,5 +1,6 @@
 #include <service.h>
 
+#include <fstore/error.h>
 #include <fstore/repo/filesystem.h>
 
 namespace fstore::service {
@@ -20,7 +21,7 @@ namespace fstore::service {
         try {
             return std::make_unique<bucket_core>(entity.fetch_bucket(name));
         }
-        catch (const fstore::core::fstore_error& ex) {
+        catch (const fstore_error& ex) {
             return {};
         }
     }

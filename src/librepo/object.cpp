@@ -1,7 +1,8 @@
 #include <database.h>
 
-#include <fstore/core.h>
 #include <fstore/repo/object.h>
+
+#include <uuid++/uuid.h>
 
 using entix::query;
 
@@ -17,13 +18,14 @@ namespace fstore::repo::db {
 
         auto tx = pqxx::nontransaction(connect());
 
-        auto uuid = core::uuid{};
+        auto uuid = UUID::uuid{};
+        uuid.generate();
 
         col<c_id>().set(tx.exec_params1(
             query{}
                 .select("create_object($1, $2, $3, $4)")
             .str(),
-            std::string(uuid.to_string()),
+            uuid.string(),
             hash,
             size,
             mime_type

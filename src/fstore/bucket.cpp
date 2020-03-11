@@ -1,6 +1,9 @@
 #include <cli.h>
 
+#include <fstore/error.h>
+
 #include <commline/commands.h>
+#include <ext/data_size.h>
 #include <iostream>
 #include <nova/ext/string.h>
 #include <utility>
@@ -8,7 +11,7 @@
 namespace core = fstore::core;
 namespace service = fstore::service;
 
-using core::data_size;
+using ext::data_size;
 
 namespace fstore {
     const bucket_table::row_t fstore::bucket_table::headers = {
@@ -18,7 +21,7 @@ namespace fstore {
     void bucket_table::get_data(row_t& entry, value_t&& bucket) {
         entry[0] = bucket->name();
         entry[1] = std::to_string(bucket->object_count());
-        entry[2] = core::to_string(data_size::format(bucket->space_used()));
+        entry[2] = ext::to_string(data_size::format(bucket->space_used()));
     }
 
     std::unique_ptr<service::bucket> fetch_bucket(
@@ -60,7 +63,7 @@ void commline::commands::create(const commline::cli& cli) {
         const auto bucket = object_store->create_bucket(name);
         std::cout << "created bucket: " << bucket->name() << std::endl;
     }
-    catch (const core::fstore_error& ex) {
+    catch (const fstore::fstore_error& ex) {
         throw commline::cli_error(ex.what());
     }
 }

@@ -15,10 +15,11 @@ define $(project).libs
  color++
  commline
  cryptopp
+ extensions++
  magix
  pqxx
  pq
- uuid
+ uuid++
  $(internal)
 endef
 

@@ -1,6 +1,6 @@
 #include <database.h>
 
-#include <fstore/core.h>
+#include <fstore/error.h>
 #include <fstore/repo/bucket.h>
 
 using entix::query;
@@ -48,13 +48,13 @@ namespace fstore::repo::db {
             col<c_name>().set(new_name);
         }
         catch (const pqxx::unique_violation& ex) {
-            throw core::fstore_error(
+            throw fstore_error(
                 "cannot rename bucket: bucket named "
                 QUOTE(new_name) " already exists"
             );
         }
         catch (const pqxx::check_violation& ex) {
-            throw core::fstore_error(
+            throw fstore_error(
                 "cannot rename bucket: name empty"
             );
         }
@@ -76,7 +76,7 @@ namespace fstore::repo::db {
             ));
         }
         catch (const pqxx::unexpected_rows& ex) {
-            throw core::fstore_error("bucket does not contain object");
+            throw fstore_error("bucket does not contain object");
         }
     }
 

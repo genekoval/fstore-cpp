@@ -1,10 +1,13 @@
 #include <cli.h>
 
+#include <fstore/error.h>
+
 #include <commline/commands.h>
+#include <ext/data_size.h>
 #include <fstore/service.h>
 #include <iostream>
 
-using fstore::core::data_size;
+using ext::data_size;
 
 void commline::commands::add(const commline::cli& cli) {
     if (!cli.options().selected("bucket"))
@@ -44,7 +47,7 @@ void commline::commands::object_remove(const commline::cli& cli) {
                 << data_size::format(object->size())
                 << std::endl;
         }
-        catch (const fstore::core::fstore_error& ex) {
+        catch (const fstore::fstore_error& ex) {
             std::cout << "skipped: " << id << ": " << ex.what() << std::endl;
         }
     }
