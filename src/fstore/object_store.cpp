@@ -7,7 +7,7 @@
 using ext::data_size;
 
 void commline::commands::prune(const commline::cli& cli) {
-    const auto object_store = fstore::service::object_store::get();
+    const auto object_store = fstore::service::local_store();
     const auto removed_objects = object_store->prune();
 
     if (removed_objects.empty()) {

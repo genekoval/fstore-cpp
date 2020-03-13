@@ -8,9 +8,6 @@
 #include <nova/ext/string.h>
 #include <utility>
 
-namespace core = fstore::core;
-namespace service = fstore::service;
-
 using ext::data_size;
 
 namespace fstore {
@@ -24,18 +21,18 @@ namespace fstore {
         entry[2] = ext::to_string(data_size::format(bucket->space_used()));
     }
 
-    std::unique_ptr<service::bucket> fetch_bucket(
+    std::unique_ptr<core::bucket> fetch_bucket(
         const std::string& bucket_name
     ) {
         return std::move(fetch_bucket(
             bucket_name,
-            std::move(service::object_store::get())
+            std::move(service::local_store())
         ));
     }
 
-    std::unique_ptr<service::bucket> fetch_bucket(
+    std::unique_ptr<core::bucket> fetch_bucket(
         const std::string& bucket_name,
-        std::unique_ptr<service::object_store>&& object_store
+        std::unique_ptr<core::object_store>&& object_store
     ) {
         auto bucket = object_store->fetch_bucket(bucket_name);
 
@@ -46,6 +43,7 @@ namespace fstore {
 
         return std::move(bucket.value());
     }
+
 }
 
 const std::string& get_name(const commline::cli& cli) {
@@ -56,7 +54,7 @@ const std::string& get_name(const commline::cli& cli) {
 }
 
 void commline::commands::create(const commline::cli& cli) {
-    const auto object_store = service::object_store::get();
+    const auto object_store = fstore::service::local_store();
     const auto& name = get_name(cli);
 
     try {
@@ -95,11 +93,11 @@ void commline::commands::rename(const commline::cli& cli) {
 }
 
 void commline::commands::status(const commline::cli& cli) {
-    const auto object_store = service::object_store::get();
+    const auto object_store = fstore::service::local_store();
     const auto show_all_buckets = cli.options().selected("all");
     fstore::bucket_table table;
 
-    std::vector<std::unique_ptr<service::bucket>> buckets;
+    std::vector<std::unique_ptr<fstore::core::bucket>> buckets;
 
     if (show_all_buckets)
         buckets = object_store->fetch_buckets();

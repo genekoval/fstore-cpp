@@ -4,64 +4,60 @@
 #include <fstore/repo/filesystem.h>
 
 namespace fstore::service {
-    std::unique_ptr<object_store> object_store::get() {
-        return std::make_unique<object_store_core>();
-    }
-
-    std::unique_ptr<bucket> object_store_core::create_bucket(
+    std::unique_ptr<core::bucket> object_store::create_bucket(
         std::string_view name
     ) const {
         entity.create_bucket(name);
-        return std::make_unique<bucket_core>(entity.fetch_bucket(name));
+        return std::make_unique<bucket>(entity.fetch_bucket(name));
     }
 
-    std::optional<std::unique_ptr<bucket>> object_store_core::fetch_bucket(
+    std::optional<std::unique_ptr<core::bucket>> object_store::fetch_bucket(
         std::string_view name
     ) const {
         try {
-            return std::make_unique<bucket_core>(entity.fetch_bucket(name));
+            return std::make_unique<bucket>(entity.fetch_bucket(name));
         }
         catch (const fstore_error& ex) {
             return {};
         }
     }
 
-    std::vector<std::unique_ptr<bucket>> object_store_core::fetch_buckets()
+    std::vector<std::unique_ptr<core::bucket>> object_store::fetch_buckets()
     const {
         auto entities = entity.fetch_buckets();
-        std::vector<std::unique_ptr<bucket>> buckets;
+        std::vector<std::unique_ptr<core::bucket>> buckets;
 
         for (auto& entity : entities)
-            buckets.push_back(std::make_unique<bucket_core>(std::move(entity)));
+            buckets.push_back(std::make_unique<bucket>(std::move(entity)));
 
         return buckets;
     }
 
-    std::vector<std::unique_ptr<bucket>> object_store_core::fetch_buckets(
+    std::vector<std::unique_ptr<core::bucket>> object_store::fetch_buckets(
         const std::vector<std::string>& names
     ) const {
         auto entities = entity.fetch_buckets(names);
-        std::vector<std::unique_ptr<bucket>> buckets;
+        std::vector<std::unique_ptr<core::bucket>> buckets;
 
         for (auto& entity : entities)
-            buckets.push_back(std::make_unique<bucket_core>(std::move(entity)));
+            buckets.push_back(std::make_unique<bucket>(std::move(entity)));
 
         return buckets;
     }
 
-    std::unique_ptr<core::store_totals> object_store_core::get_store_totals()
+    std::unique_ptr<core::store_totals> object_store::get_store_totals()
     const {
         return std::make_unique<repo::db::store_totals>(
             std::move(entity.get_store_totals())
         );
     }
 
-    std::vector<std::unique_ptr<object>> object_store_core::prune() const {
-        std::vector<std::unique_ptr<object>> orphans;
+    std::vector<std::unique_ptr<core::object>> object_store::prune() const {
+        std::vector<std::unique_ptr<core::object>> orphans;
 
         for (const auto& orphan : entity.delete_orphan_objects()) {
             orphans.push_back(
-                std::make_unique<object_core>(std::move(orphan))
+                std::make_unique<object>(std::move(orphan))
             );
 
             repo::fs::remove_from_store(orphan.id());
