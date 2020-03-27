@@ -12,8 +12,8 @@ namespace fstore::service {
     std::unique_ptr<core::object> bucket::add_object(
         const std::filesystem::path& path
     ) {
-        auto obj = std::make_unique<object>(path);
-        entity.add(obj->id());
+        std::unique_ptr<core::object> obj = std::make_unique<object>(path);
+        entity.add(obj);
         return obj;
     }
 

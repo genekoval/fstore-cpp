@@ -29,7 +29,7 @@ namespace fstore::repo::db {
             c_space_used
         };
 
-        void add(std::string_view object_id);
+        void add(const std::unique_ptr<core::object>& obj);
 
         void drop();
 

@@ -6,7 +6,7 @@
 using entix::query;
 
 namespace fstore::repo::db {
-    void bucket::add(std::string_view object_id) {
+    void bucket::add(const std::unique_ptr<core::object>& obj) {
         auto tx = pqxx::nontransaction(connect());
 
         tx.exec_params(
@@ -14,7 +14,7 @@ namespace fstore::repo::db {
                 .select("add_object($1, $2)")
             .str(),
             std::string(id()),
-            std::string(object_id)
+            std::string(obj->id())
         );
     }
 

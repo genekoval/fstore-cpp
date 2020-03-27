@@ -18,7 +18,7 @@ namespace fstore::repo::db {
 
         auto tx = pqxx::nontransaction(connect());
 
-        auto uuid = UUID::uuid{};
+        auto uuid = UUID::uuid();
         uuid.generate();
 
         col<c_id>().set(tx.exec_params1(

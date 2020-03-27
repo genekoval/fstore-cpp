@@ -108,4 +108,16 @@ namespace fstore::repo::db {
             .str()
         ));
     }
+
+    void object_store::truncate_buckets() const {
+        auto tx = pqxx::nontransaction(connect());
+
+        tx.exec("TRUNCATE bucket CASCADE");
+    }
+
+    void object_store::truncate_objects() const {
+        auto tx = pqxx::nontransaction(connect());
+
+        tx.exec("TRUNCATE object CASCADE");
+    }
 }

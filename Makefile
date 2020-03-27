@@ -4,16 +4,15 @@ version := 0.1.0
 include mk/db.mk
 include mk/internal.mk
 
+test := $(project)-test
+
 install := $(project)
-targets := $(install) $(internal.libs)
+targets := $(install) $(internal.libs) $(test)
 
 extensions := cli
 
-$(project).type = executable
-$(project).deps = $(service) $(extensions)
-define $(project).libs
+define common
  color++
- commline
  cryptopp
  extensions++
  magix
@@ -21,6 +20,21 @@ define $(project).libs
  pq
  uuid++
  $(internal)
+endef
+
+$(project).type = executable
+$(project).deps = $(service) $(extensions)
+define $(project).libs
+ commline
+ $(common)
+endef
+
+$(test).type = executable
+$(test).deps = $(project)
+define $(test).libs
+ gtest
+ gtest_main
+ $(common)
 endef
 
 include $(DEVROOT)/include/mkbuild/base.mk
@@ -31,3 +45,7 @@ $($(repo)): CXXFLAGS += -DPREFIX='"$(prefix)"'
 .PHONY: debug
 debug:
 	gdb -quiet -tui -ex "source .gdb/break" -x .gdb/run $($(project))
+
+.PHONY: test
+test: $(test)
+	$($(test))

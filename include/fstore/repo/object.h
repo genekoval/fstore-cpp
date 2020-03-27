@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstore/core.h>
+
 #include <entix/entix.h>
 
 namespace fstore::repo::db {
@@ -12,7 +14,7 @@ namespace fstore::repo::db {
         extern inline constexpr auto size = "len"sv;
     }
 
-    struct object : public entix::entity<
+    struct object : public core::object, public entix::entity<
         object,
         entix::column<object_col::id, std::string>,
         entix::column<object_col::hash, std::string>,
@@ -35,12 +37,12 @@ namespace fstore::repo::db {
             uintmax_t size
         );
 
-        std::string_view id() const;
+        std::string_view id() const override;
 
-        std::string_view hash() const;
+        std::string_view hash() const override;
 
-        std::string_view mime_type() const;
+        std::string_view mime_type() const override ;
 
-        uintmax_t size() const;
+        uintmax_t size() const override;
     };
 }
