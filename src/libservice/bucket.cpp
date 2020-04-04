@@ -12,7 +12,10 @@ namespace fstore::service {
     std::unique_ptr<core::object> bucket::add_object(
         const std::filesystem::path& path
     ) {
-        std::unique_ptr<core::object> obj = std::make_unique<object>(path);
+        std::unique_ptr<core::object> obj = std::make_unique<object>(
+            entity.connection(),
+            path
+        );
         entity.add(obj);
         return obj;
     }

@@ -1,5 +1,6 @@
+#include <repo.h>
+
 #include <fstore/error.h>
-#include <fstore/repo/object_store.h>
 
 #include <gtest/gtest.h>
 
@@ -7,15 +8,17 @@ namespace db = fstore::repo::db;
 
 using namespace std::literals;
 
+using fstore::test::test_store;
+
 class RepoBucketTest : public testing::Test {
 protected:
     static auto TearDownTestSuite() -> void {
-        db::object_store().truncate_buckets();
+        test_store().truncate_buckets();
     }
 
-    const db::object_store store;
+    db::object_store store;
 
-    RepoBucketTest() : store() {
+    RepoBucketTest() : store(test_store()) {
         store.truncate_buckets();
     }
 

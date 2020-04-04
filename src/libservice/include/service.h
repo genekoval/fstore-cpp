@@ -28,7 +28,10 @@ namespace fstore::service {
         repo::db::object entity;
     public:
         object(const repo::db::object&& entity);
-        object(const std::filesystem::path& path);
+        object(
+            repo::db::object::db_t db,
+            const std::filesystem::path& path
+        );
 
         std::string_view id() const override;
         std::string_view hash() const override;
@@ -39,17 +42,18 @@ namespace fstore::service {
     class object_store : public core::object_store {
         repo::db::object_store entity;
     public:
+        object_store();
         std::unique_ptr<core::bucket> create_bucket(
             std::string_view name
-        ) const override;
+        ) override;
         std::optional<std::unique_ptr<core::bucket>> fetch_bucket(
             std::string_view name
-        ) const override;
-        std::vector<std::unique_ptr<core::bucket>> fetch_buckets() const override;
+        ) override;
+        std::vector<std::unique_ptr<core::bucket>> fetch_buckets() override;
         std::vector<std::unique_ptr<core::bucket>> fetch_buckets(
             const std::vector<std::string>& names
-        ) const override;
-        std::unique_ptr<core::store_totals> get_store_totals() const override;
-        std::vector<std::unique_ptr<core::object>> prune() const override;
+        ) override;
+        std::unique_ptr<core::store_totals> get_store_totals() override;
+        std::vector<std::unique_ptr<core::object>> prune() override;
     };
 }

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <fstore/core.h>
+#include <fstore/repo/postgresql.h>
 
-#include <entix/entix.h>
+#include <entix/entix>
 
 namespace fstore::repo::db {
     namespace store_totals_col {
@@ -15,6 +16,7 @@ namespace fstore::repo::db {
 
     struct store_totals : public core::store_totals, public entix::entity<
         store_totals,
+        postgresql,
         entix::column<store_totals_col::bucket_count, int>,
         entix::column<store_totals_col::object_count, int>,
         entix::column<store_totals_col::space_used, uintmax_t>
@@ -25,6 +27,8 @@ namespace fstore::repo::db {
             c_object_count,
             c_space_used
         };
+
+        using entity::entity;
 
         int bucket_count() const override {
             return ccol<c_bucket_count>().value();

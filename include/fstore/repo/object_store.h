@@ -7,23 +7,25 @@
 #include <string_view>
 
 namespace fstore::repo::db {
-    struct object_store {
-        void create_bucket(std::string_view bucket_name) const;
+    struct object_store : public entix::connected<postgresql> {
+        object_store(std::string_view options);
 
-        std::vector<object> delete_orphan_objects() const;
+        void create_bucket(std::string_view bucket_name);
 
-        bucket fetch_bucket(std::string_view bucket_name) const;
+        std::vector<object> delete_orphan_objects();
+
+        bucket fetch_bucket(std::string_view bucket_name);
 
         std::vector<bucket> fetch_buckets(
             const std::vector<std::string>& names
-        ) const;
+        );
 
-        std::vector<bucket> fetch_buckets() const;
+        std::vector<bucket> fetch_buckets();
 
-        store_totals get_store_totals() const;
+        store_totals get_store_totals();
 
-        void truncate_buckets() const;
+        void truncate_buckets();
 
-        void truncate_objects() const;
+        void truncate_objects();
     };
 }

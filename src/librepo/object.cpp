@@ -1,5 +1,3 @@
-#include <database.h>
-
 #include <fstore/repo/object.h>
 
 #include <uuid++/uuid.h>
@@ -7,16 +5,21 @@
 using entix::query;
 
 namespace fstore::repo::db {
+    object::object(db_t db) : entity(db) {}
+
     object::object(
+        db_t db,
         const std::string& hash,
         const std::string& mime_type,
         uintmax_t size
-    ) {
+    ) :
+        object(db)
+    {
         col<c_hash>().set(hash);
         col<c_mime_type>().set(mime_type);
         col<c_size>().set(size);
 
-        auto tx = pqxx::nontransaction(connect());
+        auto tx = pqxx::nontransaction(db->connect());
 
         auto uuid = UUID::uuid();
         uuid.generate();

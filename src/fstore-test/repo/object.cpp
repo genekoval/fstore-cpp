@@ -1,6 +1,6 @@
-#include <fstore/core.h>
+#include <repo.h>
+
 #include <fstore/error.h>
-#include <fstore/repo/object_store.h>
 
 #include <gtest/gtest.h>
 
@@ -8,6 +8,8 @@ namespace core = fstore::core;
 namespace db = fstore::repo::db;
 
 using namespace std::literals;
+
+using fstore::test::test_store;
 
 class RepoObjectTest : public testing::Test {
 protected:
@@ -35,13 +37,14 @@ protected:
     };
 
     static auto TearDownTestSuite() -> void {
-        db::object_store().truncate_buckets();
-        db::object_store().truncate_objects();
+        auto store = test_store();
+        store.truncate_buckets();
+        store.truncate_objects();
     }
 
-    const db::object_store store;
+    db::object_store store;
 
-    RepoObjectTest() : store() {
+    RepoObjectTest() : store(test_store()) {
         store.truncate_buckets();
         store.truncate_objects();
     }
@@ -49,7 +52,12 @@ protected:
 
 TEST_F(RepoObjectTest, Creation) {
     const auto text = data::text();
-    auto object = db::object(text.hash, text.mime_type, text.size);
+    auto object = db::object(
+        store.connection(),
+        text.hash,
+        text.mime_type,
+        text.size
+    );
 
     ASSERT_EQ(text.hash, object.hash());
     ASSERT_EQ(text.mime_type, object.mime_type());
@@ -58,7 +66,12 @@ TEST_F(RepoObjectTest, Creation) {
     // Creating an object with the same hash should result in the same
     // object instance.
     // TODO Should the mime type and size also have to match?
-    auto another = db::object(text.hash, text.mime_type, text.size);
+    auto another = db::object(
+        store.connection(),
+        text.hash,
+        text.mime_type,
+        text.size
+    );
 
     // TODO Overload equality operator for objects.
     ASSERT_EQ(object.id(), another.id());
@@ -67,8 +80,12 @@ TEST_F(RepoObjectTest, Creation) {
 TEST_F(RepoObjectTest, BucketAdditionRemoval) {
     // Create a test object.
     const auto text = data::text();
-    std::unique_ptr<core::object> object =
-        std::make_unique<db::object>(text.hash, text.mime_type, text.size);
+    std::unique_ptr<core::object> object = std::make_unique<db::object>(
+        store.connection(),
+        text.hash,
+        text.mime_type,
+        text.size
+    );
 
     // Create a bucket to add the object to.
     const auto name = "test";

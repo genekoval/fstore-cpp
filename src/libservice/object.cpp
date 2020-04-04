@@ -9,7 +9,11 @@ namespace fstore::service {
         entity(std::move(entity))
     {}
 
-    object::object(const std::filesystem::path& path) : entity(
+    object::object(
+        repo::db::object::db_t db,
+        const std::filesystem::path& path
+    ) : entity(
+        db,
         repo::fs::hash(path),
         repo::fs::mime_type(path),
         repo::fs::size(path)

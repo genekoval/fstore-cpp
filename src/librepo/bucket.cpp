@@ -1,5 +1,3 @@
-#include <database.h>
-
 #include <fstore/error.h>
 #include <fstore/repo/bucket.h>
 
@@ -7,7 +5,7 @@ using entix::query;
 
 namespace fstore::repo::db {
     void bucket::add(const std::unique_ptr<core::object>& obj) {
-        auto tx = pqxx::nontransaction(connect());
+        auto tx = pqxx::nontransaction(db->connect());
 
         tx.exec_params(
             query{}
@@ -19,7 +17,7 @@ namespace fstore::repo::db {
     }
 
     void bucket::drop() {
-        auto tx = pqxx::nontransaction(connect());
+        auto tx = pqxx::nontransaction(db->connect());
 
         tx.exec_params(
             query{}
@@ -34,7 +32,7 @@ namespace fstore::repo::db {
     std::string_view bucket::name() const { return ccol<c_name>().ref(); }
 
     void bucket::name(const std::string& new_name) {
-        auto tx = pqxx::nontransaction(connect());
+        auto tx = pqxx::nontransaction(db->connect());
 
         try {
             tx.exec_params(
@@ -63,10 +61,10 @@ namespace fstore::repo::db {
     int bucket::object_count() const { return ccol<c_object_count>().value(); }
 
     object bucket::remove(std::string_view object_id) {
-        auto tx = pqxx::nontransaction(connect());
+        auto tx = pqxx::nontransaction(db->connect());
 
         try {
-            return object::from_row(tx.exec_params1(
+            return create_entity<object>(tx.exec_params1(
                 query{}
                     .select<object>()
                     .from("remove_object($1, $2)")

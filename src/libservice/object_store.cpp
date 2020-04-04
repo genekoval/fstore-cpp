@@ -4,16 +4,20 @@
 #include <fstore/repo/filesystem.h>
 
 namespace fstore::service {
+    object_store::object_store() : entity(
+        "postgresql://fstore@localhost/fstore"
+    ) {}
+
     std::unique_ptr<core::bucket> object_store::create_bucket(
         std::string_view name
-    ) const {
+    ) {
         entity.create_bucket(name);
         return std::make_unique<bucket>(entity.fetch_bucket(name));
     }
 
     std::optional<std::unique_ptr<core::bucket>> object_store::fetch_bucket(
         std::string_view name
-    ) const {
+    ) {
         try {
             return std::make_unique<bucket>(entity.fetch_bucket(name));
         }
@@ -22,8 +26,7 @@ namespace fstore::service {
         }
     }
 
-    std::vector<std::unique_ptr<core::bucket>> object_store::fetch_buckets()
-    const {
+    std::vector<std::unique_ptr<core::bucket>> object_store::fetch_buckets() {
         auto entities = entity.fetch_buckets();
         std::vector<std::unique_ptr<core::bucket>> buckets;
 
@@ -35,7 +38,7 @@ namespace fstore::service {
 
     std::vector<std::unique_ptr<core::bucket>> object_store::fetch_buckets(
         const std::vector<std::string>& names
-    ) const {
+    ) {
         auto entities = entity.fetch_buckets(names);
         std::vector<std::unique_ptr<core::bucket>> buckets;
 
@@ -45,14 +48,13 @@ namespace fstore::service {
         return buckets;
     }
 
-    std::unique_ptr<core::store_totals> object_store::get_store_totals()
-    const {
+    std::unique_ptr<core::store_totals> object_store::get_store_totals() {
         return std::make_unique<repo::db::store_totals>(
             std::move(entity.get_store_totals())
         );
     }
 
-    std::vector<std::unique_ptr<core::object>> object_store::prune() const {
+    std::vector<std::unique_ptr<core::object>> object_store::prune() {
         std::vector<std::unique_ptr<core::object>> orphans;
 
         for (const auto& orphan : entity.delete_orphan_objects()) {

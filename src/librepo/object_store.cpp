@@ -1,5 +1,3 @@
-#include <database.h>
-
 #include <fstore/error.h>
 #include <fstore/repo/object_store.h>
 
@@ -8,8 +6,14 @@
 using entix::query;
 
 namespace fstore::repo::db {
-    void object_store::create_bucket(std::string_view bucket_name) const {
-        auto tx = pqxx::nontransaction(connect());
+    object_store::object_store(std::string_view options) :
+        connected<postgresql>(
+            std::make_shared<postgresql>(std::string(options))
+        )
+    {}
+
+    void object_store::create_bucket(std::string_view bucket_name) {
+        auto tx = pqxx::nontransaction(db->connect());
 
         auto uuid = UUID::uuid{};
         uuid.generate();
@@ -37,10 +41,10 @@ namespace fstore::repo::db {
         }
     }
 
-    std::vector<object> object_store::delete_orphan_objects() const {
-        auto tx = pqxx::nontransaction(connect());
+    std::vector<object> object_store::delete_orphan_objects() {
+        auto tx = pqxx::nontransaction(db->connect());
 
-        return object::from_rows(tx.exec_params(
+        return create_entities<object>(tx.exec_params(
             query{}
                 .select<object>()
                 .from("delete_orphan_objects()")
@@ -48,11 +52,11 @@ namespace fstore::repo::db {
         ));
     }
 
-    bucket object_store::fetch_bucket(std::string_view bucket_name) const {
-        auto tx = pqxx::nontransaction(connect());
+    bucket object_store::fetch_bucket(std::string_view bucket_name) {
+        auto tx = pqxx::nontransaction(db->connect());
 
         try {
-            return bucket::from_row(tx.exec_params1(
+            return create_entity<bucket>(tx.exec_params1(
                 query{}
                     .select<bucket>()
                     .from("bucket_view")
@@ -72,24 +76,24 @@ namespace fstore::repo::db {
 
     std::vector<bucket> object_store::fetch_buckets(
         const std::vector<std::string>& names
-    ) const {
-        auto tx = pqxx::nontransaction(connect());
+    ) {
+        auto tx = pqxx::nontransaction(db->connect());
 
-        return bucket::from_rows(tx.exec(
+        return create_entities<bucket>(tx.exec(
             query{}
                 .select<bucket>()
                 .from("bucket_view")
                 .where(bucket::column<bucket::c_name>())
-                    .in(quote(names, tx))
+                    .in(db->quote(names))
                 .order_by_asc(bucket::column<bucket::c_name>())
             .str()
         ));
     }
 
-    std::vector<bucket> object_store::fetch_buckets() const {
-        auto tx = pqxx::nontransaction(connect());
+    std::vector<bucket> object_store::fetch_buckets() {
+        auto tx = pqxx::nontransaction(db->connect());
 
-        return bucket::from_rows(tx.exec(
+        return create_entities<bucket>(tx.exec(
             query{}
                 .select<bucket>()
                 .from("bucket_view")
@@ -98,10 +102,10 @@ namespace fstore::repo::db {
         ));
     }
 
-    store_totals object_store::get_store_totals() const {
-        auto tx = pqxx::nontransaction(connect());
+    store_totals object_store::get_store_totals() {
+        auto tx = pqxx::nontransaction(db->connect());
 
-        return store_totals::from_row(tx.exec1(
+        return create_entity<store_totals>(tx.exec1(
             query{}
                 .select<store_totals>()
                 .from("store_totals")
@@ -109,14 +113,14 @@ namespace fstore::repo::db {
         ));
     }
 
-    void object_store::truncate_buckets() const {
-        auto tx = pqxx::nontransaction(connect());
+    void object_store::truncate_buckets() {
+        auto tx = pqxx::nontransaction(db->connect());
 
         tx.exec("TRUNCATE bucket CASCADE");
     }
 
-    void object_store::truncate_objects() const {
-        auto tx = pqxx::nontransaction(connect());
+    void object_store::truncate_objects() {
+        auto tx = pqxx::nontransaction(db->connect());
 
         tx.exec("TRUNCATE object CASCADE");
     }

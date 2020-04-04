@@ -111,7 +111,7 @@ namespace fstore::core {
          *        desc: The name of the new bucket.
          * returns: The newly created bucket.
          */
-        virtual auto create_bucket(std::string_view name) const ->
+        virtual auto create_bucket(std::string_view name) ->
             std::unique_ptr<bucket> = 0;
 
         /**
@@ -124,22 +124,22 @@ namespace fstore::core {
          *        desc: The name of the bucket to retrieve.
          * returns: An existing bucket with the specified name.
          */
-        virtual auto fetch_bucket(std::string_view name) const ->
+        virtual auto fetch_bucket(std::string_view name) ->
             std::optional<std::unique_ptr<bucket>> = 0;
 
-        virtual auto fetch_buckets() const ->
+        virtual auto fetch_buckets() ->
             std::vector<std::unique_ptr<bucket>> = 0;
 
         virtual auto fetch_buckets(
             const std::vector<std::string>& names
-        ) const -> std::vector<std::unique_ptr<bucket>> = 0;
+        ) -> std::vector<std::unique_ptr<bucket>> = 0;
 
-        virtual auto get_store_totals() const ->
+        virtual auto get_store_totals() ->
             std::unique_ptr<core::store_totals> = 0;
 
         /**
          * Removes all objects that are not referenced by a bucket.
          */
-        virtual auto prune() const -> std::vector<std::unique_ptr<object>> = 0;
+        virtual auto prune() -> std::vector<std::unique_ptr<object>> = 0;
     };
 }

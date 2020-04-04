@@ -1,8 +1,9 @@
 #pragma once
 
+#include <fstore/repo/postgresql.h>
 #include <fstore/repo/object.h>
 
-#include <entix/entix.h>
+#include <entix/entix>
 
 namespace fstore::repo::db {
     namespace bucket_col {
@@ -16,6 +17,7 @@ namespace fstore::repo::db {
 
     struct bucket : public entix::entity<
         bucket,
+        postgresql,
         entix::column<bucket_col::id, std::string>,
         entix::column<bucket_col::name, std::string>,
         entix::column<bucket_col::object_count, int>,
@@ -28,6 +30,8 @@ namespace fstore::repo::db {
             c_object_count,
             c_space_used
         };
+
+        using entity::entity;
 
         void add(const std::unique_ptr<core::object>& obj);
 
