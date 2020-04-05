@@ -6,13 +6,13 @@
 using entix::query;
 
 namespace fstore::repo::db {
-    object_store::object_store(std::string_view options) :
+    object_store::object_store(const std::string& options) :
         connected<postgresql>(
-            std::make_shared<postgresql>(std::string(options))
+            std::make_shared<postgresql>(options)
         )
     {}
 
-    void object_store::create_bucket(std::string_view bucket_name) {
+    void object_store::create_bucket(const std::string& bucket_name) {
         auto tx = pqxx::nontransaction(db->connect());
 
         auto uuid = UUID::uuid{};
@@ -52,7 +52,7 @@ namespace fstore::repo::db {
         ));
     }
 
-    bucket object_store::fetch_bucket(std::string_view bucket_name) {
+    bucket object_store::fetch_bucket(const std::string& bucket_name) {
         auto tx = pqxx::nontransaction(db->connect());
 
         try {

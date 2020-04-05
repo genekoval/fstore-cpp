@@ -40,11 +40,11 @@ namespace fstore::repo::db {
             uintmax_t size
         );
 
-        std::string_view id() const override;
+        const std::string& id() const override;
 
-        std::string_view hash() const override;
+        const std::string& hash() const override;
 
-        std::string_view mime_type() const override ;
+        const std::string& mime_type() const override ;
 
         uintmax_t size() const override;
     };

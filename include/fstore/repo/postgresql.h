@@ -7,11 +7,11 @@
 namespace fstore::repo::db {
     class postgresql {
     public:
-        using connection_t = pqxx::connection_base;
+        using connection_t = pqxx::connection;
     private:
-        std::shared_ptr<connection_t> connection;
+        connection_t connection;
     public:
-        postgresql(const std::string& url);
+        postgresql(const std::string& options);
 
         auto connect() -> connection_t&;
 

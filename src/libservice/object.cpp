@@ -21,11 +21,11 @@ namespace fstore::service {
         repo::fs::copy_to_store(path, id());
     }
 
-    std::string_view object::id() const { return entity.id(); }
+    const std::string& object::id() const { return entity.id(); }
 
-    std::string_view object::hash() const { return entity.hash(); }
+    const std::string& object::hash() const { return entity.hash(); }
 
-    std::string_view object::mime_type() const {
+    const std::string& object::mime_type() const {
         return entity.mime_type();
     }
 

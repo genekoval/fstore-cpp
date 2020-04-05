@@ -22,16 +22,16 @@ namespace fstore::service {
 
     void bucket::drop() { entity.drop(); }
 
-    std::string_view bucket::name() const { return entity.name(); }
+    const std::string& bucket::name() const { return entity.name(); }
 
-    void bucket::name(std::string_view new_name) {
+    void bucket::name(const std::string& new_name) {
         entity.name(nova::ext::string::trim(std::string(new_name)));
     }
 
     int bucket::object_count() const { return entity.object_count(); }
 
     std::unique_ptr<core::object> bucket::remove_object(
-        std::string_view object_id
+        const std::string& object_id
     ) {
         return std::make_unique<object>(
             std::move(entity.remove(object_id))

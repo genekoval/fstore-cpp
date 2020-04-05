@@ -22,7 +22,7 @@ protected:
         store.truncate_buckets();
     }
 
-    auto create_bucket(std::string_view name) -> db::bucket const {
+    auto create_bucket(const std::string& name) -> db::bucket const {
         store.create_bucket(name);
         return store.fetch_bucket(name);
     }

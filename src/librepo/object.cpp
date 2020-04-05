@@ -35,11 +35,11 @@ namespace fstore::repo::db {
         )[0].as<std::string>());
     }
 
-    std::string_view object::id() const { return ccol<c_id>().ref(); }
+    const std::string& object::id() const { return ccol<c_id>().ref(); }
 
-    std::string_view object::hash() const { return ccol<c_hash>().ref(); }
+    const std::string& object::hash() const { return ccol<c_hash>().ref(); }
 
-    std::string_view object::mime_type() const {
+    const std::string& object::mime_type() const {
         return ccol<c_mime_type>().ref();
     }
 

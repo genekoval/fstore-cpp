@@ -1,8 +1,6 @@
 #include <repo.h>
 
-using namespace std::literals;
-
-constexpr auto test_db = "postgresql://fstore@localhost/fstore"sv;
+constexpr auto test_db = "postgresql://fstore@localhost/fstore";
 
 namespace fstore::test {
     auto test_store() -> repo::db::object_store {

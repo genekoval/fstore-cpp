@@ -15,11 +15,11 @@ namespace fstore::service {
             const std::filesystem::path& file
         ) override;
         void drop() override;
-        std::string_view name() const override;
-        void name(std::string_view new_name) override;
+        const std::string& name() const override;
+        void name(const std::string& new_name) override;
         int object_count() const override;
         std::unique_ptr<core::object> remove_object(
-            std::string_view object_id
+            const std::string& object_id
         ) override;
         uintmax_t space_used() const override;
     };
@@ -33,9 +33,9 @@ namespace fstore::service {
             const std::filesystem::path& path
         );
 
-        std::string_view id() const override;
-        std::string_view hash() const override;
-        std::string_view mime_type() const override;
+        const std::string& id() const override;
+        const std::string& hash() const override;
+        const std::string& mime_type() const override;
         uintmax_t size() const override;
     };
 
@@ -44,10 +44,10 @@ namespace fstore::service {
     public:
         object_store();
         std::unique_ptr<core::bucket> create_bucket(
-            std::string_view name
+            const std::string& name
         ) override;
         std::optional<std::unique_ptr<core::bucket>> fetch_bucket(
-            std::string_view name
+            const std::string& name
         ) override;
         std::vector<std::unique_ptr<core::bucket>> fetch_buckets() override;
         std::vector<std::unique_ptr<core::bucket>> fetch_buckets(

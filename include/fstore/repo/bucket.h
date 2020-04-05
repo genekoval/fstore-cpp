@@ -37,15 +37,15 @@ namespace fstore::repo::db {
 
         void drop();
 
-        std::string_view id() const;
+        const std::string& id() const;
 
-        std::string_view name() const;
+        const std::string& name() const;
 
         void name(const std::string& new_name);
 
         int object_count() const;
 
-        object remove(std::string_view object_id);
+        object remove(const std::string& object_id);
 
         uintmax_t space_used() const;
     };

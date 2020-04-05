@@ -4,7 +4,6 @@
 #include <filesystem> // std::filesystem::path
 #include <memory> // std::unique_ptr
 #include <optional> // std::optional
-#include <string_view> // std::string_view
 #include <vector> // std::vector
 
 namespace fstore::core {
@@ -18,7 +17,7 @@ namespace fstore::core {
          *
          * returns: This object's id.
          */
-        virtual auto id() const -> std::string_view = 0;
+        virtual auto id() const -> const std::string& = 0;
 
         /**
          * Returns a value obtained by hashing the contents of this object.
@@ -26,14 +25,14 @@ namespace fstore::core {
          *
          * returns: The hash of this object's contents.
          */
-        virtual auto hash() const -> std::string_view = 0;
+        virtual auto hash() const -> const std::string& = 0;
 
         /**
          * Returns the mime type of this object's contents.
          *
          * returns: The mime type of this object's contents.
          */
-        virtual auto mime_type() const -> std::string_view = 0;
+        virtual auto mime_type() const -> const std::string& = 0;
 
         /**
          * Returns the amount of data this object represents. The size is
@@ -72,7 +71,7 @@ namespace fstore::core {
          *
          * returns: The name of this bucket.
          */
-        virtual auto name() const -> std::string_view = 0;
+        virtual auto name() const -> const std::string& = 0;
 
         /**
          * Sets the name of this bucket to the specified name.
@@ -81,11 +80,11 @@ namespace fstore::core {
          *      - name: name
          *        desc: The new name for this bucket.
          */
-         virtual auto name(std::string_view new_name) -> void = 0;
+         virtual auto name(const std::string& new_name) -> void = 0;
 
          virtual auto object_count() const -> int = 0;
 
-         virtual auto remove_object(std::string_view object_id) ->
+         virtual auto remove_object(const std::string& object_id) ->
             std::unique_ptr<object> = 0;
 
         virtual auto space_used() const -> uintmax_t = 0;
@@ -111,7 +110,7 @@ namespace fstore::core {
          *        desc: The name of the new bucket.
          * returns: The newly created bucket.
          */
-        virtual auto create_bucket(std::string_view name) ->
+        virtual auto create_bucket(const std::string& name) ->
             std::unique_ptr<bucket> = 0;
 
         /**
@@ -124,7 +123,7 @@ namespace fstore::core {
          *        desc: The name of the bucket to retrieve.
          * returns: An existing bucket with the specified name.
          */
-        virtual auto fetch_bucket(std::string_view name) ->
+        virtual auto fetch_bucket(const std::string& name) ->
             std::optional<std::unique_ptr<bucket>> = 0;
 
         virtual auto fetch_buckets() ->

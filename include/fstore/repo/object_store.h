@@ -4,17 +4,15 @@
 #include <fstore/repo/object.h>
 #include <fstore/repo/store_totals.h>
 
-#include <string_view>
-
 namespace fstore::repo::db {
     struct object_store : public entix::connected<postgresql> {
-        object_store(std::string_view options);
+        object_store(const std::string& options);
 
-        void create_bucket(std::string_view bucket_name);
+        void create_bucket(const std::string& bucket_name);
 
         std::vector<object> delete_orphan_objects();
 
-        bucket fetch_bucket(std::string_view bucket_name);
+        bucket fetch_bucket(const std::string& bucket_name);
 
         std::vector<bucket> fetch_buckets(
             const std::vector<std::string>& names

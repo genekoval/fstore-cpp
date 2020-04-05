@@ -9,14 +9,14 @@ namespace fstore::service {
     ) {}
 
     std::unique_ptr<core::bucket> object_store::create_bucket(
-        std::string_view name
+        const std::string& name
     ) {
         entity.create_bucket(name);
         return std::make_unique<bucket>(entity.fetch_bucket(name));
     }
 
     std::optional<std::unique_ptr<core::bucket>> object_store::fetch_bucket(
-        std::string_view name
+        const std::string& name
     ) {
         try {
             return std::make_unique<bucket>(entity.fetch_bucket(name));

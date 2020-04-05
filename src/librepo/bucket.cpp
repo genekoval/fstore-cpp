@@ -11,8 +11,8 @@ namespace fstore::repo::db {
             query{}
                 .select("add_object($1, $2)")
             .str(),
-            std::string(id()),
-            std::string(obj->id())
+            id(),
+            obj->id()
         );
     }
 
@@ -23,13 +23,13 @@ namespace fstore::repo::db {
             query{}
                 .select("delete_bucket($1)")
             .str(),
-            std::string(id())
+            id()
         );
     }
 
-    std::string_view bucket::id() const { return ccol<c_id>().ref(); }
+    const std::string& bucket::id() const { return ccol<c_id>().ref(); }
 
-    std::string_view bucket::name() const { return ccol<c_name>().ref(); }
+    const std::string& bucket::name() const { return ccol<c_name>().ref(); }
 
     void bucket::name(const std::string& new_name) {
         auto tx = pqxx::nontransaction(db->connect());
@@ -39,7 +39,7 @@ namespace fstore::repo::db {
                 query{}
                     .select("rename_bucket($1, $2)")
                 .str(),
-                std::string(id()),
+                id(),
                 new_name
             );
 
@@ -60,7 +60,7 @@ namespace fstore::repo::db {
 
     int bucket::object_count() const { return ccol<c_object_count>().value(); }
 
-    object bucket::remove(std::string_view object_id) {
+    object bucket::remove(const std::string& object_id) {
         auto tx = pqxx::nontransaction(db->connect());
 
         try {
@@ -69,8 +69,8 @@ namespace fstore::repo::db {
                     .select<object>()
                     .from("remove_object($1, $2)")
                 .str(),
-                std::string(id()),
-                std::string(object_id)
+                id(),
+                object_id
             ));
         }
         catch (const pqxx::unexpected_rows& ex) {
