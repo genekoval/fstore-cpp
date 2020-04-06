@@ -11,14 +11,17 @@ namespace fstore::service {
 
     object::object(
         repo::db::object::db_t db,
+        const repo::fs::fs_t& fs,
         const std::filesystem::path& path
-    ) : entity(
-        db,
-        repo::fs::hash(path),
-        repo::fs::mime_type(path),
-        repo::fs::size(path)
-    ) {
-        repo::fs::copy_to_store(path, id());
+    ) :
+        entity(
+            db,
+            fs->hash(path),
+            fs->mime_type(path),
+            fs->size(path)
+        )
+    {
+        fs->copy_object(path, id());
     }
 
     const std::string& object::id() const { return entity.id(); }

@@ -1,18 +1,31 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
 
 namespace fstore::repo::fs {
-    void copy_to_store(
-        const std::filesystem::path& src,
-        std::string_view object_id
-    );
+    struct filesystem {
+        virtual auto copy_object(
+            const std::filesystem::path& source,
+            std::string_view id
+        ) -> void const = 0;
 
-    std::string hash(const std::filesystem::path& path);
+        virtual auto hash(
+            const std::filesystem::path& path
+        ) -> std::string const = 0;
 
-    std::string mime_type(const std::filesystem::path& path);
+        virtual auto mime_type(
+            const std::filesystem::path& path
+        ) -> std::string const = 0;
 
-    void remove_from_store(std::string_view object_id);
+        virtual auto remove_object(std::string_view id) -> void const = 0;
 
-    uintmax_t size(const std::filesystem::path& path);
+        virtual auto size(
+            const std::filesystem::path& path
+        ) -> uintmax_t const = 0;
+    };
+
+    using fs_t = std::shared_ptr<filesystem>;
+
+    auto get(const std::filesystem::path& objects) -> fs_t;
 }

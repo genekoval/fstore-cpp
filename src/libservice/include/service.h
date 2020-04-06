@@ -2,14 +2,19 @@
 
 #include <fstore/core.h>
 #include <fstore/repo/bucket.h>
+#include <fstore/repo/filesystem.h>
 #include <fstore/repo/object.h>
 #include <fstore/repo/object_store.h>
 
 namespace fstore::service {
     class bucket : public core::bucket {
         repo::db::bucket entity;
+        repo::fs::fs_t fs;
     public:
-        bucket(const repo::db::bucket&& entity);
+        bucket(
+            const repo::db::bucket&& entity,
+            repo::fs::fs_t fs
+        );
 
         std::unique_ptr<core::object> add_object(
             const std::filesystem::path& file
@@ -30,6 +35,7 @@ namespace fstore::service {
         object(const repo::db::object&& entity);
         object(
             repo::db::object::db_t db,
+            const repo::fs::fs_t& fs,
             const std::filesystem::path& path
         );
 
@@ -41,6 +47,7 @@ namespace fstore::service {
 
     class object_store : public core::object_store {
         repo::db::object_store entity;
+        repo::fs::fs_t fs;
     public:
         object_store();
         std::unique_ptr<core::bucket> create_bucket(

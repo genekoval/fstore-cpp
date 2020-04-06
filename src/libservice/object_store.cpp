@@ -3,23 +3,29 @@
 #include <fstore/error.h>
 #include <fstore/repo/filesystem.h>
 
+#include <cstdlib>
+
 namespace fstore::service {
-    object_store::object_store() : entity(
-        "postgresql://fstore@localhost/fstore"
-    ) {}
+    object_store::object_store() :
+        entity("postgresql://fstore@localhost/fstore"),
+        fs(repo::fs::get(
+            std::filesystem::path(std::getenv("DEVROOT")) /
+            "var/lib/fstore/objects"
+        ))
+    {}
 
     std::unique_ptr<core::bucket> object_store::create_bucket(
         const std::string& name
     ) {
         entity.create_bucket(name);
-        return std::make_unique<bucket>(entity.fetch_bucket(name));
+        return std::make_unique<bucket>(entity.fetch_bucket(name), fs);
     }
 
     std::optional<std::unique_ptr<core::bucket>> object_store::fetch_bucket(
         const std::string& name
     ) {
         try {
-            return std::make_unique<bucket>(entity.fetch_bucket(name));
+            return std::make_unique<bucket>(entity.fetch_bucket(name), fs);
         }
         catch (const fstore_error& ex) {
             return {};
@@ -31,7 +37,7 @@ namespace fstore::service {
         std::vector<std::unique_ptr<core::bucket>> buckets;
 
         for (auto& entity : entities)
-            buckets.push_back(std::make_unique<bucket>(std::move(entity)));
+            buckets.push_back(std::make_unique<bucket>(std::move(entity), fs));
 
         return buckets;
     }
@@ -43,7 +49,7 @@ namespace fstore::service {
         std::vector<std::unique_ptr<core::bucket>> buckets;
 
         for (auto& entity : entities)
-            buckets.push_back(std::make_unique<bucket>(std::move(entity)));
+            buckets.push_back(std::make_unique<bucket>(std::move(entity), fs));
 
         return buckets;
     }
@@ -62,7 +68,7 @@ namespace fstore::service {
                 std::make_unique<object>(std::move(orphan))
             );
 
-            repo::fs::remove_from_store(orphan.id());
+            fs->remove_object(orphan.id());
         }
 
         return orphans;

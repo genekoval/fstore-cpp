@@ -5,8 +5,12 @@
 namespace fs = std::filesystem;
 
 namespace fstore::service {
-    bucket::bucket(const repo::db::bucket&& entity) :
-        entity(std::move(entity))
+    bucket::bucket(
+        const repo::db::bucket&& entity,
+        repo::fs::fs_t fs
+    ) :
+        entity(std::move(entity)),
+        fs(fs)
     {}
 
     std::unique_ptr<core::object> bucket::add_object(
@@ -14,6 +18,7 @@ namespace fstore::service {
     ) {
         std::unique_ptr<core::object> obj = std::make_unique<object>(
             entity.connection(),
+            fs,
             path
         );
         entity.add(obj);
