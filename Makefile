@@ -37,6 +37,8 @@ define $(test).libs
  $(common)
 endef
 
+BUILD = /tmp/$(project)
+
 include $(DEVROOT)/include/mkbuild/base.mk
 include $(DEVROOT)/include/mkbuild/cli.mk
 
