@@ -2,7 +2,6 @@
 
 repo = librepo
 $(repo).type = static
-$(repo).deps = $(core)
 
 service = libservice
 $(service).type = static
