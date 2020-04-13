@@ -1,3 +1,5 @@
+#include "cli.h"
+
 #include <fstore/service.h>
 
 #include <commline/commands.h>
@@ -6,9 +8,15 @@
 
 using ext::data_size;
 
+namespace fstore {
+    auto object_store() -> std::unique_ptr<core::object_store> {
+        const auto config = service::settings();
+        return service::local_store(config);
+    }
+}
+
 void commline::commands::prune(const commline::cli& cli) {
-    const auto object_store = fstore::service::local_store();
-    const auto removed_objects = object_store->prune();
+    const auto removed_objects = fstore::object_store()->prune();
 
     if (removed_objects.empty()) {
         std::cout << "no objects to prune" << std::endl;

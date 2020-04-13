@@ -26,7 +26,7 @@ namespace fstore {
     ) {
         return std::move(fetch_bucket(
             bucket_name,
-            std::move(service::local_store())
+            std::move(object_store())
         ));
     }
 
@@ -54,11 +54,10 @@ const std::string& get_name(const commline::cli& cli) {
 }
 
 void commline::commands::create(const commline::cli& cli) {
-    const auto object_store = fstore::service::local_store();
     const auto& name = get_name(cli);
 
     try {
-        const auto bucket = object_store->create_bucket(name);
+        const auto bucket = fstore::object_store()->create_bucket(name);
         std::cout << "created bucket: " << bucket->name() << std::endl;
     }
     catch (const fstore::fstore_error& ex) {
@@ -93,7 +92,7 @@ void commline::commands::rename(const commline::cli& cli) {
 }
 
 void commline::commands::status(const commline::cli& cli) {
-    const auto object_store = fstore::service::local_store();
+    const auto object_store = fstore::object_store();
     const auto show_all_buckets = cli.options().selected("all");
     fstore::bucket_table table;
 

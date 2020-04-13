@@ -1,10 +1,8 @@
 #pragma once
 
-#include <fstore/core.h>
-#include <fstore/repo/bucket.h>
 #include <fstore/repo/filesystem.h>
-#include <fstore/repo/object.h>
 #include <fstore/repo/object_store.h>
+#include <fstore/service.h>
 
 namespace fstore::service {
     class bucket : public core::bucket {
@@ -49,7 +47,7 @@ namespace fstore::service {
         repo::db::object_store entity;
         repo::fs::fs_t fs;
     public:
-        object_store();
+        object_store(const settings& config);
         std::unique_ptr<core::bucket> create_bucket(
             const std::string& name
         ) override;

@@ -16,6 +16,7 @@ define test.libs
  pqxx
  pq
  uuid++
+ yaml-cpp
  $(internal)
 endef
 
@@ -32,6 +33,4 @@ include mk/db.mk
 include $(DEVROOT)/include/mkbuild/base.mk
 include $(DEVROOT)/include/mkbuild/cli.mk
 
-.PHONY: debug
-debug:
-	gdb -quiet -tui -ex "source .gdb/break" -x .gdb/run $($(project))
+$(obj)/$(service)/settings.o: CXXFLAGS += -DCONFDIR='"$(prefix)/etc"'

@@ -6,12 +6,9 @@
 #include <cstdlib>
 
 namespace fstore::service {
-    object_store::object_store() :
-        entity("postgresql://fstore@localhost/fstore"),
-        fs(repo::fs::get(
-            std::filesystem::path(std::getenv("DEVROOT")) /
-            "var/lib/fstore/objects"
-        ))
+    object_store::object_store(const settings& config) :
+        entity(config.connection_string),
+        fs(repo::fs::get(config.objects_dir))
     {}
 
     std::unique_ptr<core::bucket> object_store::create_bucket(

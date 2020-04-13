@@ -14,6 +14,8 @@ namespace fstore {
         std::unique_ptr<core::object_store>&& object_store
     );
 
+    std::unique_ptr<core::object_store> object_store();
+
     class bucket_table :
         public table<bucket_table, std::unique_ptr<core::bucket>, 3>
     {
