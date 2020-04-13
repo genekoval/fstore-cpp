@@ -8,7 +8,7 @@ targets := $(install) $(internal.libs)
 
 extensions := cli
 
-define test.libs
+define core.libs
  color++
  cryptopp
  extensions++
@@ -20,11 +20,17 @@ define test.libs
  $(internal)
 endef
 
+define test.libs
+ $(core.libs)
+ gtest
+ gtest_main
+endef
+
 $(project).type = executable
 $(project).deps = $(service) $(extensions)
 define $(project).libs
+ $(core.libs)
  commline
- $(test.libs)
 endef
 
 BUILD = /tmp/$(project)
