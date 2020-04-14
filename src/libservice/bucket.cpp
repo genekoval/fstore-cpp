@@ -1,6 +1,6 @@
 #include "service.h"
 
-#include <nova/ext/string.h>
+#include <ext/string.h>
 
 namespace fs = std::filesystem;
 
@@ -30,7 +30,7 @@ namespace fstore::service {
     const std::string& bucket::name() const { return entity.name(); }
 
     void bucket::name(const std::string& new_name) {
-        entity.name(nova::ext::string::trim(std::string(new_name)));
+        entity.name(ext::trim(std::string(new_name)));
     }
 
     int bucket::object_count() const { return entity.object_count(); }

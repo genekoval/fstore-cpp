@@ -1,13 +1,11 @@
 #include <fstore/error.h>
 #include <fstore/service.h>
 
-#include <nova/ext/string.h>
+#include <ext/string.h>
 
 #ifndef CONFDIR
 #   define CONFDIR "/etc"
 #endif
-
-using nova::ext::string::expand_env;
 
 namespace fstore::service {
     static const auto default_config_file =
@@ -22,7 +20,7 @@ namespace fstore::service {
         )> preprocessor
     ) -> std::string {
         try {
-            return expand_env(preprocessor(node, key).as<std::string>());
+            return ext::expand_env(preprocessor(node, key).as<std::string>());
         }
         catch (const std::invalid_argument& ex) {
             throw fstore_error(

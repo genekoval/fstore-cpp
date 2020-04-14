@@ -11,7 +11,7 @@ extensions := cli
 define core.libs
  color++
  cryptopp
- extensions++
+ ext++
  magix
  pqxx
  pq

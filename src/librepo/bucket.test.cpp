@@ -101,7 +101,7 @@ TEST_F(RepoBucketTest, RenameWithEmptyNameFails) {
     auto test = [&bucket](const std::string& name) {
         try {
             bucket.name(name);
-            FAIL() << "Bucket renamed with name: " QUOTE(name);
+            FAIL() << "Bucket renamed with name: " + name;
         }
         catch (const fstore::fstore_error& ex) {
             ASSERT_EQ("cannot rename bucket: name empty"s, ex.what());

@@ -4,8 +4,8 @@
 
 #include <commline/commands.h>
 #include <ext/data_size.h>
+#include <ext/string.h>
 #include <iostream>
-#include <nova/ext/string.h>
 #include <utility>
 
 using ext::data_size;
@@ -37,7 +37,7 @@ namespace fstore {
         auto bucket = object_store->fetch_bucket(bucket_name);
 
         if (!bucket) throw commline::cli_error(
-            "bucket " QUOTE(nova::ext::string::trim(bucket_name))
+            "bucket " QUOTE(ext::trim(bucket_name))
             " does not exist"
         );
 
