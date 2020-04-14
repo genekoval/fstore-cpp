@@ -9,7 +9,6 @@ targets := $(install) $(internal.libs)
 extensions := cli
 
 define core.libs
- color++
  cryptopp
  ext++
  magix
