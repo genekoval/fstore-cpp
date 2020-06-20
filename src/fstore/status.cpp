@@ -18,7 +18,7 @@ static auto $status(
 
     auto buckets = std::vector<std::unique_ptr<fstore::core::bucket>>();
     if (verbose) buckets = object_store->fetch_buckets();
-    else if (!argv.empty()) object_store->fetch_buckets(sargv);
+    else if (!argv.empty()) buckets = object_store->fetch_buckets(sargv);
 
     for (auto&& bucket : buckets) table.push_back(std::move(bucket));
 
