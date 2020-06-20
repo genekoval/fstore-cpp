@@ -1,120 +1,101 @@
 #include "cli.h"
+#include "commands.h"
 
-#include <fstore/error.h>
-
-#include <commline/commands.h>
-#include <ext/data_size.h>
 #include <ext/string.h>
+
 #include <iostream>
-#include <utility>
 
-using ext::data_size;
-
-namespace fstore {
-    const bucket_table::row_t fstore::bucket_table::headers = {
-        "Bucket", "Objects", "Space Used"
-    };
-
-    void bucket_table::get_data(row_t& entry, value_t&& bucket) {
-        entry[0] = bucket->name();
-        entry[1] = std::to_string(bucket->object_count());
-        entry[2] = ext::to_string(data_size::format(bucket->space_used()));
-    }
-
-    std::unique_ptr<core::bucket> fetch_bucket(
-        const std::string& bucket_name
-    ) {
-        return std::move(fetch_bucket(
-            bucket_name,
-            std::move(object_store())
-        ));
-    }
-
-    std::unique_ptr<core::bucket> fetch_bucket(
-        const std::string& bucket_name,
-        std::unique_ptr<core::object_store>&& object_store
-    ) {
-        auto bucket = object_store->fetch_bucket(bucket_name);
-
-        if (!bucket) throw commline::cli_error(
-            "bucket " QUOTE(ext::trim(bucket_name))
-            " does not exist"
-        );
-
-        return std::move(bucket.value());
-    }
-
+static auto $bucket(
+    const commline::app& app,
+    const commline::argv& argv
+) {
+    const auto buckets = fstore::object_store()->fetch_buckets();
+    for (const auto& bucket : buckets) std::cout << bucket->name() << '\n';
 }
 
-const std::string& get_name(const commline::cli& cli) {
-    if (cli.args().empty())
-        throw commline::cli_error("no bucket name given");
+static auto $add(const commline::app& app, const commline::argv& argv) -> void {
+    if (argv.empty()) {
+        throw commline::cli_error("No bucket name given.");
+    }
 
-    return cli.args().front();
+    const auto& name = argv[0];
+
+    const auto bucket =
+        fstore::object_store()->create_bucket(std::string(name));
+    std::cout << "Created bucket: " << bucket->name() << std::endl;
 }
 
-void commline::commands::create(const commline::cli& cli) {
-    const auto& name = get_name(cli);
-
-    try {
-        const auto bucket = fstore::object_store()->create_bucket(name);
-        std::cout << "created bucket: " << bucket->name() << std::endl;
+static auto $remove(
+    const commline::app& app,
+    const commline::argv& argv
+) -> void {
+    if (argv.empty()) {
+        throw commline::cli_error("No bucket name given.");
     }
-    catch (const fstore::fstore_error& ex) {
-        throw commline::cli_error(ex.what());
-    }
-}
 
-void commline::commands::remove(const commline::cli& cli) {
-    const auto& name = get_name(cli);
+    const auto& name = argv[0];
 
     auto bucket = fstore::fetch_bucket(name);
     bucket->drop();
-    std::cout << "deleted bucket: " << bucket->name() << std::endl;
+    std::cout << "Deleted bucket: " << bucket->name() << std::endl;
 }
 
-void commline::commands::rename(const commline::cli& cli) {
-    if (cli.args().size() < 2)
-        throw commline::cli_error("old and new bucket name required");
+static auto $rename(
+    const commline::app& app,
+    const commline::argv& argv
+) -> void {
+    if (argv.size() < 2) {
+        throw commline::cli_error("Old and new bucket name required.");
+    }
 
-    const auto& old_name = cli.args()[0];
-    const auto& new_name = cli.args()[1];
+    auto bucket = fstore::fetch_bucket(argv[0]);
+    // Create a local copy.
+    // Once the bucket is renamed, the sanitized old name will be unreachable.
+    const auto old_name = std::string(bucket->name());
 
-    auto bucket = fstore::fetch_bucket(old_name);
-
-    const std::string old_bucket(bucket->name());
-    bucket->name(new_name);
+    bucket->name(std::string(argv[1]));
 
     std::cout
-        << "bucket " QUOTE(old_bucket)
-        << " renamed to: " << bucket->name()
+        << "bucket " QUOTE(old_name) << " renamed to: " << bucket->name()
         << std::endl;
 }
 
-void commline::commands::status(const commline::cli& cli) {
-    const auto object_store = fstore::object_store();
-    const auto show_all_buckets = cli.options().selected("all");
-    fstore::bucket_table table;
+namespace fstore::cli {
+    auto bucket() -> std::unique_ptr<commline::command_node> {
+        auto cmd = commline::command(
+            "bucket",
+            "List bucket information",
+            $bucket
+        );
 
-    std::vector<std::unique_ptr<fstore::core::bucket>> buckets;
+        cmd->subcommand(bucket_add());
+        cmd->subcommand(bucket_remove());
+        cmd->subcommand(bucket_rename());
 
-    if (show_all_buckets)
-        buckets = object_store->fetch_buckets();
-    else if (!cli.args().empty())
-        buckets = object_store->fetch_buckets(cli.args());
+        return cmd;
+    }
 
-    for (auto&& bucket : buckets) table.push_back(std::move(bucket));
+    auto bucket_add() -> std::unique_ptr<commline::command_node> {
+        return commline::command(
+            "add",
+            "Create a new bucket.",
+            $add
+        );
+    }
 
-    if (!table.empty())
-        std::cout << std::endl << table << std::endl;
+    auto bucket_remove() -> std::unique_ptr<commline::command_node> {
+        return commline::command(
+            "remove",
+            "Delete a bucket.",
+            $remove
+        );
+    }
 
-    if (cli.args().empty() || show_all_buckets) {
-        auto totals = object_store->get_store_totals();
-
-        std::cout
-            << "buckets: " << totals->bucket_count() << std::endl
-            << "objects: " << totals->object_count() << std::endl
-            << "space used: " << data_size::format(totals->space_used())
-            << std::endl;
+    auto bucket_rename() -> std::unique_ptr<commline::command_node> {
+        return commline::command(
+            "rename",
+            "Rename a bucket.",
+            $rename
+        );
     }
 }

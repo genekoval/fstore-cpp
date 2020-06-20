@@ -6,11 +6,11 @@
 
 namespace fstore {
     std::unique_ptr<core::bucket> fetch_bucket(
-        const std::string& bucket_name
+        std::string_view name
     );
 
     std::unique_ptr<core::bucket> fetch_bucket(
-        const std::string& bucket_name,
+        std::string_view name,
         std::unique_ptr<core::object_store>&& object_store
     );
 

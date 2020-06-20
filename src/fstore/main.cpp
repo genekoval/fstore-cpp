@@ -1,5 +1,26 @@
-#include <commline/commline.h>
+#include "commands.h"
 
-void commline::main(const commline::cli& cli) {
-    throw commline::cli_error("not implemented");
+#include <commline/commline>
+
+static auto $main(
+    const commline::app& app,
+    const commline::argv& argv
+) -> void {
+    throw commline::cli_error("Not implemented.");
+}
+
+auto main(int argc, const char** argv) -> int {
+    auto app = commline::application(
+        "fstore",
+        "0.1.0",
+        "Object storage.",
+        $main
+    );
+
+    app.subcommand(fstore::cli::bucket());
+    app.subcommand(fstore::cli::object());
+    app.subcommand(fstore::cli::prune());
+    app.subcommand(fstore::cli::status());
+
+    return app.run(argc, argv);
 }
