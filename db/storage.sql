@@ -1,12 +1,17 @@
 DROP SCHEMA IF EXISTS storage CASCADE;
 
-CREATE SCHEMA storage
+CREATE SCHEMA storage;
 
 CREATE TABLE bucket (
+    -- The bucket's unique internal identifier.
     id              uuid PRIMARY KEY,
-    name            varchar(128) UNIQUE NOT NULL CHECK (length(trim(name)) <> 0),
+
+    -- The bucket's user-assigned name.
+    name            varchar(128) UNIQUE NOT NULL,
+
+    -- The time this bucket was first created.
     date_created    timestamptz DEFAULT NOW()
-)
+);
 
 CREATE TABLE object (
     -- The object's unique identifier.
@@ -15,15 +20,15 @@ CREATE TABLE object (
     -- SHA256 checksum of the object's contents.
     hash            char(64) UNIQUE NOT NULL,
 
-    -- Length of the object's contents in bytes.
-    len             bigint NOT NULL,
+    -- Size of the object's contents in bytes.
+    size            bigint NOT NULL,
 
     -- Mime type of the object's contents.
     mime_type       varchar(50) NOT NULL,
 
     -- The time this object was first added to the object store.
     date_added      timestamptz DEFAULT NOW()
-)
+);
 
 CREATE TABLE bucket_object (
     bucket_id       uuid REFERENCES bucket(id) ON DELETE CASCADE,
@@ -31,20 +36,20 @@ CREATE TABLE bucket_object (
     date_added      timestamptz DEFAULT NOW(),
 
     PRIMARY KEY (bucket_id, object_id)
-)
+);
 
 CREATE VIEW bucket_view AS
     SELECT
         bucket.id AS bucket_id,
         name AS bucket_name,
         count(object_id) AS object_count,
-        COALESCE(sum(len), 0) AS space_used
+        coalesce(sum(size), 0) AS space_used
     FROM bucket
         LEFT OUTER JOIN bucket_object
             ON bucket_id = bucket.id
         LEFT OUTER JOIN object
             ON object_id = object.id
-    GROUP BY bucket.id, name
+    GROUP BY bucket.id, name;
 
 CREATE VIEW object_reference AS
     SELECT
@@ -53,7 +58,7 @@ CREATE VIEW object_reference AS
     FROM object
         LEFT OUTER JOIN bucket_object
             ON bucket_object.object_id = object.id
-    GROUP BY id
+    GROUP BY id;
 
 CREATE VIEW store_totals AS
     SELECT
@@ -61,17 +66,15 @@ CREATE VIEW store_totals AS
             AS bucket_count,
         (SELECT count(*) FROM object)
             AS object_count,
-        (SELECT COALESCE(sum(len), 0) FROM object)
-            AS space_used
+        (SELECT COALESCE(sum(size), 0) FROM object)
+            AS space_used;
 
-; -- END SCHEMA storage
-
-CREATE FUNCTION storage.add_object(
+CREATE FUNCTION add_object(
     bucket_id       uuid,
     object_id       uuid
 ) RETURNS uuid AS $$
 BEGIN
-    INSERT INTO storage.bucket_object (
+    INSERT INTO bucket_object (
         bucket_id,
         object_id
     ) VALUES (
@@ -83,12 +86,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION storage.create_bucket(
+CREATE FUNCTION create_bucket(
     bucket_id       uuid,
     bucket_name     varchar(128)
 ) RETURNS void AS $$
 BEGIN
-    INSERT INTO storage.bucket (
+    INSERT INTO bucket (
         id,
         name
     ) VALUES (
@@ -98,36 +101,36 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION storage.create_object(
+CREATE FUNCTION create_object(
     object_id          uuid,
     object_hash        char(64),
-    object_len         bigint,
+    object_size        bigint,
     object_mime_type   varchar
 ) RETURNS uuid AS $$
 DECLARE
     id_for_hash     uuid;
 BEGIN
-    INSERT INTO storage.object (
+    INSERT INTO object (
         id,
         hash,
-        len,
+        size,
         mime_type
     ) VALUES (
         object_id,
         object_hash,
-        object_len,
+        object_size,
         object_mime_type
     ) ON CONFLICT DO NOTHING;
 
     SELECT id INTO id_for_hash
-    FROM storage.object
+    FROM object
     WHERE hash = object_hash;
 
     RETURN id_for_hash;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION storage.delete_bucket(
+CREATE FUNCTION delete_bucket(
     bucket_id       uuid
 ) RETURNS void AS $$
 BEGIN
@@ -136,7 +139,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION storage.delete_orphan_objects()
+CREATE FUNCTION delete_orphan_objects()
 RETURNS SETOF object AS $$
 BEGIN
     RETURN QUERY
@@ -146,7 +149,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION storage.remove_object(
+CREATE FUNCTION remove_object(
     bkt_id          uuid,
     obj_id          uuid
 ) RETURNS SETOF object AS $$
@@ -168,7 +171,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION storage.rename_bucket(
+CREATE FUNCTION rename_bucket(
     bucket_id       uuid,
     bucket_name     varchar(128)
 ) RETURNS void AS $$
