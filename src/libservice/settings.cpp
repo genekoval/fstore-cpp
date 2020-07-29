@@ -61,6 +61,9 @@ namespace fstore::service {
         ),
         objects_dir(
             extract_string(node, "objects", required)
+        ),
+        unix_socket(
+            extract_string(node, "unix socket", required)
         )
     {}
 }

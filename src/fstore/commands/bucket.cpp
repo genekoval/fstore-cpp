@@ -1,8 +1,8 @@
-#include "cli.h"
 #include "commands.h"
 
-#include <ext/string.h>
+#include <fstore/cli.h>
 
+#include <ext/string.h>
 #include <iostream>
 
 static auto $bucket(
@@ -61,20 +61,6 @@ static auto $rename(
 }
 
 namespace fstore::cli {
-    auto bucket() -> std::unique_ptr<commline::command_node> {
-        auto cmd = commline::command(
-            "bucket",
-            "List bucket information",
-            $bucket
-        );
-
-        cmd->subcommand(bucket_add());
-        cmd->subcommand(bucket_remove());
-        cmd->subcommand(bucket_rename());
-
-        return cmd;
-    }
-
     auto bucket_add() -> std::unique_ptr<commline::command_node> {
         return commline::command(
             "add",
@@ -97,5 +83,19 @@ namespace fstore::cli {
             "Rename a bucket.",
             $rename
         );
+    }
+
+    auto bucket() -> std::unique_ptr<commline::command_node> {
+        auto cmd = commline::command(
+            "bucket",
+            "List bucket information",
+            $bucket
+        );
+
+        cmd->subcommand(bucket_add());
+        cmd->subcommand(bucket_remove());
+        cmd->subcommand(bucket_rename());
+
+        return cmd;
     }
 }

@@ -6,9 +6,16 @@
 #include <cstdlib>
 
 namespace fstore::service {
+    object_store::object_store(
+        std::string_view db,
+        std::string_view fs
+    ) :
+        entity(std::string(db)),
+        fs(repo::fs::get(std::filesystem::path(fs)))
+    {}
+
     object_store::object_store(const settings& config) :
-        entity(config.connection_string),
-        fs(repo::fs::get(config.objects_dir))
+        object_store(config.connection_string, config.objects_dir)
     {}
 
     std::unique_ptr<core::bucket> object_store::create_bucket(

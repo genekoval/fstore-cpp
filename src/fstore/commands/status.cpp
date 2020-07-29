@@ -1,8 +1,8 @@
-#include "cli.h"
 #include "commands.h"
 
-#include <ext/data_size.h>
+#include <fstore/cli.h>
 
+#include <ext/data_size.h>
 #include <iostream>
 
 static auto $status(

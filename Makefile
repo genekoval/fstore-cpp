@@ -32,6 +32,8 @@ $(project).deps = $(service) $(extensions)
 define $(project).libs
  $(core.libs)
  commline
+ netcore
+ timber
 endef
 
 BUILD = /tmp/$(project)

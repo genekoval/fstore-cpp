@@ -47,6 +47,10 @@ namespace fstore::service {
         repo::db::object_store entity;
         repo::fs::fs_t fs;
     public:
+        object_store(
+            std::string_view db,
+            std::string_view fs
+        );
         object_store(const settings& config);
         std::unique_ptr<core::bucket> create_bucket(
             const std::string& name

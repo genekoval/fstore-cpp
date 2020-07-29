@@ -7,12 +7,18 @@
 namespace fstore::service {
     struct settings {
         const std::string connection_string;
-        const std::filesystem::path objects_dir;
+        const std::string objects_dir;
+        const std::string unix_socket;
 
         settings();
         settings(const std::filesystem::path& config);
         settings(const YAML::Node& node);
     };
+
+    auto connect(
+        std::string_view db,
+        std::string_view fs
+    ) -> std::unique_ptr<core::object_store>;
 
     /**
      * Returns an Object Store implementation that allows for manipulating

@@ -1,6 +1,6 @@
-#include "cli.h"
 #include "commands.h"
 
+#include <fstore/cli.h>
 #include <fstore/error.h>
 
 #include <ext/data_size.h>
@@ -57,19 +57,6 @@ static auto $remove(
 }
 
 namespace fstore::cli {
-    auto object() -> std::unique_ptr<commline::command_node> {
-        auto cmd = commline::command(
-            "object",
-            "Not implemented.",
-            [](const commline::app& app, const commline::argv& argv) {}
-        );
-
-        cmd->subcommand(object_add());
-        cmd->subcommand(object_remove());
-
-        return cmd;
-    }
-
     auto object_add() -> std::unique_ptr<commline::command_node> {
         return commline::command(
             "add",
@@ -85,5 +72,18 @@ namespace fstore::cli {
             "Remove an object from a bucket.",
             $remove
         );
+    }
+
+    auto object() -> std::unique_ptr<commline::command_node> {
+        auto cmd = commline::command(
+            "object",
+            "Not implemented.",
+            [](const commline::app& app, const commline::argv& argv) {}
+        );
+
+        cmd->subcommand(object_add());
+        cmd->subcommand(object_remove());
+
+        return cmd;
     }
 }

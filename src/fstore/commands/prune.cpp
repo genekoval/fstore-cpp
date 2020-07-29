@@ -1,5 +1,6 @@
-#include "cli.h"
 #include "commands.h"
+
+#include <fstore/cli.h>
 
 #include <ext/data_size.h>
 #include <iostream>
