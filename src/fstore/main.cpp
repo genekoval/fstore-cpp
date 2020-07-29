@@ -8,22 +8,23 @@
 static auto $main(
     const commline::app& app,
     const commline::argv& argv,
-    std::string_view unix_socket
+    std::string_view unix_socket,
+    bool version
 ) -> void {
-    try {
-        auto api = fstore::api(unix_socket);
-
-        auto totals = api.get_store_totals();
-
-        std::cout
-            << "Bucket count: " << totals.bucket_count << '\n'
-            << "Object count: " << totals.object_count << '\n'
-            << "Space used: " << totals.space_used
-            << std::endl;
+    if (version) {
+        commline::print_version(std::cout, app);
+        return;
     }
-    catch (const std::exception& ex) {
-        ERROR() << ex.what();
-    }
+
+    auto api = fstore::api(unix_socket);
+
+    auto totals = api.get_store_totals();
+
+    std::cout
+        << "Bucket count: " << totals.bucket_count << '\n'
+        << "Object count: " << totals.object_count << '\n'
+        << "Space used: " << totals.space_used
+        << std::endl;
 }
 
 auto main(int argc, const char** argv) -> int {
@@ -34,15 +35,19 @@ auto main(int argc, const char** argv) -> int {
     const auto settings = fstore::service::settings();
 
     auto app = application(
-        "fstore",
-        "0.1.0",
-        "Object storage.",
+        NAME,
+        VERSION,
+        DESCRIPTION,
         options(
             option<std::string_view>(
                 {"unix-socket", "u"},
                 "Endpoint to listen for connections on.",
                 "endpoint",
                 settings.unix_socket
+            ),
+            flag(
+                {"version", "v"},
+                "Print the program version information."
             )
         ),
         $main

@@ -1,5 +1,5 @@
 project := fstore
-version := 0.1.0
+summary := Simple object storage.
 
 STD := gnu++2a
 
@@ -42,3 +42,8 @@ include mk/db.mk
 include mkbuild/base.mk
 
 $(obj)/$(service)/settings.o: CXXFLAGS += -DCONFDIR='"$(prefix)/etc"'
+
+$(obj)/$(project)/main.o: CXXFLAGS +=\
+ -DNAME='"$(project)"'\
+ -DVERSION='"$(version)"'\
+ -DDESCRIPTION='"$(summary)"'
