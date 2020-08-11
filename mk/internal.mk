@@ -7,5 +7,9 @@ service = libservice
 $(service).type = static
 $(service).deps = $(repo)
 
-internal = service repo
+server = libserver
+$(server).type = static
+$(server).deps = $(service)
+
+internal = server service repo
 internal.libs = $(addprefix lib,$(internal))

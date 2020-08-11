@@ -1,47 +1,64 @@
-#include "repo.h"
+#include "test.h"
 
 #include <fstore/error.h>
 
+#include <ext/string.h>
 #include <gtest/gtest.h>
-
-namespace db = fstore::repo::db;
+#include <uuid++/uuid.h>
 
 using namespace std::literals;
-
-using fstore::test::test_store;
 
 class RepoBucketTest : public testing::Test {
 protected:
     static auto TearDownTestSuite() -> void {
-        test_store().truncate_buckets();
+        fstore::test::drop_buckets();
     }
 
-    db::object_store store;
+    fstore::repo::db db;
 
-    RepoBucketTest() : store(test_store()) {
-        store.truncate_buckets();
+    RepoBucketTest() : db(fstore::test::db()) {
+        fstore::test::drop_buckets();
     }
 
-    auto create_bucket(const std::string& name) -> db::bucket const {
-        store.create_bucket(name);
-        return store.fetch_bucket(name);
+    auto create_bucket(std::string_view name) -> fstore::model::bucket {
+        return fstore::test::create_bucket(db, name);
     }
 };
 
-TEST_F(RepoBucketTest, CreationDeletionWorks) {
+TEST_F(RepoBucketTest, CreationWorks) {
+    auto uuid = UUID::uuid();
+    uuid.generate();
+
+    const auto id = uuid.string();
     const auto name = "creation"s;
 
-    auto bucket = create_bucket(name);
-    ASSERT_EQ(name, bucket.name());
+    auto bucket = fstore::model::bucket {
+        .id = id,
+        .name = name
+    };
 
-    bucket.drop();
-    ASSERT_EQ(0, store.fetch_buckets().size());
+    db.create_bucket(bucket);
+
+    ASSERT_EQ(id, bucket.id);
+    ASSERT_EQ(name, bucket.name);
+    ASSERT_EQ(0, bucket.size);
+    ASSERT_EQ(0, bucket.space_used);
+    ASSERT_FALSE(bucket.date_created.empty());
 }
 
+TEST_F(RepoBucketTest, RemovalWorks) {
+    auto bucket = create_bucket("removal");
+    ASSERT_EQ(1, db.fetch_store_totals().buckets);
+
+    db.remove_bucket(bucket.id);
+    ASSERT_EQ(0, db.fetch_store_totals().buckets);
+}
+
+/* TODO This test should be moved to 'service'.
 TEST_F(RepoBucketTest, CreationWithEmptyNameFails) {
-    auto test = [this](const std::string& name) {
+    auto test = [this](std::string_view name) {
         try {
-            store.create_bucket(name);
+            create_bucket(name);
             FAIL() << "Bucket created with name: " QUOTE(name);
         }
         catch (const fstore::fstore_error& ex) {
@@ -53,47 +70,66 @@ TEST_F(RepoBucketTest, CreationWithEmptyNameFails) {
     test(" ");
     test("              ");
 }
+*/
 
-TEST_F(RepoBucketTest, CreationWithNonUniqueNameFails) {
+TEST_F(RepoBucketTest, CreationRequiresUniqueName) {
     const auto name = "unique"s;
-    store.create_bucket(name);
+    create_bucket(name);
 
     try {
-        store.create_bucket(name);
+        create_bucket(name);
         FAIL();
     }
     catch (const fstore::fstore_error& ex) {
-        ASSERT_EQ("cannot create bucket " QUOTE(name) ": bucket exists"s,
-            ex.what());
+        ASSERT_EQ(
+            "cannot create bucket " QUOTE(name) ": bucket exists"s,
+            ex.what()
+        );
     }
 }
 
+TEST_F(RepoBucketTest, FetchWorks) {
+    auto bucket = create_bucket("fetch");
+    auto fetched = db.fetch_bucket(bucket.name);
+
+    ASSERT_EQ(bucket.id, fetched.id);
+    ASSERT_EQ(bucket.name, fetched.name);
+    ASSERT_EQ(bucket.size, fetched.size);
+    ASSERT_EQ(bucket.space_used, fetched.space_used);
+    ASSERT_EQ(bucket.date_created, fetched.date_created);
+}
+
 TEST_F(RepoBucketTest, FetchMultipleWorks) {
-    const auto names = std::vector<std::string>{
+    const std::string name_array[] = {
         "one", "two", "three"
     };
 
-    auto test = [&names](const auto buckets) {
+    const auto names = std::vector<std::string_view>(
+        std::begin(name_array),
+        std::end(name_array)
+    );
+
+    auto test = [&names](const auto& buckets) {
         ASSERT_EQ(names.size(), buckets.size());
 
-        auto contains = [&buckets](const std::string& name) -> bool {
-            for (const auto& bucket : buckets)
-                if (bucket.name() == name) return true;
-            return false;
-        };
-
-        for (const auto& name : names)
-            ASSERT_TRUE(contains(name));
+        for (const auto& name : names) {
+            ASSERT_TRUE(std::find_if(
+                buckets.begin(),
+                buckets.end(),
+                [&name](auto bucket) -> bool {
+                    return bucket.name == name;
+                }
+            ) != buckets.end());
+        }
     };
 
-    for (const auto& bucket : names) store.create_bucket(bucket);
+    for (const auto& name: names) create_bucket(name);
 
-    auto buckets = store.fetch_buckets(names);
-    test(buckets);
-    buckets = store.fetch_buckets();
-    test(buckets);
+    test(db.fetch_buckets(names));
+    test(db.fetch_buckets());
 }
 
+/* TODO This test should be moved to 'service'.
 TEST_F(RepoBucketTest, RenameWithEmptyNameFails) {
     const auto original = "rename"s;
     auto bucket = create_bucket(original);
@@ -112,20 +148,36 @@ TEST_F(RepoBucketTest, RenameWithEmptyNameFails) {
     test(" ");
     test("                   ");
 }
+*/
+
+TEST_F(RepoBucketTest, RenameWorks) {
+    const auto first = "first"s;
+    const auto second = "second"s;
+
+    const auto id = create_bucket(first).id;
+    db.rename_bucket(id, second);
+
+    const auto bucket = db.fetch_bucket(second);
+
+    ASSERT_EQ(id, bucket.id);
+}
 
 TEST_F(RepoBucketTest, RenameWithNonUniqueNameFails) {
     const auto one = "one"s;
-    auto bucket_one = create_bucket(one);
+
+    auto first = create_bucket(one);
+    auto fid = first.id;
 
     // Passing in the same name should do nothing.
-    bucket_one.name(one);
-    ASSERT_EQ(one, bucket_one.name());
+    db.rename_bucket(fid, one);
+    first = db.fetch_bucket(one);
+    ASSERT_EQ(fid, first.id);
 
     const auto two = "two"s;
-    auto bucket_two = create_bucket(two);
+    auto second = create_bucket(two);
 
     try {
-        bucket_two.name(one);
+        db.rename_bucket(second.id, one);
         FAIL() << "Renaming with another bucket's name should have failed";
     }
     catch (const fstore::fstore_error& ex) {
@@ -134,15 +186,4 @@ TEST_F(RepoBucketTest, RenameWithNonUniqueNameFails) {
             ex.what()
         );
     }
-}
-
-TEST_F(RepoBucketTest, RenameWorks) {
-    const auto first = "first"s;
-    auto bucket = create_bucket(first);
-
-    const auto second = "second"s;
-    bucket.name(second);
-
-    ASSERT_EQ(second, bucket.name());
-    ASSERT_EQ(bucket.id(), store.fetch_bucket(second).id());
 }

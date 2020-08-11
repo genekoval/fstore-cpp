@@ -2,7 +2,7 @@
 
 #include <fstore/cli.h>
 #include <fstore/server/server.h>
-#include <fstore/service.h>
+#include <fstore/service/object_store.h>
 
 #include <timber/timber>
 #include <unistd.h>
@@ -22,9 +22,9 @@ static auto $start(
         << " version " << app.version
         << " starting: [PID " << getpid() << ']';
 
-    auto store = fstore::service::connect(db_connection, objects_dir);
+    auto store = fstore::service::object_store(db_connection, objects_dir);
 
-    fstore::server::listen(*store, unix_socket);
+    fstore::server::listen(store, unix_socket);
 }
 
 namespace fstore::cli {

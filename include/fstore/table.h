@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <ostream>
 
-namespace fstore {
+namespace fstore::cli {
     template <class Derived, class T, int ColumnCount>
     class table {
     protected:

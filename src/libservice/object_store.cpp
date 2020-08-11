@@ -1,80 +1,98 @@
-#include "service.h"
+#include <fstore/service/object_store.h>
 
-#include <fstore/error.h>
-#include <fstore/repo/filesystem.h>
-
-#include <cstdlib>
+#include <filesystem>
+#include <timber/timber>
+#include <uuid++/uuid.h>
 
 namespace fstore::service {
     object_store::object_store(
-        std::string_view db,
-        std::string_view fs
+        std::string_view db_connection,
+        std::string_view objects_dir
     ) :
-        entity(std::string(db)),
-        fs(repo::fs::get(std::filesystem::path(fs)))
-    {}
-
-    object_store::object_store(const settings& config) :
-        object_store(config.connection_string, config.objects_dir)
-    {}
-
-    std::unique_ptr<core::bucket> object_store::create_bucket(
-        const std::string& name
-    ) {
-        entity.create_bucket(name);
-        return std::make_unique<bucket>(entity.fetch_bucket(name), fs);
+        db(db_connection),
+        fs(repo::fs::get(std::filesystem::path(objects_dir)))
+    {
+        INFO() << "Database connection: " << db_connection;
+        INFO() << "Object storage: " << std::filesystem::canonical(objects_dir);
     }
 
-    std::optional<std::unique_ptr<core::bucket>> object_store::fetch_bucket(
-        const std::string& name
-    ) {
-        try {
-            return std::make_unique<bucket>(entity.fetch_bucket(name), fs);
-        }
-        catch (const fstore_error& ex) {
-            return {};
-        }
+    auto object_store::add_object(
+        std::string_view bucket_id,
+        std::string_view path
+    ) -> model::object {
+        auto uuid = UUID::uuid();
+        uuid.generate();
+
+        auto object = model::object {
+            .id = uuid.string(),
+            .hash = fs->hash(path),
+            .size = fs->size(path),
+            .mime_type = fs->mime_type(path)
+        };
+
+        db.add_object(bucket_id, object);
+        fs->copy_object(path, object.id);
+
+        return object;
     }
 
-    std::vector<std::unique_ptr<core::bucket>> object_store::fetch_buckets() {
-        auto entities = entity.fetch_buckets();
-        std::vector<std::unique_ptr<core::bucket>> buckets;
+    auto object_store::create_bucket(std::string_view name) -> model::bucket {
+        auto uuid = UUID::uuid();
+        uuid.generate();
 
-        for (auto& entity : entities)
-            buckets.push_back(std::make_unique<bucket>(std::move(entity), fs));
+        auto bucket = model::bucket {
+            .id = uuid.string(),
+            .name = std::string(name)
+        };
 
-        return buckets;
+        db.create_bucket(bucket);
+        INFO() << "Created bucket: " << bucket.name;
+
+        return bucket;
     }
 
-    std::vector<std::unique_ptr<core::bucket>> object_store::fetch_buckets(
-        const std::vector<std::string>& names
-    ) {
-        auto entities = entity.fetch_buckets(names);
-        std::vector<std::unique_ptr<core::bucket>> buckets;
-
-        for (auto& entity : entities)
-            buckets.push_back(std::make_unique<bucket>(std::move(entity), fs));
-
-        return buckets;
+    auto object_store::fetch_bucket(std::string_view name) -> model::bucket {
+        return db.fetch_bucket(name);
     }
 
-    std::unique_ptr<core::store_totals> object_store::get_store_totals() {
-        return std::make_unique<repo::db::store_totals>(
-            std::move(entity.get_store_totals())
-        );
+    auto object_store::fetch_buckets() -> std::vector<model::bucket> {
+        return db.fetch_buckets();
     }
 
-    std::vector<std::unique_ptr<core::object>> object_store::prune() {
-        std::vector<std::unique_ptr<core::object>> orphans;
+    auto object_store::fetch_buckets(
+        const std::vector<std::string_view>& names
+    ) -> std::vector<model::bucket> {
+        return db.fetch_buckets(names);
+    }
 
-        for (const auto& orphan : entity.delete_orphan_objects()) {
-            orphans.push_back(
-                std::make_unique<object>(std::move(orphan))
-            );
+    auto object_store::fetch_store_totals() -> model::object_store {
+        return db.fetch_store_totals();
+    }
 
-            fs->remove_object(orphan.id());
-        }
+    auto object_store::prune() -> std::vector<model::object> {
+        auto orphans = db.remove_orphan_objects();
+        for (const auto& obj : orphans) fs->remove_object(obj.id);
+
+        INFO() << "Pruned " << orphans.size() << " objects";
 
         return orphans;
+    }
+
+    auto object_store::remove_bucket(std::string_view bucket_id) -> void {
+        db.remove_bucket(bucket_id);
+    }
+
+    auto object_store::remove_object(
+        std::string_view bucket_id,
+        std::string_view object_id
+    ) -> model::object {
+        return db.remove_object(bucket_id, object_id);
+    }
+
+    auto object_store::rename_bucket(
+        std::string_view bucket_id,
+        std::string_view bucket_name
+    ) -> void {
+        db.rename_bucket(bucket_id, bucket_name);
     }
 }

@@ -1,42 +1,64 @@
 #include "commands.h"
 
-#include <fstore/cli.h>
+#include <fstore/service/object_store.h>
 
 #include <ext/data_size.h>
 #include <iostream>
+#include <numeric>
 
-auto $prune(const commline::app& app, const commline::argv& argv) -> void {
-    const auto removed_objects = fstore::object_store()->prune();
+auto $prune(
+    const commline::app& app,
+    const commline::argv& argv,
+    std::string_view connection_string,
+    std::string_view objects_dir
+) -> void {
+    auto store = fstore::service::object_store(connection_string, objects_dir);
 
-    if (removed_objects.empty()) {
+    const auto objects = store.prune();
+
+    if (objects.empty()) {
         std::cout << "No objects to prune." << std::endl;
         return;
     }
 
-    std::cout << "Pruning object store..." << '\n' << "---" << '\n';
-
-    uintmax_t freed_space = 0;
-    for (const auto& object : removed_objects) {
-        freed_space += object->size();
-        std::cout
-            << object->id() << " "
-            << object->hash() << " "
-            << ext::data_size::format(object->size())
-            << '\n';
-    }
+    auto space_freed = std::accumulate(
+        objects.begin(),
+        objects.end(),
+        uintmax_t(0),
+        [](uintmax_t sum, const auto& object) -> uintmax_t {
+            return sum + object.size;
+        }
+    );
 
     std::cout
-        << "---" << '\n'
-        << "Deleted: " << removed_objects.size()
-        << " object" << (removed_objects.size() == 1 ? "" : "s") << '\n'
-        << "Freeing: " << ext::data_size::format(freed_space) << std::endl;
+        << "removed " << objects.size()
+        << " object" << (objects.size() == 1 ? "" : "s") << '\n'
+        << "freeing " << ext::data_size::format(space_freed) << std::endl;
 }
 
 namespace fstore::cli {
-    auto prune() -> std::unique_ptr<commline::command_node> {
-        return commline::command(
+    using namespace commline;
+
+    auto prune(
+        const service::settings& settings
+    ) -> std::unique_ptr<command_node> {
+        return command(
             "prune",
             "Remove any objects not referenced by a bucket.",
+            options(
+                option<std::string_view>(
+                    {"database"},
+                    "Database connection string.",
+                    "connection",
+                    settings.connection_string
+                ),
+                option<std::string_view>(
+                    {"objects"},
+                    "Path to object files.",
+                    "objects directory",
+                    settings.objects_dir
+                )
+            ),
             $prune
         );
     }

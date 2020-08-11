@@ -1,15 +1,23 @@
 #pragma once
 
-#include <fstore/service.h>
+#include <fstore/service/settings.h>
 
 #include <commline/commline>
 
 namespace fstore::cli {
-    auto bucket() -> std::unique_ptr<commline::command_node>;
-    auto object() -> std::unique_ptr<commline::command_node>;
-    auto prune() -> std::unique_ptr<commline::command_node>;
+    auto bucket(
+        const service::settings& settings
+    ) -> std::unique_ptr<commline::command_node>;
+
+    auto prune(
+        const service::settings& settings
+    ) -> std::unique_ptr<commline::command_node>;
+
     auto start(
         const service::settings& settings
     ) -> std::unique_ptr<commline::command_node>;
-    auto status() -> std::unique_ptr<commline::command_node>;
+
+    auto status(
+        const service::settings& settings
+    ) -> std::unique_ptr<commline::command_node>;
 }

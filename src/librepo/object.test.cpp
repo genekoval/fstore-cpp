@@ -1,128 +1,75 @@
-#include "repo.h"
+#include "test.h"
 
 #include <fstore/error.h>
 
 #include <gtest/gtest.h>
 
-namespace core = fstore::core;
-namespace db = fstore::repo::db;
-
 using namespace std::literals;
-
-using fstore::test::test_store;
 
 class RepoObjectTest : public testing::Test {
 protected:
-    /**
-     * A simple aggregate for holding data for test objects.
-     */
-    struct data {
-        /**
-         * Returns metadata from the following text:
-         *      object\n
-         * returns: Metadata for some text data.
-         */
-        static auto text() -> data {
-            return data {
-                "eab32d918fc1c07d87eddb59a4508666"
-                "6f9117538d6d9c40ee0efeda635bd330",
-                "text/plain",
-                7
-            };
-        }
-
-        const std::string hash;
-        const std::string mime_type;
-        const uintmax_t size;
-    };
-
     static auto TearDownTestSuite() -> void {
-        auto store = test_store();
-        store.truncate_buckets();
-        store.truncate_objects();
+        fstore::test::drop_buckets();
+        fstore::test::drop_objects();
     }
 
-    db::object_store store;
+    fstore::repo::db db;
+    fstore::model::object object;
 
-    RepoObjectTest() : store(test_store()) {
-        store.truncate_buckets();
-        store.truncate_objects();
+    RepoObjectTest() :
+        db(fstore::test::db()),
+        object({
+            .id = "a4f33eab-1fbf-49ab-af6b-9fc72714f8c5",
+            .hash =
+                "eab32d918fc1c07d87eddb59a4508666"
+                "6f9117538d6d9c40ee0efeda635bd330",
+            .size = 7,
+            .mime_type = "text/plain"
+        })
+    {
+        fstore::test::drop_buckets();
+        fstore::test::drop_objects();
     }
 };
 
-TEST_F(RepoObjectTest, Creation) {
-    const auto text = data::text();
-    auto object = db::object(
-        store.connection(),
-        text.hash,
-        text.mime_type,
-        text.size
-    );
-
-    ASSERT_EQ(text.hash, object.hash());
-    ASSERT_EQ(text.mime_type, object.mime_type());
-    ASSERT_EQ(text.size, object.size());
-
-    // Creating an object with the same hash should result in the same
-    // object instance.
-    // TODO Should the mime type and size also have to match?
-    auto another = db::object(
-        store.connection(),
-        text.hash,
-        text.mime_type,
-        text.size
-    );
-
-    // TODO Overload equality operator for objects.
-    ASSERT_EQ(object.id(), another.id());
-}
-
 TEST_F(RepoObjectTest, BucketAdditionRemoval) {
-    // Create a test object.
-    const auto text = data::text();
-    std::unique_ptr<core::object> object = std::make_unique<db::object>(
-        store.connection(),
-        text.hash,
-        text.mime_type,
-        text.size
-    );
-
-    // Create a bucket to add the object to.
-    const auto name = "test";
-    store.create_bucket(name);
-    auto bucket = store.fetch_bucket(name);
-    ASSERT_EQ(0, bucket.object_count());
+    // Create a bucket to add objects to.
+    auto bucket = fstore::test::create_bucket(db, "test");
 
     // Asserts that the bucket contains the specified number of objects.
-    auto assert_count = [this, &name](int count) {
+    auto assert_count = [this, &bucket](int count) {
         // Fetch the bucket again to ensure information
         // is read from the database.
-        ASSERT_EQ(count, store.fetch_bucket(name).object_count());
+        bucket = db.fetch_bucket(bucket.name);
+        ASSERT_EQ(count, bucket.size);
     };
 
+    // The bucket should be initially empty.
+    assert_count(0);
+
     // Add the object to the bucket.
-    bucket.add(object);
+    db.add_object(bucket.id, object);
     assert_count(1);
 
     // Adding the same object does nothing.
-    for (auto i = 0u; i < 5u; i++) bucket.add(object);
+    for (auto i = 0u; i < 5u; i++) db.add_object(bucket.id, object);
     assert_count(1);
 
     // Remove the object.
-    bucket.remove(object->id());
+    db.remove_object(bucket.id, object.id);
     assert_count(0);
 
     // The object we removed can be added again...
-    bucket.add(object);
+    db.add_object(bucket.id, object);
     assert_count(1);
 
     // ...and removed again.
-    bucket.remove(object->id());
+    db.remove_object(bucket.id, object.id);
     assert_count(0);
 
     // Removing an object that does not exist results in an error.
     try {
-        bucket.remove(object->id());
+        db.remove_object(bucket.id, object.id);
         FAIL() << "Removing a nonexistent object should have failed";
     }
     catch (const fstore::fstore_error& ex) {

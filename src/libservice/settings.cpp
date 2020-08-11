@@ -1,5 +1,5 @@
 #include <fstore/error.h>
-#include <fstore/service.h>
+#include <fstore/service/settings.h>
 
 #include <ext/string.h>
 

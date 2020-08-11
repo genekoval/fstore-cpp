@@ -5,35 +5,42 @@ STD := gnu++2a
 
 include mk/internal.mk
 
-install := $(project)
+client := lib$(project)
+
+install := $(project) $(client)
 targets := $(install) $(internal.libs)
 
-extensions := cli
-
 define core.libs
+ $(internal)
  cryptopp
  ext++
  magix
+ netcore
  pqxx
  pq
+ timber
  uuid++
  yaml-cpp
- $(internal)
 endef
 
+test.deps = $(internal.libs)
 define test.libs
  $(core.libs)
+ $(project)
  gtest
  gtest_main
 endef
 
 $(project).type = executable
-$(project).deps = $(service) $(extensions)
+$(project).deps = $(internal.libs)
 define $(project).libs
  $(core.libs)
  commline
+endef
+
+$(client).type = shared
+define $(client).libs
  netcore
- timber
 endef
 
 BUILD = /tmp/$(project)
