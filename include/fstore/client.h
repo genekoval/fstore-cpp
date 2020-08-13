@@ -26,20 +26,22 @@ namespace fstore {
             std::string_view path
         ) -> model::object;
 
-        auto create_bucket(std::string_view name) -> model::bucket;
-
         auto fetch_bucket(std::string_view name) -> model::bucket;
-
-        auto remove_bucket(std::string_view bucket_id) -> void;
 
         auto remove_object(
             std::string_view bucket_id,
             std::string_view object_id
         ) -> model::object;
+    };
 
-        auto rename_bucket(
-            std::string_view bucket_id,
-            std::string_view bucket_name
-        ) -> void;
+    class bucket {
+        const std::string id;
+        object_store* store;
+
+        bucket(std::string_view id, object_store& store);
+    public:
+        auto add(std::string_view path) -> model::object;
+
+        auto remove(std::string_view object_id) -> model::object;
     };
 }

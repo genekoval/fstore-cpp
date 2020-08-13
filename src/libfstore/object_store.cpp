@@ -20,22 +20,11 @@ namespace fstore {
         );
     }
 
-    auto object_store::create_bucket(std::string_view name) -> model::bucket {
-        return client.send<model::bucket>(
-            event::create_bucket,
-            name
-        );
-    }
-
     auto object_store::fetch_bucket(std::string_view name) -> model::bucket {
         return client.send<model::bucket>(
             event::fetch_bucket,
             name
         );
-    }
-
-    auto object_store::remove_bucket(std::string_view bucket_id) -> void {
-        client.emit(event::remove_bucket, bucket_id);
     }
 
     auto object_store::remove_object(
@@ -47,12 +36,5 @@ namespace fstore {
             bucket_id,
             object_id
         );
-    }
-
-    auto object_store::rename_bucket(
-        std::string_view bucket_id,
-        std::string_view bucket_name
-    ) -> void {
-        client.emit(event::rename_bucket, bucket_id, bucket_name);
     }
 }
