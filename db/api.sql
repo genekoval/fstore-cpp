@@ -30,7 +30,7 @@ BEGIN
         date_added
     FROM bucket_contents bc
     WHERE bucket_id = a_bucket_id
-        AND object_id = a_object_id;
+        AND hash = a_hash;
 END;
 $$ LANGUAGE plpgsql;
 
