@@ -9,11 +9,8 @@ namespace fstore::server {
     static inline auto router() {
         return zipline::make_router<protocol, event_t>(
             endpoint::add_object,
-            endpoint::create_bucket,
             endpoint::fetch_bucket,
-            endpoint::remove_bucket,
-            endpoint::remove_object,
-            endpoint::rename_bucket
+            endpoint::remove_object
         );
     }
 
@@ -35,17 +32,18 @@ namespace fstore::server {
 
     auto listen(
         service::object_store& store,
-        std::string_view endpoint
+        std::string_view endpoint,
+        const std::function<void()>& callback
     ) -> void {
         const auto routes = router();
 
         auto server = netcore::server(
             [&routes, &store](netcore::socket&& sock) {
-                routes.route(connection(sock, store));
+                routes.route(protocol(sock, store));
             }
         );
 
-        server.listen(endpoint);
+        server.listen(endpoint, callback);
 
         INFO() << "Shutting down...";
     }

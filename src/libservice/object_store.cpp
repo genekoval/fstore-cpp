@@ -16,6 +16,11 @@ namespace fstore::service {
         INFO() << "Object storage: " << std::filesystem::canonical(objects_dir);
     }
 
+    object_store::object_store(repo::db&& db, repo::fs::fs_t&& fs) :
+        db(std::move(db)),
+        fs(std::move(fs))
+    {}
+
     auto object_store::add_object(
         std::string_view bucket_id,
         std::string_view path

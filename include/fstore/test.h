@@ -2,6 +2,8 @@
 
 #include <fstore/repo/db.h>
 
+#include <filesystem>
+
 namespace fstore::test {
     auto db() -> repo::db;
 
@@ -10,4 +12,10 @@ namespace fstore::test {
     auto drop_buckets() -> void;
 
     auto drop_objects() -> void;
+
+    auto start_server(std::string_view unix_socket) -> pid_t;
+
+    auto stop_server(pid_t pid) -> void;
+
+    auto temp_directory_path() -> std::filesystem::path;
 }

@@ -1,6 +1,5 @@
-#include "test.h"
-
 #include <fstore/error.h>
+#include <fstore/test.h>
 
 #include <ext/string.h>
 #include <gtest/gtest.h>

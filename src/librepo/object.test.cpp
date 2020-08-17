@@ -1,4 +1,4 @@
-#include "test.h"
+#include <fstore/test.h>
 
 #include <fstore/error.h>
 

@@ -24,7 +24,9 @@ static auto $start(
 
     auto store = fstore::service::object_store(db_connection, objects_dir);
 
-    fstore::server::listen(store, unix_socket);
+    fstore::server::listen(store, unix_socket, [&unix_socket]() {
+        INFO() << "Listening for connections on: " << unix_socket;
+    });
 }
 
 namespace fstore::cli {

@@ -13,6 +13,11 @@ namespace fstore::service {
             std::string_view objects_dir
         );
 
+        object_store(
+            repo::db&& db,
+            repo::fs::fs_t&& fs
+        );
+
         auto add_object(
             std::string_view bucket_id,
             std::string_view path

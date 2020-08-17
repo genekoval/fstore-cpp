@@ -38,6 +38,7 @@ namespace fstore::server {
 
     auto listen(
         service::object_store& store,
-        std::string_view endpoint
+        std::string_view endpoint,
+        const std::function<void()>& callback
     ) -> void;
 }
