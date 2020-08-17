@@ -141,6 +141,29 @@ namespace fstore::repo {
         };
     }
 
+    auto db::get_object(
+        std::string_view bucket_id,
+        std::string_view object_id
+    ) -> std::optional<model::object> {
+        auto tx = pqxx::nontransaction(connection);
+
+        try {
+            auto row = tx.exec_params1(
+                "select * from get_object($1, $2)",
+                std::string(bucket_id),
+                std::string(object_id)
+            );
+
+            auto object = model::object();
+            set_object(object, row);
+
+            return object;
+        }
+        catch (const pqxx::unexpected_rows& ex) {
+            return {};
+        }
+    }
+
     auto db::remove_bucket(std::string_view bucket_id) -> void {
         auto tx = pqxx::nontransaction(connection);
 

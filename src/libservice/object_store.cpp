@@ -74,6 +74,13 @@ namespace fstore::service {
         return db.fetch_store_totals();
     }
 
+    auto object_store::get_object_metadata(
+        std::string_view bucket_id,
+        std::string_view object_id
+    ) -> std::optional<model::object> {
+        return db.get_object(bucket_id, object_id);
+    }
+
     auto object_store::prune() -> std::vector<model::object> {
         auto orphans = db.remove_orphan_objects();
         for (const auto& obj : orphans) fs->remove_object(obj.id);

@@ -1,8 +1,8 @@
+#include <fstore/error.h>
 #include <fstore/test.h>
 
-#include <fstore/error.h>
-
 #include <gtest/gtest.h>
+#include <uuid++/uuid.h>
 
 using namespace std::literals;
 
@@ -75,4 +75,37 @@ TEST_F(RepoObjectTest, BucketAdditionRemoval) {
     catch (const fstore::fstore_error& ex) {
         ASSERT_EQ("bucket does not contain object"s, ex.what());
     }
+}
+
+TEST_F(RepoObjectTest, GetObjectNoBucket) {
+    auto uuid = UUID::uuid();
+    uuid.generate();
+
+    auto opt = db.get_object(uuid.string(), object.id);
+
+    ASSERT_FALSE(opt.has_value());
+}
+
+TEST_F(RepoObjectTest, GetObjectNoObject) {
+    auto bucket = fstore::test::create_bucket(db, "test");
+
+    auto opt = db.get_object(bucket.id, object.id);
+
+    ASSERT_FALSE(opt.has_value());
+}
+
+TEST_F(RepoObjectTest, GetObject) {
+    auto bucket = fstore::test::create_bucket(db, "test");
+    db.add_object(bucket.id, object);
+
+    auto opt = db.get_object(bucket.id, object.id);
+    ASSERT_TRUE(opt.has_value());
+
+    auto result = opt.value();
+
+    ASSERT_EQ(object.id, result.id);
+    ASSERT_EQ(object.hash, result.hash);
+    ASSERT_EQ(object.size, result.size);
+    ASSERT_EQ(object.mime_type, result.mime_type);
+    ASSERT_EQ(object.date_added, result.date_added);
 }

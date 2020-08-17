@@ -15,6 +15,13 @@ namespace fstore::server::endpoint {
         proto.reply(proto.store->fetch_bucket(name));
     }
 
+    auto get_object_metadata(protocol& proto) -> void {
+        auto bucket_id = proto.read<std::string>();
+        auto object_id = proto.read<std::string>();
+
+        proto.reply(proto.store->get_object_metadata(bucket_id, object_id));
+    }
+
     auto remove_object(protocol& proto) -> void {
         auto bucket_id = proto.read<std::string>();
         auto object_id = proto.read<std::string>();

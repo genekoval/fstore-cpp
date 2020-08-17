@@ -31,6 +31,17 @@ namespace fstore {
         );
     }
 
+    auto object_store::get_object_metadata(
+        std::string_view bucket_id,
+        std::string_view object_id
+    ) -> std::optional<model::object> {
+        return connect().send<std::optional<model::object>>(
+            event::get_object_metadata,
+            bucket_id,
+            object_id
+        );
+    }
+
     auto object_store::remove_object(
         std::string_view bucket_id,
         std::string_view object_id

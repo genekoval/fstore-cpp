@@ -29,6 +29,11 @@ namespace fstore::repo {
 
         auto fetch_store_totals() -> model::object_store;
 
+        auto get_object(
+            std::string_view bucket_id,
+            std::string_view object_id
+        ) -> std::optional<model::object>;
+
         auto remove_bucket(std::string_view bucket_id) -> void;
 
         auto remove_object(

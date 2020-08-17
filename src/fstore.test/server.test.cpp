@@ -35,7 +35,7 @@ namespace fstore::test {
         server::listen(store, unix_socket, [&]() {
             INFO() << "Listening for connections on: " << unix_socket;
             ready = true;
-            write(pipefd[1], &ready, sizeof(bool));
+            write(pipefd[1], &ready, sizeof(decltype(ready)));
         });
 
         std::filesystem::remove_all(objects);

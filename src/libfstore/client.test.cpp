@@ -3,11 +3,12 @@
 
 #include <fstream>
 #include <gtest/gtest.h>
+#include <uuid++/uuid.h>
 
 const auto socket = fstore::test::temp_directory_path() / "fstore.sock";
 constexpr auto bucket_name = "test";
 
-pid_t server_pid;
+auto server_pid = pid_t();
 
 class ClientTest : public testing::Test {
 protected:
@@ -45,7 +46,7 @@ TEST_F(ClientTest, FetchBucket) {
 }
 
 TEST_F(ClientTest, AddObject) {
-    constexpr auto filename = "/tmp/fstore/TestObject";
+    const auto filename = fstore::test::temp_directory_path() / "TestObject";
     constexpr auto content = "Hello\n";
 
     auto bucket = connect();
@@ -55,7 +56,7 @@ TEST_F(ClientTest, AddObject) {
         file << content;
     }
 
-    auto object = bucket.add(filename);
+    auto object = bucket.add(filename.string());
 
     ASSERT_EQ(6, object.size);
     ASSERT_EQ(
@@ -63,4 +64,39 @@ TEST_F(ClientTest, AddObject) {
         object.hash
     );
     ASSERT_EQ("text/plain", object.mime_type);
+}
+
+TEST_F(ClientTest, GetObject) {
+    const auto filename = fstore::test::temp_directory_path() / "TestObject";
+    constexpr auto content = "Hello\n";
+
+    auto bucket = connect();
+
+    {
+        auto file = std::ofstream(filename);
+        file << content;
+    }
+
+    auto object = bucket.add(filename.string());
+
+    auto opt = bucket[object.id];
+    ASSERT_TRUE(opt.has_value());
+
+    const auto& result = opt.value().metadata;
+
+    ASSERT_EQ(object.id, result.id);
+    ASSERT_EQ(object.hash, result.hash);
+    ASSERT_EQ(object.size, result.size);
+    ASSERT_EQ(object.mime_type, result.mime_type);
+    ASSERT_EQ(object.date_added, result.date_added);
+}
+
+TEST_F(ClientTest, GetObjectNoObject) {
+    auto uuid = UUID::uuid();
+    uuid.generate();
+
+    auto bucket = connect();
+    auto opt = bucket[uuid.string()];
+
+    ASSERT_FALSE(opt.has_value());
 }

@@ -28,7 +28,7 @@ BEGIN
         size,
         mime_type,
         date_added
-    FROM bucket_contents bc
+    FROM bucket_contents
     WHERE bucket_id = a_bucket_id
         AND hash = a_hash;
 END;
@@ -96,6 +96,24 @@ BEGIN
             AS objects,
         (SELECT COALESCE(sum(size), 0) FROM object)
             AS space_used;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION get_object(
+    a_bucket_id uuid,
+    a_object_id uuid
+) RETURNS SETOF object AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        object_id AS id,
+        hash,
+        size,
+        mime_type,
+        date_added
+    FROM bucket_contents
+    WHERE bucket_id = a_bucket_id
+        AND object_id = a_object_id;
 END;
 $$ LANGUAGE plpgsql;
 

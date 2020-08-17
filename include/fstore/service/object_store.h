@@ -3,6 +3,8 @@
 #include <fstore/repo/db.h>
 #include <fstore/repo/filesystem.h>
 
+#include <optional>
+
 namespace fstore::service {
     class object_store {
         repo::db db;
@@ -34,6 +36,11 @@ namespace fstore::service {
         ) -> std::vector<model::bucket>;
 
         auto fetch_store_totals() -> model::object_store;
+
+        auto get_object_metadata(
+            std::string_view bucket_id,
+            std::string_view object_id
+        ) -> std::optional<model::object>;
 
         auto prune() -> std::vector<model::object>;
 
