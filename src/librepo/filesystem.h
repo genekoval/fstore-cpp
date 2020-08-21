@@ -21,6 +21,8 @@ namespace fstore::repo::fs {
             const std::filesystem::path& path
         ) -> std::string const override;
 
+        auto open(std::string_view id) -> netcore::fd override;
+
         auto remove_object(std::string_view id) -> void const override;
 
         auto size(

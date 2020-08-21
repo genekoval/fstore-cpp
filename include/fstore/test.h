@@ -13,7 +13,7 @@ namespace fstore::test {
 
     auto drop_objects() -> void;
 
-    auto start_server(std::string_view unix_socket) -> pid_t;
+    auto start_server(const std::filesystem::path& unix_socket) -> pid_t;
 
     auto stop_server(pid_t pid) -> void;
 

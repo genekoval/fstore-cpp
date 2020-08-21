@@ -4,10 +4,19 @@
 #include <fstore/server/server.h>
 
 namespace fstore {
+    using byte_vector = std::vector<std::byte>;
+    using object_meta = model::object;
+
+    struct object_content {
+        const std::string mime_type;
+        const byte_vector data;
+    };
+
     class object_store {
         enum class event : server::event_t {
             add_object,
             fetch_bucket,
+            get_object,
             get_object_metadata,
             remove_object,
         };
@@ -25,24 +34,24 @@ namespace fstore {
         auto add_object(
             std::string_view bucket_id,
             std::string_view path
-        ) -> model::object;
+        ) -> object_meta;
 
         auto fetch_bucket(std::string_view name) -> model::bucket;
+
+        auto get_object(
+            std::string_view bucket_id,
+            std::string_view object_id
+        ) -> object_content;
 
         auto get_object_metadata(
             std::string_view bucket_id,
             std::string_view object_id
-        ) -> std::optional<model::object>;
+        ) -> object_meta;
 
         auto remove_object(
             std::string_view bucket_id,
             std::string_view object_id
-        ) -> model::object;
-    };
-
-    class object {
-    public:
-        const model::object metadata;
+        ) -> object_meta;
     };
 
     class bucket {
@@ -51,10 +60,16 @@ namespace fstore {
     public:
         bucket(std::string_view id, object_store& store);
 
-        auto operator[](std::string_view object_id) -> std::optional<object>;
+        auto add(std::string_view path) -> object_meta;
 
-        auto add(std::string_view path) -> model::object;
+        auto get(
+            std::string_view object_id
+        ) -> object_content;
 
-        auto remove(std::string_view object_id) -> model::object;
+        auto meta(
+            std::string_view object_id
+        ) -> object_meta;
+
+        auto remove(std::string_view object_id) -> object_meta;
     };
 }

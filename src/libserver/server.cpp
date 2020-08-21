@@ -10,6 +10,7 @@ namespace fstore::server {
         return zipline::make_router<protocol, event_t>(
             endpoint::add_object,
             endpoint::fetch_bucket,
+            endpoint::get_object,
             endpoint::get_object_metadata,
             endpoint::remove_object
         );

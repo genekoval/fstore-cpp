@@ -5,6 +5,8 @@
 #include <gtest/gtest.h>
 #include <uuid++/uuid.h>
 
+using namespace std::literals;
+
 const auto socket = fstore::test::temp_directory_path() / "fstore.sock";
 constexpr auto bucket_name = "test";
 
@@ -13,10 +15,13 @@ auto server_pid = pid_t();
 class ClientTest : public testing::Test {
 protected:
     static auto SetUpTestSuite() -> void {
+        fstore::test::drop_buckets();
+        fstore::test::drop_objects();
+
         auto db = fstore::test::db();
         fstore::test::create_bucket(db, bucket_name);
 
-        server_pid = fstore::test::start_server(socket.string());
+        server_pid = fstore::test::start_server(socket);
     }
 
     static auto TearDownTestSuite() -> void {
@@ -78,11 +83,7 @@ TEST_F(ClientTest, GetObject) {
     }
 
     auto object = bucket.add(filename.string());
-
-    auto opt = bucket[object.id];
-    ASSERT_TRUE(opt.has_value());
-
-    const auto& result = opt.value().metadata;
+    auto result = bucket.meta(object.id);
 
     ASSERT_EQ(object.id, result.id);
     ASSERT_EQ(object.hash, result.hash);
@@ -91,12 +92,46 @@ TEST_F(ClientTest, GetObject) {
     ASSERT_EQ(object.date_added, result.date_added);
 }
 
+TEST_F(ClientTest, GetObjectContent) {
+    const auto filename = fstore::test::temp_directory_path() / "TestObject";
+    constexpr auto content = "Hello\n"sv;
+
+    auto bucket = connect();
+
+    {
+        auto file = std::ofstream(filename);
+        file << content;
+    }
+
+    const auto object = bucket.add(filename.string());
+
+    const auto [type, data] = bucket.get(object.id);
+
+    ASSERT_EQ("text/plain", type);
+    ASSERT_EQ(content.size(), data.size());
+
+    const auto text = std::string(
+        reinterpret_cast<const char*>(data.data()),
+        data.size()
+    );
+
+    ASSERT_EQ(content, text);
+}
+
 TEST_F(ClientTest, GetObjectNoObject) {
     auto uuid = UUID::uuid();
     uuid.generate();
 
     auto bucket = connect();
-    auto opt = bucket[uuid.string()];
 
-    ASSERT_FALSE(opt.has_value());
+    try {
+        bucket.meta(uuid.string());
+        FAIL() << "Retrieved metadata for a non-existent object";
+    }
+    catch (const std::runtime_error& ex) {
+        ASSERT_EQ(
+            "bucket does not contain object"s,
+            ex.what()
+        );
+    }
 }

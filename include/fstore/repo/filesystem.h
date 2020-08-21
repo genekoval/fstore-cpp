@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <netcore/fd.h>
 
 namespace fstore::repo::fs {
     struct filesystem {
@@ -17,6 +18,8 @@ namespace fstore::repo::fs {
         virtual auto mime_type(
             const std::filesystem::path& path
         ) -> std::string const = 0;
+
+        virtual auto open(std::string_view id) -> netcore::fd = 0;
 
         virtual auto remove_object(std::string_view id) -> void const = 0;
 

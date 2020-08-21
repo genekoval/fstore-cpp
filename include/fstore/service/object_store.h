@@ -37,6 +37,11 @@ namespace fstore::service {
 
         auto fetch_store_totals() -> model::object_store;
 
+        auto get_object(
+            std::string_view bucket_id,
+            std::string_view object_id
+        ) -> std::optional<std::pair<model::object, netcore::fd>>;
+
         auto get_object_metadata(
             std::string_view bucket_id,
             std::string_view object_id

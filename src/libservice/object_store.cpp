@@ -74,6 +74,16 @@ namespace fstore::service {
         return db.fetch_store_totals();
     }
 
+    auto object_store::get_object(
+        std::string_view bucket_id,
+        std::string_view object_id
+    ) -> std::optional<std::pair<model::object, netcore::fd>> {
+        auto meta = get_object_metadata(bucket_id, object_id);
+        if (!meta) return {};
+
+        return std::make_pair(meta.value(), fs->open(object_id));
+    }
+
     auto object_store::get_object_metadata(
         std::string_view bucket_id,
         std::string_view object_id

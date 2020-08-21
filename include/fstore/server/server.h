@@ -2,8 +2,10 @@
 
 #include <fstore/service/object_store.h>
 
+#include <netcore/fd.h>
 #include <netcore/socket.h>
 #include <string_view>
+#include <sys/sendfile.h>
 #include <zipline/zipline>
 
 namespace fstore::server {
@@ -34,6 +36,13 @@ namespace fstore::server {
             zipline::protocol<netcore::socket>(sock),
             store(&store)
         {}
+
+        auto sendfile(const netcore::fd& fd, std::size_t count) -> void {
+            write(count);
+            const auto bytes = ::sendfile(sock->fd(), fd, NULL, count);
+
+            DEBUG() << *sock << " send " << bytes << " bytes (sendfile)";
+        }
     };
 
     auto listen(

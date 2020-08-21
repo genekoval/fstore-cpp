@@ -7,6 +7,8 @@ namespace fstore::server::endpoint {
 
     auto fetch_bucket(protocol& proto) -> void;
 
+    auto get_object(protocol& proto) -> void;
+
     auto get_object_metadata(protocol& proto) -> void;
 
     auto remove_object(protocol& proto) -> void;

@@ -11,8 +11,8 @@ namespace fstore {
     auto object_store::add_object(
         std::string_view bucket_id,
         std::string_view path
-    ) -> model::object {
-        return connect().send<model::object>(
+    ) -> object_meta {
+        return connect().send<object_meta>(
             event::add_object,
             bucket_id,
             path
@@ -31,11 +31,22 @@ namespace fstore {
         );
     }
 
+    auto object_store::get_object(
+        std::string_view bucket_id,
+        std::string_view object_id
+    ) -> object_content {
+        return connect().send<object_content>(
+            event::get_object,
+            bucket_id,
+            object_id
+        );
+    }
+
     auto object_store::get_object_metadata(
         std::string_view bucket_id,
         std::string_view object_id
-    ) -> std::optional<model::object> {
-        return connect().send<std::optional<model::object>>(
+    ) -> object_meta {
+        return connect().send<object_meta>(
             event::get_object_metadata,
             bucket_id,
             object_id
@@ -45,8 +56,8 @@ namespace fstore {
     auto object_store::remove_object(
         std::string_view bucket_id,
         std::string_view object_id
-    ) -> model::object {
-        return connect().send<model::object>(
+    ) -> object_meta {
+        return connect().send<object_meta>(
             event::remove_object,
             bucket_id,
             object_id

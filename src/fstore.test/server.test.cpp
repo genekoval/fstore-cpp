@@ -7,7 +7,11 @@
 #include <unistd.h>
 
 namespace fstore::test {
-    auto start_server(std::string_view unix_socket) -> pid_t {
+    constexpr auto ignored = -1;
+
+    auto start_server(const std::filesystem::path& unix_socket) -> pid_t {
+        if (std::filesystem::exists(unix_socket)) return ignored;
+
         int pipefd[2];
         pipe(pipefd);
 
@@ -32,7 +36,7 @@ namespace fstore::test {
             repo::fs::get(objects)
         );
 
-        server::listen(store, unix_socket, [&]() {
+        server::listen(store, unix_socket.string(), [&]() {
             INFO() << "Listening for connections on: " << unix_socket;
             ready = true;
             write(pipefd[1], &ready, sizeof(decltype(ready)));
@@ -44,6 +48,8 @@ namespace fstore::test {
     }
 
     auto stop_server(pid_t pid) -> void {
+        if (pid == ignored) return;
+
         int status;
 
         kill(pid, SIGINT);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstore/client.h>
 #include <fstore/models.h>
 
 #include <zipline/zipline>
@@ -104,6 +105,18 @@ namespace zipline {
                 sock,
                 object.date_added
             );
+        }
+    };
+
+    template <typename Socket>
+    struct transfer<Socket, fstore::object_content> {
+        static auto read(const Socket& sock) -> fstore::object_content {
+            return fstore::object_content {
+                .mime_type = transfer<Socket, std::remove_const_t<
+                    decltype(fstore::object_content::mime_type)>>::read(sock),
+                .data = transfer<Socket, std::remove_const_t<
+                    decltype(fstore::object_content::data)>>::read(sock)
+            };
         }
     };
 }
