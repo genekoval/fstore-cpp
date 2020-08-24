@@ -7,7 +7,7 @@
 
 using namespace std::literals;
 
-const auto socket = fstore::test::temp_directory_path() / "fstore.sock";
+const auto socket = std::filesystem::temp_directory_path() / "fstore.sock";
 constexpr auto bucket_name = "test";
 
 auto server_pid = pid_t();
@@ -22,6 +22,8 @@ protected:
         fstore::test::create_bucket(db, bucket_name);
 
         server_pid = fstore::test::start_server(socket);
+
+        if (server_pid == 0) std::exit(EXIT_SUCCESS);
     }
 
     static auto TearDownTestSuite() -> void {
@@ -30,6 +32,7 @@ protected:
         fstore::test::drop_objects();
     }
 
+    fstore::test::temp_directory objects;
     fstore::object_store store;
 
     ClientTest() : store(socket.string()) {}
@@ -51,7 +54,7 @@ TEST_F(ClientTest, FetchBucket) {
 }
 
 TEST_F(ClientTest, AddObject) {
-    const auto filename = fstore::test::temp_directory_path() / "TestObject";
+    const auto filename = objects.path / "TestObject";
     constexpr auto content = "Hello\n";
 
     auto bucket = connect();
@@ -72,7 +75,7 @@ TEST_F(ClientTest, AddObject) {
 }
 
 TEST_F(ClientTest, GetObject) {
-    const auto filename = fstore::test::temp_directory_path() / "TestObject";
+    const auto filename = objects.path / "TestObject";
     constexpr auto content = "Hello\n";
 
     auto bucket = connect();
@@ -93,7 +96,7 @@ TEST_F(ClientTest, GetObject) {
 }
 
 TEST_F(ClientTest, GetObjectContent) {
-    const auto filename = fstore::test::temp_directory_path() / "TestObject";
+    const auto filename = objects.path / "TestObject";
     constexpr auto content = "Hello\n"sv;
 
     auto bucket = connect();

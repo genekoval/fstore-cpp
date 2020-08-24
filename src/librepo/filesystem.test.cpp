@@ -1,28 +1,11 @@
-#include "filesystem.h"
-
-#include <gtest/gtest.h>
-#include <stdlib.h>
+#include <fstore/repo/filesystem.h>
+#include <fstore/test.h>
 
 #include <fstream>
+#include <gtest/gtest.h>
 #include <uuid++/uuid.h>
 
 using namespace std::literals;
-
-constexpr const char* dir_template = "fstore.test.XXXXXX";
-
-static auto create_temp_directory() -> std::filesystem::path {
-    auto path = std::filesystem::temp_directory_path() / dir_template;
-    auto str = path.string();
-    auto size = str.size();
-
-    auto dir = new char[size];
-    str.copy(dir, size);
-
-    path = mkdtemp(dir);
-
-    delete[] dir;
-    return path;
-}
 
 namespace test_file {
     static constexpr auto content = "MyObjectFile";
@@ -35,7 +18,7 @@ namespace test_file {
     static auto write(
         const std::filesystem::path& directory
     ) -> std::filesystem::path {
-        const auto path = directory / content;
+        const auto path = directory/content;
 
         auto file = std::ofstream(path);
         file << content << std::flush;
@@ -46,28 +29,25 @@ namespace test_file {
 
 class RepoFilesystemTest : public testing::Test {
 protected:
-    const std::filesystem::path app_dir;
-    const fstore::repo::fs::fs_t fs;
+    const fstore::test::temp_directory home;
+    const fstore::repo::fs fs;
     const std::filesystem::path test_file_path;
 
     RepoFilesystemTest() :
-        app_dir(create_temp_directory()),
-        fs(fstore::repo::fs::get(app_dir / "objects")),
-        test_file_path(test_file::write(app_dir))
+        fs(home.path),
+        test_file_path(test_file::write(home.path))
     {}
-
-    ~RepoFilesystemTest() {
-        std::filesystem::remove_all(app_dir);
-    }
 };
 
 TEST_F(RepoFilesystemTest, CopyObject) {
     auto uuid = UUID::uuid();
     uuid.generate();
 
-    fs->copy_object(test_file_path, uuid.string());
+    auto id = uuid.string();
 
-    auto object = app_dir / "objects" / uuid.string();
+    fs.copy(test_file_path, id);
+
+    auto object = fs.path_to(id);
 
     ASSERT_TRUE(std::filesystem::exists(object));
 
@@ -79,13 +59,13 @@ TEST_F(RepoFilesystemTest, CopyObject) {
 }
 
 TEST_F(RepoFilesystemTest, Hash) {
-    ASSERT_EQ(test_file::hash, fs->hash(test_file_path));
+    ASSERT_EQ(test_file::hash, fs.hash(test_file_path));
 }
 
 TEST_F(RepoFilesystemTest, MimeType) {
-    ASSERT_EQ(test_file::type, fs->mime_type(test_file_path));
+    ASSERT_EQ(test_file::type, fs.mime_type(test_file_path));
 }
 
 TEST_F(RepoFilesystemTest, Size) {
-    ASSERT_EQ(test_file::size, fs->size(test_file_path));
+    ASSERT_EQ(test_file::size, fs.size(test_file_path));
 }

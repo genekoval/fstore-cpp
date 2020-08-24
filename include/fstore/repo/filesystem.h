@@ -1,34 +1,29 @@
 #pragma once
 
 #include <filesystem>
-#include <memory>
 #include <netcore/fd.h>
 
-namespace fstore::repo::fs {
-    struct filesystem {
-        virtual auto copy_object(
+namespace fstore::repo {
+    class fs {
+        const std::filesystem::path objects;
+    public:
+        fs(const std::filesystem::path& home);
+
+        auto copy(
             const std::filesystem::path& source,
             std::string_view id
-        ) -> void const = 0;
+        ) const -> void;
 
-        virtual auto hash(
-            const std::filesystem::path& path
-        ) -> std::string const = 0;
+        auto hash(const std::filesystem::path& path) const -> std::string;
 
-        virtual auto mime_type(
-            const std::filesystem::path& path
-        ) -> std::string const = 0;
+        auto mime_type(const std::filesystem::path& path) const -> std::string;
 
-        virtual auto open(std::string_view id) -> netcore::fd = 0;
+        auto open(std::string_view id) const -> netcore::fd;
 
-        virtual auto remove_object(std::string_view id) -> void const = 0;
+        auto path_to(std::string_view id) const -> std::filesystem::path;
 
-        virtual auto size(
-            const std::filesystem::path& path
-        ) -> uintmax_t const = 0;
+        auto remove(std::string_view id) const -> void;
+
+        auto size(const std::filesystem::path& path) const -> uintmax_t;
     };
-
-    using fs_t = std::shared_ptr<filesystem>;
-
-    auto get(const std::filesystem::path& objects) -> fs_t;
 }

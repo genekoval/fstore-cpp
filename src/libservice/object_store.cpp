@@ -10,13 +10,13 @@ namespace fstore::service {
         std::string_view objects_dir
     ) :
         db(db_connection),
-        fs(repo::fs::get(std::filesystem::path(objects_dir)))
+        fs(objects_dir)
     {
         INFO() << "Database connection: " << db_connection;
         INFO() << "Object storage: " << std::filesystem::canonical(objects_dir);
     }
 
-    object_store::object_store(repo::db&& db, repo::fs::fs_t&& fs) :
+    object_store::object_store(repo::db&& db, repo::fs&& fs) :
         db(std::move(db)),
         fs(std::move(fs))
     {}
@@ -30,13 +30,13 @@ namespace fstore::service {
 
         auto object = model::object {
             .id = uuid.string(),
-            .hash = fs->hash(path),
-            .size = fs->size(path),
-            .mime_type = fs->mime_type(path)
+            .hash = fs.hash(path),
+            .size = fs.size(path),
+            .mime_type = fs.mime_type(path)
         };
 
         db.add_object(bucket_id, object);
-        fs->copy_object(path, object.id);
+        fs.copy(path, object.id);
 
         return object;
     }
@@ -81,7 +81,7 @@ namespace fstore::service {
         auto meta = get_object_metadata(bucket_id, object_id);
         if (!meta) return {};
 
-        return std::make_pair(meta.value(), fs->open(object_id));
+        return std::make_pair(meta.value(), fs.open(object_id));
     }
 
     auto object_store::get_object_metadata(
@@ -93,7 +93,7 @@ namespace fstore::service {
 
     auto object_store::prune() -> std::vector<model::object> {
         auto orphans = db.remove_orphan_objects();
-        for (const auto& obj : orphans) fs->remove_object(obj.id);
+        for (const auto& obj : orphans) fs.remove(obj.id);
 
         INFO() << "Pruned " << orphans.size() << " objects";
 

@@ -19,32 +19,30 @@ namespace fstore::test {
 
         auto pid = fork();
 
-        if (pid > 0) {
+        if (pid > 0) { // Client
             close(pipefd[1]);
             read(pipefd[0], &ready, sizeof(decltype(ready)));
 
             if (ready) return pid;
-
             throw std::runtime_error("failed to start server");
         }
+        else { // Server
+            close(pipefd[0]);
 
-        close(pipefd[0]);
+            auto home = temp_directory();
+            auto store = service::object_store(
+                db(),
+                repo::fs(home.path)
+            );
 
-        auto objects = temp_directory_path() / "objects";
-        auto store = service::object_store(
-            db(),
-            repo::fs::get(objects)
-        );
+            server::listen(store, unix_socket.string(), [&]() {
+                INFO() << "Listening for connections on: " << unix_socket;
+                ready = true;
+                write(pipefd[1], &ready, sizeof(decltype(ready)));
+            });
+        }
 
-        server::listen(store, unix_socket.string(), [&]() {
-            INFO() << "Listening for connections on: " << unix_socket;
-            ready = true;
-            write(pipefd[1], &ready, sizeof(decltype(ready)));
-        });
-
-        std::filesystem::remove_all(objects);
-
-        std::exit(EXIT_SUCCESS);
+        return pid;
     }
 
     auto stop_server(pid_t pid) -> void {

@@ -8,7 +8,7 @@
 namespace fstore::service {
     class object_store {
         repo::db db;
-        repo::fs::fs_t fs;
+        repo::fs fs;
     public:
         object_store(
             std::string_view db_connection,
@@ -17,7 +17,7 @@ namespace fstore::service {
 
         object_store(
             repo::db&& db,
-            repo::fs::fs_t&& fs
+            repo::fs&& fs
         );
 
         auto add_object(

@@ -5,6 +5,13 @@
 #include <filesystem>
 
 namespace fstore::test {
+    struct temp_directory {
+        const std::filesystem::path path;
+
+        temp_directory();
+        ~temp_directory();
+    };
+
     auto db() -> repo::db;
 
     auto create_bucket(repo::db& db, std::string_view name) -> model::bucket;
@@ -16,6 +23,4 @@ namespace fstore::test {
     auto start_server(const std::filesystem::path& unix_socket) -> pid_t;
 
     auto stop_server(pid_t pid) -> void;
-
-    auto temp_directory_path() -> std::filesystem::path;
 }

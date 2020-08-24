@@ -1,55 +1,50 @@
 #include "crypto.h"
-#include "filesystem.h"
+
+#include <fstore/repo/filesystem.h>
 
 #include <fcntl.h>
 #include <magix.h>
 
-namespace fstore::repo::fs {
-    auto get(const std::filesystem::path& objects) -> fs_t {
-        return std::make_shared<default_fs>(objects);
-    }
+namespace fstore::repo {
+    constexpr auto object_dir = "objects";
 
-    default_fs::default_fs(const std::filesystem::path& objects) :
-        objects(objects)
-    {
+    fs::fs(const std::filesystem::path& home) : objects(home/object_dir) {
         std::filesystem::create_directories(objects);
     }
 
-    auto default_fs::copy_object(
+    auto fs::copy(
         const std::filesystem::path& source,
         std::string_view id
-    ) -> void const {
+    ) const -> void {
         std::filesystem::copy_file(
             source,
-            objects / id,
+            path_to(id),
             std::filesystem::copy_options::skip_existing
         );
     }
 
-    auto default_fs::hash(
-        const std::filesystem::path& path
-    ) -> std::string const {
+    auto fs::hash(const std::filesystem::path& path) const -> std::string {
         return crypto::sha256sum(path);
     }
 
-    auto default_fs::mime_type(
-        const std::filesystem::path& path
-    ) -> std::string const {
+    auto fs::mime_type(const std::filesystem::path& path) const -> std::string {
         return magix::magic(MAGIC_MIME_TYPE).file(path);
     }
 
-    auto default_fs::open(std::string_view id) -> netcore::fd {
-        auto path = objects/id;
+    auto fs::open(std::string_view id) const -> netcore::fd {
+        auto path = path_to(id);
         return ::open(path.c_str(), O_RDONLY);
     }
 
-    auto default_fs::remove_object(std::string_view id) -> void const {
-        std::filesystem::remove(objects / id);
+    auto fs::path_to(std::string_view id) const -> std::filesystem::path {
+        return objects/id;
     }
 
-    auto default_fs::size(
-        const std::filesystem::path& path
-    ) -> uintmax_t const {
+    auto fs::remove(std::string_view id) const -> void {
+        std::filesystem::remove(path_to(id));
+    }
+
+    auto fs::size(const std::filesystem::path& path) const -> uintmax_t {
         return std::filesystem::file_size(path);
     }
 }

@@ -3,7 +3,8 @@
 #include <fstream>
 #include <timber/timber>
 
-const auto log_path = fstore::test::temp_directory_path() / "test.log";
+const auto log_path =
+    std::filesystem::temp_directory_path() / "fstore" / "fstore.test.log";
 auto log_file = std::ofstream(log_path);
 
 namespace timber {
