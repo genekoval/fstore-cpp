@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <netcore/fd.h>
+#include <span>
 
 namespace fstore::repo {
     class fs {
@@ -14,7 +15,11 @@ namespace fstore::repo {
             std::string_view id
         ) const -> void;
 
+        auto hash(std::span<const std::byte> buffer) const -> std::string;
+
         auto hash(const std::filesystem::path& path) const -> std::string;
+
+        auto mime_type(std::span<const std::byte> buffer) const -> std::string;
 
         auto mime_type(const std::filesystem::path& path) const -> std::string;
 
@@ -25,5 +30,10 @@ namespace fstore::repo {
         auto remove(std::string_view id) const -> void;
 
         auto size(const std::filesystem::path& path) const -> uintmax_t;
+
+        auto write(
+            std::string_view id,
+            std::span<const std::byte> buffer
+        ) const -> void;
     };
 }

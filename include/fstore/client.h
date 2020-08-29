@@ -3,6 +3,8 @@
 #include <fstore/models.h>
 #include <fstore/server/server.h>
 
+#include <span>
+
 namespace fstore {
     using byte_vector = std::vector<std::byte>;
     using object_meta = model::object;
@@ -15,6 +17,7 @@ namespace fstore {
     class object_store {
         enum class event : server::event_t {
             add_object,
+            create_object_from_file,
             fetch_bucket,
             get_object,
             get_object_metadata,
@@ -32,6 +35,11 @@ namespace fstore {
         object_store(std::string_view path);
 
         auto add_object(
+            std::string_view bucket_id,
+            std::span<const std::byte> data
+        ) -> object_meta;
+
+        auto create_object_from_file(
             std::string_view bucket_id,
             std::string_view path
         ) -> object_meta;
@@ -59,6 +67,8 @@ namespace fstore {
         object_store* store;
     public:
         bucket(std::string_view id, object_store& store);
+
+        auto add(const void* buffer, std::size_t len) -> object_meta;
 
         auto add(std::string_view path) -> object_meta;
 

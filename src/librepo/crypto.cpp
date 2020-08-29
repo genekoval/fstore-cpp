@@ -6,14 +6,34 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/sha.h>
 
-namespace fs = std::filesystem;
-
 namespace fstore::crypto {
-    std::string sha256sum(const fs::path& path) {
-        using namespace CryptoPP;
+    using namespace CryptoPP;
 
-        SHA256 hash;
-        std::string sum;
+    auto sha256sum(std::span<const std::byte> buffer) -> std::string {
+        auto hash = SHA256();
+        auto sum = std::string();
+
+        const auto* data = reinterpret_cast<const byte*>(buffer.data());
+
+        StringSource(
+            data,
+            buffer.size(),
+            true,
+            new HashFilter(
+                hash,
+                new HexEncoder(new StringSink(sum))
+            )
+        );
+
+        std::transform(sum.begin(), sum.end(), sum.begin(),
+            [](unsigned char c) -> unsigned char { return std::tolower(c); });
+
+        return sum;
+    }
+
+    auto sha256sum(const std::filesystem::path& path) -> std::string {
+        auto hash = SHA256();
+        auto sum = std::string();
 
         FileSource(
             path.c_str(),

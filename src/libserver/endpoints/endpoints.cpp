@@ -3,8 +3,23 @@
 #include <fstore/error.h>
 #include <fstore/server/transfer.h>
 
+#include <span>
+
 namespace fstore::server::endpoint {
     auto add_object(protocol& proto) -> void {
+        const auto bucket_id = proto.read<std::string>();
+        const auto data = proto.read<std::vector<std::byte>>();
+
+        proto.reply(proto.store->add_object(
+            bucket_id,
+            std::span<const std::byte>(
+                data.cbegin(),
+                data.cend()
+            )
+        ));
+    }
+
+    auto create_object_from_file(protocol& proto) -> void {
         auto bucket_id = proto.read<std::string>();
         auto path = proto.read<std::string>();
 

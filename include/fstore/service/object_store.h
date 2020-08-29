@@ -4,6 +4,7 @@
 #include <fstore/repo/filesystem.h>
 
 #include <optional>
+#include <span>
 
 namespace fstore::service {
     class object_store {
@@ -19,6 +20,11 @@ namespace fstore::service {
             repo::db&& db,
             repo::fs&& fs
         );
+
+        auto add_object(
+            std::string_view bucket_id,
+            std::span<const std::byte> data
+        ) -> model::object;
 
         auto add_object(
             std::string_view bucket_id,

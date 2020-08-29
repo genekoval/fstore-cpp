@@ -23,6 +23,26 @@ namespace fstore::service {
 
     auto object_store::add_object(
         std::string_view bucket_id,
+        std::span<const std::byte> buffer
+    ) -> model::object {
+        auto uuid = UUID::uuid();
+        uuid.generate();
+
+        auto object = model::object {
+            .id = uuid.string(),
+            .hash = fs.hash(buffer),
+            .size = buffer.size(),
+            .mime_type = fs.mime_type(buffer)
+        };
+
+        db.add_object(bucket_id, object);
+        fs.write(object.id, buffer);
+
+        return object;
+    }
+
+    auto object_store::add_object(
+        std::string_view bucket_id,
         std::string_view path
     ) -> model::object {
         auto uuid = UUID::uuid();

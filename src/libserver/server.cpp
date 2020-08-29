@@ -9,6 +9,7 @@ namespace fstore::server {
     static inline auto router() {
         return zipline::make_router<protocol, event_t>(
             endpoint::add_object,
+            endpoint::create_object_from_file,
             endpoint::fetch_bucket,
             endpoint::get_object,
             endpoint::get_object_metadata,

@@ -12,6 +12,15 @@ constexpr auto bucket_name = "test";
 
 auto server_pid = pid_t();
 
+namespace test_object {
+    constexpr auto content = "Hello\n"sv;
+    constexpr auto data = content.data();
+    constexpr auto size = content.size();
+    constexpr auto type = "text/plain"sv;
+    constexpr auto hash =
+        "66a045b452102c59d840ec097d59d9467e13a3f34f6494e539ffd32c1bb35f18"sv;
+}
+
 class ClientTest : public testing::Test {
 protected:
     static auto SetUpTestSuite() -> void {
@@ -32,100 +41,82 @@ protected:
         fstore::test::drop_objects();
     }
 
-    fstore::test::temp_directory objects;
     fstore::object_store store;
+    const fstore::model::bucket bucket_info;
+    fstore::bucket bucket;
 
-    ClientTest() : store(socket.string()) {}
+    ClientTest() :
+        store(socket.string()),
+        bucket_info(store.fetch_bucket(bucket_name)),
+        bucket(bucket_info.id, store)
+    {
+        fstore::test::drop_objects();
+    }
 
-    auto connect() -> fstore::bucket {
-        return fstore::bucket(
-            store.fetch_bucket(bucket_name).id,
-            store
-        );
+    auto add_object() -> fstore::object_meta {
+        return bucket.add(test_object::data, test_object::size);
     }
 };
 
 TEST_F(ClientTest, FetchBucket) {
-    auto info = store.fetch_bucket(bucket_name);
-
-    ASSERT_FALSE(info.id.empty());
-    ASSERT_FALSE(info.date_created.empty());
-    ASSERT_EQ(bucket_name, info.name);
+    ASSERT_FALSE(bucket_info.id.empty());
+    ASSERT_FALSE(bucket_info.date_created.empty());
+    ASSERT_EQ(bucket_name, bucket_info.name);
 }
 
 TEST_F(ClientTest, AddObject) {
-    const auto filename = objects.path / "TestObject";
-    constexpr auto content = "Hello\n";
+    const auto object = add_object();
 
-    auto bucket = connect();
-
-    {
-        auto file = std::ofstream(filename);
-        file << content;
-    }
-
-    auto object = bucket.add(filename.string());
-
-    ASSERT_EQ(6, object.size);
-    ASSERT_EQ(
-        "66a045b452102c59d840ec097d59d9467e13a3f34f6494e539ffd32c1bb35f18",
-        object.hash
-    );
-    ASSERT_EQ("text/plain", object.mime_type);
+    ASSERT_EQ(test_object::size, object.size);
+    ASSERT_EQ(test_object::hash, object.hash);
+    ASSERT_EQ(test_object::type, object.mime_type);
 }
 
-TEST_F(ClientTest, GetObject) {
-    const auto filename = objects.path / "TestObject";
-    constexpr auto content = "Hello\n";
-
-    auto bucket = connect();
+TEST_F(ClientTest, AddFile) {
+    const auto directory = fstore::test::temp_directory();
+    const auto filename = directory.path / "TestObject";
 
     {
         auto file = std::ofstream(filename);
-        file << content;
+        file << test_object::content;
     }
 
     auto object = bucket.add(filename.string());
-    auto result = bucket.meta(object.id);
 
-    ASSERT_EQ(object.id, result.id);
-    ASSERT_EQ(object.hash, result.hash);
-    ASSERT_EQ(object.size, result.size);
-    ASSERT_EQ(object.mime_type, result.mime_type);
-    ASSERT_EQ(object.date_added, result.date_added);
+    ASSERT_EQ(test_object::size, object.size);
+    ASSERT_EQ(test_object::hash, object.hash);
+    ASSERT_EQ(test_object::type, object.mime_type);
+}
+
+TEST_F(ClientTest, GetMetadata) {
+    const auto object = add_object();
+    const auto metadata = bucket.meta(object.id);
+
+    ASSERT_EQ(object.id, metadata.id);
+    ASSERT_EQ(object.hash, metadata.hash);
+    ASSERT_EQ(object.size, metadata.size);
+    ASSERT_EQ(object.mime_type, metadata.mime_type);
+    ASSERT_EQ(object.date_added, metadata.date_added);
 }
 
 TEST_F(ClientTest, GetObjectContent) {
-    const auto filename = objects.path / "TestObject";
-    constexpr auto content = "Hello\n"sv;
-
-    auto bucket = connect();
-
-    {
-        auto file = std::ofstream(filename);
-        file << content;
-    }
-
-    const auto object = bucket.add(filename.string());
-
+    const auto object = add_object();
     const auto [type, data] = bucket.get(object.id);
 
-    ASSERT_EQ("text/plain", type);
-    ASSERT_EQ(content.size(), data.size());
+    ASSERT_EQ(test_object::type, type);
+    ASSERT_EQ(test_object::size, data.size());
 
     const auto text = std::string(
         reinterpret_cast<const char*>(data.data()),
         data.size()
     );
 
-    ASSERT_EQ(content, text);
+    ASSERT_EQ(test_object::content, text);
 }
 
 TEST_F(ClientTest, GetObjectNoObject) {
     auto uuid = UUID::uuid();
     uuid.generate();
-
-    auto bucket = connect();
 
     try {
         bucket.meta(uuid.string());

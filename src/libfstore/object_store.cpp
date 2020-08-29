@@ -10,10 +10,21 @@ namespace fstore {
 
     auto object_store::add_object(
         std::string_view bucket_id,
-        std::string_view path
+            std::span<const std::byte> data
     ) -> object_meta {
         return connect().send<object_meta>(
             event::add_object,
+            bucket_id,
+            data
+        );
+    }
+
+    auto object_store::create_object_from_file(
+        std::string_view bucket_id,
+        std::string_view path
+    ) -> object_meta {
+        return connect().send<object_meta>(
+            event::create_object_from_file,
             bucket_id,
             path
         );
