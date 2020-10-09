@@ -1,10 +1,9 @@
-#include <fstore/test.h>
-
+#include <filesystem>
 #include <fstream>
 #include <timber/timber>
 
 const auto log_path =
-    std::filesystem::temp_directory_path() / "fstore" / "fstore.test.log";
+    std::filesystem::temp_directory_path() / "fstore.test.log";
 auto log_file = std::ofstream(log_path);
 
 namespace timber {
