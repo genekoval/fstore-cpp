@@ -14,16 +14,16 @@ namespace fstore {
         const byte_vector data;
     };
 
-    class object_store {
-        enum class event : server::event_t {
-            add_object,
-            create_object_from_file,
-            fetch_bucket,
-            get_object,
-            get_object_metadata,
-            remove_object,
-        };
+    enum class event : server::event_t {
+        add_object,
+        create_object_from_file,
+        fetch_bucket,
+        get_object,
+        get_object_metadata,
+        remove_object,
+    };
 
+    class object_store {
         using protocol = zipline::protocol<netcore::socket>;
         using client = zipline::client<protocol, event>;
 
