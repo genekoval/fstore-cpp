@@ -31,8 +31,7 @@ namespace fstore {
     }
 
     auto object_store::connect() -> client {
-        socket = netcore::connect(endpoint);
-        return client(socket);
+        return client(netcore::connect(endpoint));
     }
 
     auto object_store::fetch_bucket(std::string_view name) -> model::bucket {
