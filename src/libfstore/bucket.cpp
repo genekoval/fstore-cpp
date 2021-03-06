@@ -6,11 +6,12 @@ namespace fstore {
         store(&store)
     {}
 
-    auto bucket::add(const void* buffer, std::size_t len) -> object_meta {
-        return store->add_object(id, std::span<const std::byte>(
-            reinterpret_cast<const std::byte*>(buffer),
-            len
-        ));
+    auto bucket::add(
+        std::optional<std::string_view> part_id,
+        std::size_t stream_size,
+        std::function<void(part&&)> pipe
+    ) -> object_meta {
+        return store->add_object(id, part_id, stream_size, pipe);
     }
 
     auto bucket::add(std::string_view path) -> object_meta {

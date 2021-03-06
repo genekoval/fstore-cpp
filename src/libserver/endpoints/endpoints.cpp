@@ -7,16 +7,22 @@
 
 namespace fstore::server::endpoint {
     auto add_object(protocol& proto) -> void {
-        const auto bucket_id = proto.read<std::string>();
-        const auto data = proto.read<std::vector<std::byte>>();
+        auto bucket_id = proto.read<std::string>();
+        auto request = proto.read<std::optional<std::string>>();
+        auto stream = proto.read<zipline::data_stream<netcore::socket>>();
 
-        proto.reply(proto.store->add_object(
-            bucket_id,
-            std::span<const std::byte>(
-                data.cbegin(),
-                data.cend()
-            )
-        ));
+        auto part_id = std::string();
+
+        {
+            auto part = proto.store->get_part(request);
+            part_id = part.id;
+            stream.read([&part](auto&& chunk) {
+                part.write(chunk);
+            });
+        }
+
+        auto object = proto.store->commit_part(bucket_id, part_id);
+        proto.reply(object);
     }
 
     auto create_object_from_file(protocol& proto) -> void {

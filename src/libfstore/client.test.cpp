@@ -54,7 +54,12 @@ protected:
     }
 
     auto add_object() -> fstore::object_meta {
-        return bucket.add(test_object::data, test_object::size);
+        return bucket.add({}, test_object::size, [](auto&& part) {
+            part.write(std::span(
+                reinterpret_cast<const std::byte*>(test_object::data),
+                test_object::size
+            ));
+        });
     }
 };
 
@@ -65,7 +70,7 @@ TEST_F(ClientTest, FetchBucket) {
 }
 
 TEST_F(ClientTest, AddObject) {
-    const auto object = add_object();
+    auto object = add_object();
 
     ASSERT_EQ(test_object::size, object.size);
     ASSERT_EQ(test_object::hash, object.hash);

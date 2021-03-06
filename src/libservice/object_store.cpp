@@ -23,26 +23,6 @@ namespace fstore::service {
 
     auto object_store::add_object(
         std::string_view bucket_id,
-        std::span<const std::byte> buffer
-    ) -> model::object {
-        auto uuid = UUID::uuid();
-        uuid.generate();
-
-        auto object = model::object {
-            .id = uuid.string(),
-            .hash = fs.hash(buffer),
-            .size = buffer.size(),
-            .mime_type = fs.mime_type(buffer)
-        };
-
-        db.add_object(bucket_id, object);
-        fs.write(object.id, buffer);
-
-        return object;
-    }
-
-    auto object_store::add_object(
-        std::string_view bucket_id,
         std::string_view path
     ) -> model::object {
         auto uuid = UUID::uuid();
@@ -57,6 +37,28 @@ namespace fstore::service {
 
         db.add_object(bucket_id, object);
         fs.copy(path, object.id);
+
+        return object;
+    }
+
+    auto object_store::commit_part(
+        std::string_view bucket_id,
+        std::string_view part_id
+    ) -> model::object {
+        auto part = fs.part_path(part_id);
+
+        auto object = model::object {
+            .id = std::string(part_id),
+            .hash = fs.hash(part),
+            .size = fs.size(part),
+            .mime_type = fs.mime_type(part)
+        };
+
+        db.add_object(bucket_id, object);
+
+        // This object was uploaded previously.
+        if (object.id != part_id) fs.remove_part(part_id);
+        else fs.make_object(part_id);
 
         return object;
     }
@@ -109,6 +111,21 @@ namespace fstore::service {
         std::string_view object_id
     ) -> std::optional<model::object> {
         return db.get_object(bucket_id, object_id);
+    }
+
+    auto object_store::get_part(
+        std::optional<std::string_view> part_id
+    ) -> part {
+        std::string id;
+
+        if (part_id) id = *part_id;
+        else {
+            auto uuid = UUID::uuid();
+            uuid.generate();
+            id = uuid.string();
+        }
+
+        return part(id, fs.get_part(id));
     }
 
     auto object_store::prune() -> std::vector<model::object> {

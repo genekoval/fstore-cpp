@@ -10,13 +10,22 @@ namespace fstore {
 
     auto object_store::add_object(
         std::string_view bucket_id,
-            std::span<const std::byte> data
+        std::optional<std::string_view> part_id,
+        std::size_t stream_size,
+        std::function<void(part&&)> pipe
     ) -> object_meta {
-        return connect().send<object_meta>(
+        auto client = connect();
+
+        client.write(
             event::add_object,
             bucket_id,
-            data
+            part_id,
+            stream_size
         );
+
+        pipe(part(client));
+
+        return client.response<object_meta>();
     }
 
     auto object_store::create_object_from_file(

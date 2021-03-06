@@ -2,6 +2,7 @@
 
 #include <fstore/repo/db.h>
 #include <fstore/repo/filesystem.h>
+#include <fstore/service/part.h>
 
 #include <optional>
 #include <span>
@@ -23,12 +24,12 @@ namespace fstore::service {
 
         auto add_object(
             std::string_view bucket_id,
-            std::span<const std::byte> data
+            std::string_view path
         ) -> model::object;
 
-        auto add_object(
+        auto commit_part(
             std::string_view bucket_id,
-            std::string_view path
+            std::string_view part_id
         ) -> model::object;
 
         auto create_bucket(std::string_view name) -> model::bucket;
@@ -52,6 +53,8 @@ namespace fstore::service {
             std::string_view bucket_id,
             std::string_view object_id
         ) -> std::optional<model::object>;
+
+        auto get_part(std::optional<std::string_view> part_id) -> part;
 
         auto prune() -> std::vector<model::object>;
 

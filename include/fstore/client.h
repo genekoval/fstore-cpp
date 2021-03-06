@@ -20,13 +20,21 @@ namespace fstore {
         fetch_bucket,
         get_object,
         get_object_metadata,
-        remove_object,
+        remove_object
+    };
+
+    using protocol = zipline::protocol<netcore::socket>;
+    using client = zipline::client<protocol, event>;
+
+    class part {
+        client* out;
+    public:
+        part(client& out);
+
+        auto write(std::span<const std::byte> data) -> void;
     };
 
     class object_store {
-        using protocol = zipline::protocol<netcore::socket>;
-        using client = zipline::client<protocol, event>;
-
         const std::string endpoint;
 
         auto connect() -> client;
@@ -35,7 +43,9 @@ namespace fstore {
 
         auto add_object(
             std::string_view bucket_id,
-            std::span<const std::byte> data
+            std::optional<std::string_view> part_id,
+            std::size_t stream_size,
+            std::function<void(part&&)> pipe
         ) -> object_meta;
 
         auto create_object_from_file(
@@ -67,7 +77,11 @@ namespace fstore {
     public:
         bucket(std::string_view id, object_store& store);
 
-        auto add(const void* buffer, std::size_t len) -> object_meta;
+        auto add(
+            std::optional<std::string_view> part_id,
+            std::size_t stream_size,
+            std::function<void(part&&)> pipe
+        ) -> object_meta;
 
         auto add(std::string_view path) -> object_meta;
 

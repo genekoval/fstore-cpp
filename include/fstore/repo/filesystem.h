@@ -1,12 +1,14 @@
 #pragma once
 
 #include <filesystem>
+#include <fstream>
 #include <netcore/fd.h>
 #include <span>
 
 namespace fstore::repo {
     class fs {
         const std::filesystem::path objects;
+        const std::filesystem::path parts;
     public:
         fs(const std::filesystem::path& home);
 
@@ -15,25 +17,26 @@ namespace fstore::repo {
             std::string_view id
         ) const -> void;
 
+        auto get_part(std::string_view id) const -> std::ofstream;
+
         auto hash(std::span<const std::byte> buffer) const -> std::string;
 
         auto hash(const std::filesystem::path& path) const -> std::string;
 
-        auto mime_type(std::span<const std::byte> buffer) const -> std::string;
+        auto make_object(std::string_view part_id) -> void;
 
         auto mime_type(const std::filesystem::path& path) const -> std::string;
 
         auto open(std::string_view id) const -> netcore::fd;
 
+        auto part_path(std::string_view id) const -> std::filesystem::path;
+
         auto path_to(std::string_view id) const -> std::filesystem::path;
 
         auto remove(std::string_view id) const -> void;
 
-        auto size(const std::filesystem::path& path) const -> uintmax_t;
+        auto remove_part(std::string_view id) const -> void;
 
-        auto write(
-            std::string_view id,
-            std::span<const std::byte> buffer
-        ) const -> void;
+        auto size(const std::filesystem::path& path) const -> uintmax_t;
     };
 }
