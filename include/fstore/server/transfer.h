@@ -7,6 +7,24 @@
 
 namespace zipline {
     template <typename Socket>
+    struct transfer<Socket, fstore::blob> {
+        static auto read(const Socket& sock) -> fstore::blob {
+            auto stream = transfer<Socket, data_stream<Socket>>::read(sock);
+            stream.prepare();
+
+            auto blob = fstore::blob(stream.size());
+            auto index = 0;
+
+            stream.read([&blob, &index](auto&& chunk) {
+                blob.copy(chunk.data(), chunk.size(), index);
+                index += chunk.size();
+            });
+
+            return blob;
+        }
+    };
+
+    template <typename Socket>
     struct transfer<Socket, fstore::model::bucket> {
         static auto read(const Socket& sock) -> fstore::model::bucket {
             return fstore::model::bucket {
@@ -105,18 +123,6 @@ namespace zipline {
                 sock,
                 object.date_added
             );
-        }
-    };
-
-    template <typename Socket>
-    struct transfer<Socket, fstore::object_content> {
-        static auto read(const Socket& sock) -> fstore::object_content {
-            return fstore::object_content {
-                .mime_type = transfer<Socket, std::remove_const_t<
-                    decltype(fstore::object_content::mime_type)>>::read(sock),
-                .data = transfer<Socket, std::remove_const_t<
-                    decltype(fstore::object_content::data)>>::read(sock)
-            };
         }
     };
 }

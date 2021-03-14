@@ -106,14 +106,13 @@ TEST_F(ClientTest, GetMetadata) {
 
 TEST_F(ClientTest, GetObjectContent) {
     const auto object = add_object();
-    const auto [type, data] = bucket.get(object.id);
+    auto blob = bucket.get(object.id);
 
-    ASSERT_EQ(test_object::type, type);
-    ASSERT_EQ(test_object::size, data.size());
+    ASSERT_EQ(test_object::size, blob.size());
 
     const auto text = std::string(
-        reinterpret_cast<const char*>(data.data()),
-        data.size()
+        reinterpret_cast<const char*>(blob.data()),
+        blob.size()
     );
 
     ASSERT_EQ(test_object::content, text);

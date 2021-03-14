@@ -20,8 +20,15 @@ namespace fstore {
 
     auto bucket::get(
         std::string_view object_id
-    ) -> object_content {
+    ) -> blob {
         return store->get_object(id, object_id);
+    }
+
+    auto bucket::get(
+        std::string_view object_id,
+        std::byte* buffer
+    ) -> void {
+        store->get_object(id, object_id, buffer);
     }
 
     auto bucket::meta(

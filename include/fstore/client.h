@@ -3,16 +3,11 @@
 #include <fstore/models.h>
 #include <fstore/server/server.h>
 
-#include <span>
+#include <ext/dynarray.h>
 
 namespace fstore {
-    using byte_vector = std::vector<std::byte>;
     using object_meta = model::object;
-
-    struct object_content {
-        const std::string mime_type;
-        const byte_vector data;
-    };
+    using blob = ext::dynarray<std::byte>;
 
     enum class event : server::event_t {
         add_object,
@@ -23,8 +18,10 @@ namespace fstore {
         remove_object
     };
 
-    using protocol = zipline::protocol<netcore::socket>;
+    using socket = netcore::socket;
+    using protocol = zipline::protocol<socket>;
     using client = zipline::client<protocol, event>;
+    using stream_type = zipline::data_stream<socket>;
 
     class part {
         client* out;
@@ -58,7 +55,13 @@ namespace fstore {
         auto get_object(
             std::string_view bucket_id,
             std::string_view object_id
-        ) -> object_content;
+        ) -> blob;
+
+        auto get_object(
+            std::string_view bucket_id,
+            std::string_view object_id,
+            std::byte* buffer
+        ) -> void;
 
         auto get_object_metadata(
             std::string_view bucket_id,
@@ -87,7 +90,12 @@ namespace fstore {
 
         auto get(
             std::string_view object_id
-        ) -> object_content;
+        ) -> blob;
+
+        auto get(
+            std::string_view object_id,
+            std::byte* buffer
+        ) -> void;
 
         auto meta(
             std::string_view object_id

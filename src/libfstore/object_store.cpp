@@ -53,12 +53,32 @@ namespace fstore {
     auto object_store::get_object(
         std::string_view bucket_id,
         std::string_view object_id
-    ) -> object_content {
-        return connect().send<object_content>(
+    ) -> blob {
+        return connect().send<blob>(
             event::get_object,
             bucket_id,
             object_id
         );
+    }
+
+    auto object_store::get_object(
+        std::string_view bucket_id,
+        std::string_view object_id,
+        std::byte* buffer
+    ) -> void {
+        auto client = connect();
+        auto stream = client.send<stream_type>(
+            event::get_object,
+            bucket_id,
+            object_id
+        );
+
+        auto index = 0;
+
+        stream.read([&index, &buffer](auto&& chunk) {
+            std::memcpy(&buffer[index], chunk.data(), chunk.size());
+            index += chunk.size();
+        });
     }
 
     auto object_store::get_object_metadata(

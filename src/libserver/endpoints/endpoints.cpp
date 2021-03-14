@@ -46,7 +46,7 @@ namespace fstore::server::endpoint {
 
         const auto& [metadata, file] = *obj;
 
-        proto.reply(metadata.mime_type);
+        proto.reply();
         proto.sendfile(file, metadata.size);
     }
 
