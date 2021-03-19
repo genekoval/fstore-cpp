@@ -7,7 +7,7 @@
 
 using namespace std::literals;
 
-const auto socket = std::filesystem::temp_directory_path() / "fstore.sock";
+const auto socket_file = std::filesystem::temp_directory_path() / "fstore.sock";
 constexpr auto bucket_name = "test";
 
 auto server_pid = pid_t();
@@ -30,7 +30,7 @@ protected:
         auto db = fstore::test::db();
         fstore::test::create_bucket(db, bucket_name);
 
-        server_pid = fstore::test::start_server(socket);
+        server_pid = fstore::test::start_server(socket_file);
 
         if (server_pid == 0) std::exit(EXIT_SUCCESS);
     }
@@ -46,7 +46,7 @@ protected:
     fstore::bucket bucket;
 
     ClientTest() :
-        store(socket.string()),
+        store(socket_file.string()),
         bucket_info(store.fetch_bucket(bucket_name)),
         bucket(bucket_info.id, store)
     {

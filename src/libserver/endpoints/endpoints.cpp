@@ -1,6 +1,7 @@
 #include "endpoints.h"
 
 #include <fstore/error.h>
+#include <fstore/net/zipline/protocol.h>
 #include <fstore/server/transfer.h>
 
 #include <span>
@@ -9,7 +10,7 @@ namespace fstore::server::endpoint {
     auto add_object(protocol& proto) -> void {
         auto bucket_id = proto.read<std::string>();
         auto request = proto.read<std::optional<std::string>>();
-        auto stream = proto.read<zipline::data_stream<netcore::socket>>();
+        auto stream = proto.read<net::data_stream>();
 
         auto part_id = std::string();
 

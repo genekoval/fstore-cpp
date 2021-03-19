@@ -10,7 +10,6 @@ namespace zipline {
     struct transfer<Socket, fstore::blob> {
         static auto read(Socket& sock) -> fstore::blob {
             auto stream = transfer<Socket, data_stream<Socket>>::read(sock);
-            stream.prepare();
 
             auto blob = fstore::blob(stream.size());
             auto index = 0;

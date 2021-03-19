@@ -7,7 +7,7 @@
 
 namespace fstore::server {
     static inline auto router() {
-        return zipline::make_router<protocol, event_t>(
+        return zipline::make_router<protocol, net::event_t>(
             endpoint::add_object,
             endpoint::create_object_from_file,
             endpoint::fetch_bucket,
@@ -26,7 +26,8 @@ namespace fstore::server {
 
         auto server = netcore::server(
             [&routes, &store](netcore::socket&& sock) {
-                routes.route(protocol(sock, store));
+                auto socket = net::socket(std::move(sock));
+                routes.route(protocol(socket, store));
             }
         );
 

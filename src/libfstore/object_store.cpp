@@ -1,7 +1,7 @@
 #include <fstore/client.h>
 #include <fstore/server/transfer.h>
 
-#include <netcore/client.h>
+#include <netcore/netcore>
 
 namespace fstore {
     object_store::object_store(std::string_view path) :
@@ -40,7 +40,7 @@ namespace fstore {
     }
 
     auto object_store::connect() -> client {
-        return client(netcore::connect(endpoint));
+        return client(net::socket(netcore::connect(endpoint)));
     }
 
     auto object_store::fetch_bucket(std::string_view name) -> model::bucket {
@@ -67,7 +67,7 @@ namespace fstore {
         std::byte* buffer
     ) -> void {
         auto client = connect();
-        auto stream = client.send<stream_type>(
+        auto stream = client.send<net::data_stream>(
             event::get_object,
             bucket_id,
             object_id

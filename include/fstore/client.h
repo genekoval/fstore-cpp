@@ -9,7 +9,7 @@ namespace fstore {
     using object_meta = model::object;
     using blob = ext::dynarray<std::byte>;
 
-    enum class event : server::event_t {
+    enum class event : net::event_t {
         add_object,
         create_object_from_file,
         fetch_bucket,
@@ -18,10 +18,9 @@ namespace fstore {
         remove_object
     };
 
-    using socket = netcore::socket;
-    using protocol = zipline::protocol<socket>;
+    using protocol = zipline::protocol<net::socket>;
     using client = zipline::client<protocol, event>;
-    using stream_type = zipline::data_stream<socket>;
+    using data_stream = zipline::data_stream<net::socket>;
 
     class part {
         client* out;
