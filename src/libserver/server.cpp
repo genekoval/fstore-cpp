@@ -17,22 +17,6 @@ namespace fstore::server {
         );
     }
 
-    connection::connection(
-        const netcore::socket& sock,
-        service::object_store& store
-    ) :
-        sock(&sock),
-        store(&store)
-    {}
-
-    auto connection::recv(void* buffer, std::size_t len) const -> void {
-        sock->recv(buffer, len);
-    }
-
-    auto connection::send(const void* buffer, std::size_t len) const -> void {
-        sock->send(buffer, len);
-    }
-
     auto listen(
         service::object_store& store,
         std::string_view endpoint,

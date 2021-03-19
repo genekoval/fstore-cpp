@@ -8,7 +8,7 @@
 namespace zipline {
     template <typename Socket>
     struct transfer<Socket, fstore::blob> {
-        static auto read(const Socket& sock) -> fstore::blob {
+        static auto read(Socket& sock) -> fstore::blob {
             auto stream = transfer<Socket, data_stream<Socket>>::read(sock);
             stream.prepare();
 
@@ -26,7 +26,7 @@ namespace zipline {
 
     template <typename Socket>
     struct transfer<Socket, fstore::model::bucket> {
-        static auto read(const Socket& sock) -> fstore::model::bucket {
+        static auto read(Socket& sock) -> fstore::model::bucket {
             return fstore::model::bucket {
                 .id = transfer<Socket,
                     decltype(fstore::model::bucket::id)>::read(sock),
@@ -42,7 +42,7 @@ namespace zipline {
         }
 
         static auto write(
-            const Socket& sock,
+            Socket& sock,
             const fstore::model::bucket& bucket
         ) -> void {
             transfer<Socket, decltype(fstore::model::bucket::id)>::write(
@@ -77,7 +77,7 @@ namespace zipline {
 
     template <typename Socket>
     struct transfer<Socket, fstore::model::object> {
-        static auto read(const Socket& sock) -> fstore::model::object{
+        static auto read(Socket& sock) -> fstore::model::object{
             return fstore::model::object {
                 .id = transfer<Socket,
                     decltype(fstore::model::object::id)>::read(sock),
@@ -93,7 +93,7 @@ namespace zipline {
         }
 
         static auto write(
-            const Socket& sock,
+            Socket& sock,
             const fstore::model::object& object
         ) -> void {
             transfer<Socket, decltype(fstore::model::object::id)>::write(
