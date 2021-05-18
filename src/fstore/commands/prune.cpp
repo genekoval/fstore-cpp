@@ -33,7 +33,8 @@ auto $prune(
     std::cout
         << "removed " << objects.size()
         << " object" << (objects.size() == 1 ? "" : "s") << '\n'
-        << "freeing " << ext::data_size::format(space_freed) << std::endl;
+        << "freeing " << ext::data_size::format(space_freed).str(2)
+        << std::endl;
 }
 
 namespace fstore::cli {

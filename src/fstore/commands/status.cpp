@@ -29,7 +29,9 @@ static auto $status(
         std::cout
             << "buckets: " << totals.buckets << '\n'
             << "objects: " << totals.objects << '\n'
-            << "space used: " << totals.space_used << std::endl;
+            << "space used: "
+            << ext::data_size::format(totals.space_used).str(2)
+            << std::endl;
     }
 }
 

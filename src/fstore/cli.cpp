@@ -24,6 +24,6 @@ namespace fstore::cli {
     auto bucket_table::get_data(row_t& entry, value_t&& bucket) -> void {
         entry[0] = bucket.name;
         entry[1] = std::to_string(bucket.size);
-        entry[2] = ext::to_string(ext::data_size::format(bucket.space_used));
+        entry[2] = ext::data_size::format(bucket.space_used).str(2);
     }
 }
