@@ -1,35 +1,23 @@
-#include "endpoints/endpoints.h"
+#include "router/router.h"
 
 #include <fstore/server/server.h>
+#include <fstore/server/transfer.h>
 
-#include <netcore/server.h>
 #include <timber/timber>
 
 namespace fstore::server {
-    static inline auto router() {
-        return zipline::make_router<protocol, net::event_t>(
-            endpoint::add_object,
-            endpoint::create_object_from_file,
-            endpoint::fetch_bucket,
-            endpoint::get_object,
-            endpoint::get_object_metadata,
-            endpoint::remove_object
-        );
-    }
-
     auto listen(
         service::object_store& store,
         std::string_view endpoint,
         const std::function<void()>& callback
     ) -> void {
-        const auto routes = router();
+        auto ctx = context(store);
+        auto router = make_router(ctx);
 
-        auto server = netcore::server(
-            [&routes, &store](netcore::socket&& sock) {
-                auto socket = net::socket(std::move(sock));
-                routes.route(protocol(socket, store));
-            }
-        );
+        auto server = netcore::server([&router](netcore::socket&& sock) {
+            auto socket = net::socket(std::move(sock));
+            router.route(socket);
+        });
 
         server.listen(endpoint, callback);
 

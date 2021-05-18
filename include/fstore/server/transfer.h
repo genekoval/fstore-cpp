@@ -75,6 +75,22 @@ namespace zipline {
     };
 
     template <typename Socket>
+    struct transfer<Socket, fstore::model::file> {
+        static auto write(
+            Socket& sock,
+            const fstore::model::file& file
+        ) -> void {
+            transfer<Socket, decltype(fstore::model::file::size)>::write(
+                sock,
+                file.size
+            );
+
+            sock.flush();
+            sock.socket().sendfile(file.fd, file.size);
+        }
+    };
+
+    template <typename Socket>
     struct transfer<Socket, fstore::model::object> {
         static auto read(Socket& sock) -> fstore::model::object{
             return fstore::model::object {

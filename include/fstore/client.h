@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fstore/models.h>
-#include <fstore/server/server.h>
+#include <fstore/net/zipline/protocol.h>
 
 #include <ext/dynarray.h>
 
@@ -18,9 +18,7 @@ namespace fstore {
         remove_object
     };
 
-    using protocol = zipline::protocol<net::socket>;
-    using client = zipline::client<protocol, event>;
-    using data_stream = zipline::data_stream<net::socket>;
+    using client = zipline::client<net::socket, event, net::error_list>;
 
     class part {
         client* out;
@@ -32,6 +30,7 @@ namespace fstore {
 
     class object_store {
         const std::string endpoint;
+        const net::error_list errors;
 
         auto connect() -> client;
     public:

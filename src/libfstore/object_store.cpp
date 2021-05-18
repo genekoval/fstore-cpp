@@ -16,7 +16,7 @@ namespace fstore {
     ) -> object_meta {
         auto client = connect();
 
-        client.write(
+        client.start(
             event::add_object,
             bucket_id,
             part_id,
@@ -40,7 +40,7 @@ namespace fstore {
     }
 
     auto object_store::connect() -> client {
-        return client(net::socket(netcore::connect(endpoint)));
+        return client(errors, net::socket(netcore::connect(endpoint)));
     }
 
     auto object_store::fetch_bucket(std::string_view name) -> model::bucket {

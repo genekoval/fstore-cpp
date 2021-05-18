@@ -10,4 +10,6 @@ namespace fstore::net {
 
     using socket = zipline::buffered_socket<netcore::socket, buffer_size>;
     using data_stream = zipline::data_stream<socket>;
+
+    using error_list = zipline::error_list<socket>;
 }

@@ -4,6 +4,7 @@
 
 #include <signal.h>
 #include <sys/wait.h>
+#include <timber/timber>
 #include <unistd.h>
 
 namespace fstore::test {

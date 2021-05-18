@@ -1,5 +1,6 @@
 #pragma once
 
+#include <netcore/netcore>
 #include <string>
 
 namespace fstore::model {
@@ -9,6 +10,11 @@ namespace fstore::model {
         std::string date_created;
         std::size_t size;
         uintmax_t space_used;
+    };
+
+    struct file {
+        netcore::fd fd;
+        std::size_t size;
     };
 
     struct object {

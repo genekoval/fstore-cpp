@@ -99,11 +99,11 @@ namespace fstore::service {
     auto object_store::get_object(
         std::string_view bucket_id,
         std::string_view object_id
-    ) -> std::optional<std::pair<model::object, netcore::fd>> {
+    ) -> std::optional<model::file> {
         auto meta = get_object_metadata(bucket_id, object_id);
         if (!meta) return {};
 
-        return std::make_pair(meta.value(), fs.open(object_id));
+        return model::file { fs.open(object_id), meta.value().size };
     }
 
     auto object_store::get_object_metadata(
