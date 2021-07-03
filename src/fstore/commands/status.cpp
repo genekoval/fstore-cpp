@@ -9,11 +9,15 @@
 static auto $status(
     const commline::app& app,
     const commline::argv& argv,
-    std::string_view connection_string,
-    std::string_view objects_dir,
+    std::string_view confpath,
     bool verbose
 ) -> void {
-    auto store = fstore::service::object_store(connection_string, objects_dir);
+    const auto settings = fstore::conf::settings::load_file(confpath);
+    auto store = fstore::service::object_store(
+        settings.database,
+        settings.objects_dir
+    );
+
     auto table = fstore::cli::bucket_table();
 
     auto buckets = verbose ?
@@ -39,23 +43,17 @@ namespace fstore::cli {
     using namespace commline;
 
     auto status(
-        const service::settings& settings
+        std::string_view confpath
     ) -> std::unique_ptr<command_node> {
         return command(
             "status",
             "Print information about the object store.",
             options(
                 option<std::string_view>(
-                    {"database"},
-                    "Database connection string.",
-                    "connection",
-                    settings.connection_string
-                ),
-                option<std::string_view>(
-                    {"objects"},
-                    "Path to object files.",
-                    "objects directory",
-                    settings.objects_dir
+                    {"conf", "c"},
+                    "Path to configuration file",
+                    "path",
+                    std::move(confpath)
                 ),
                 flag(
                     {"verbose", "v"},

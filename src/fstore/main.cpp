@@ -1,9 +1,11 @@
 #include "commands/commands.h"
 
-#include <fstore/service/settings.h>
+#include <fstore/conf/settings.h>
 
 #include <commline/commline>
 #include <timber/timber>
+
+const auto default_config = std::filesystem::path(CONFDIR) / "fstore.yml";
 
 static auto $main(
     const commline::app& app,
@@ -17,18 +19,14 @@ static auto $main(
 }
 
 auto main(int argc, const char** argv) -> int {
-    using namespace commline;
+    const auto confpath = default_config.string();
 
-    timber::reporting_level() = timber::level::warn;
-
-    const auto settings = fstore::service::settings();
-
-    auto app = application(
+    auto app = commline::application(
         NAME,
         VERSION,
         DESCRIPTION,
-        options(
-            flag(
+        commline::options(
+            commline::flag(
                 {"version", "v"},
                 "Print the program version information."
             )
@@ -36,10 +34,10 @@ auto main(int argc, const char** argv) -> int {
         $main
     );
 
-    app.subcommand(fstore::cli::bucket(settings));
-    app.subcommand(fstore::cli::prune(settings));
-    app.subcommand(fstore::cli::start(settings));
-    app.subcommand(fstore::cli::status(settings));
+    app.subcommand(fstore::cli::bucket(confpath));
+    app.subcommand(fstore::cli::prune(confpath));
+    app.subcommand(fstore::cli::start(confpath));
+    app.subcommand(fstore::cli::status(confpath));
 
     return app.run(argc, argv);
 }

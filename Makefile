@@ -12,6 +12,7 @@ targets := $(install) $(internal.libs)
 
 define core.libs
  $(internal)
+ conftools
  cryptopp
  ext++
  magix
@@ -48,9 +49,12 @@ BUILD = /tmp/$(project)
 include mk/db.mk
 include mkbuild/base.mk
 
+confdir = $(prefix)/etc/$(project)
+
 $(obj)/$(service)/settings.o: CXXFLAGS += -DCONFDIR='"$(prefix)/etc"'
 
 $(obj)/$(project)/main.o: CXXFLAGS +=\
  -DNAME='"$(project)"'\
  -DVERSION='"$(version)"'\
- -DDESCRIPTION='"$(summary)"'
+ -DDESCRIPTION='"$(summary)"'\
+ -DCONFDIR='"$(confdir)"'

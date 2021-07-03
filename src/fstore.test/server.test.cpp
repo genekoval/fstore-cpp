@@ -36,7 +36,7 @@ namespace fstore::test {
                 repo::fs(home.path)
             );
 
-            server::listen(store, unix_socket.string(), [&]() {
+            server::listen(store, {.path = unix_socket}, [&]() {
                 INFO() << "Listening for connections on: " << unix_socket;
                 ready = true;
                 write(pipefd[1], &ready, sizeof(decltype(ready)));

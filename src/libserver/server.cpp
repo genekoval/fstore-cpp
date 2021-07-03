@@ -8,7 +8,7 @@
 namespace fstore::server {
     auto listen(
         service::object_store& store,
-        std::string_view endpoint,
+        const netcore::unix_socket& unix_socket,
         const std::function<void()>& callback
     ) -> void {
         auto ctx = context(store);
@@ -19,7 +19,7 @@ namespace fstore::server {
             router.route(socket);
         });
 
-        server.listen(endpoint, callback);
+        server.listen(unix_socket, callback);
 
         INFO() << "Shutting down...";
     }

@@ -8,10 +8,13 @@
 static auto $bucket(
     const commline::app& app,
     const commline::argv& argv,
-    std::string_view connection_string,
-    std::string_view objects_dir
+    std::string_view confpath
 ) {
-    auto store = fstore::service::object_store(connection_string, objects_dir);
+    const auto settings = fstore::conf::settings::load_file(confpath);
+    auto store = fstore::service::object_store(
+        settings.database,
+        settings.objects_dir
+    );
     const auto buckets = store.fetch_buckets();
     for (const auto& bucket : buckets) std::cout << bucket.name << '\n';
 }
@@ -19,14 +22,17 @@ static auto $bucket(
 static auto $add(
     const commline::app& app,
     const commline::argv& argv,
-    std::string_view connection_string,
-    std::string_view objects_dir
+    std::string_view confpath
 ) -> void {
     if (argv.empty()) {
         throw commline::cli_error("No bucket name given.");
     }
 
-    auto store = fstore::service::object_store(connection_string, objects_dir);
+    const auto settings = fstore::conf::settings::load_file(confpath);
+    auto store = fstore::service::object_store(
+        settings.database,
+        settings.objects_dir
+    );
 
     const auto bucket = store.create_bucket(argv[0]);
     std::cout << "bucket created: " << bucket.name << std::endl;
@@ -35,14 +41,18 @@ static auto $add(
 static auto $remove(
     const commline::app& app,
     const commline::argv& argv,
-    std::string_view connection_string,
-    std::string_view objects_dir
+    std::string_view confpath
 ) -> void {
     if (argv.empty()) {
         throw commline::cli_error("No bucket name given.");
     }
 
-    auto store = fstore::service::object_store(connection_string, objects_dir);
+    const auto settings = fstore::conf::settings::load_file(confpath);
+    auto store = fstore::service::object_store(
+        settings.database,
+        settings.objects_dir
+    );
+
     const auto bucket = store.fetch_bucket(argv[0]);
 
     store.remove_bucket(bucket.id);
@@ -53,14 +63,18 @@ static auto $remove(
 static auto $rename(
     const commline::app& app,
     const commline::argv& argv,
-    std::string_view connection_string,
-    std::string_view objects_dir
+    std::string_view confpath
 ) -> void {
     if (argv.size() < 2) {
         throw commline::cli_error("Old and new bucket name required.");
     }
 
-    auto store = fstore::service::object_store(connection_string, objects_dir);
+    const auto settings = fstore::conf::settings::load_file(confpath);
+    auto store = fstore::service::object_store(
+        settings.database,
+        settings.objects_dir
+    );
+
     const auto old = store.fetch_bucket(argv[0]);
     store.rename_bucket(old.id, argv[1]);
 
@@ -76,23 +90,17 @@ namespace fstore::cli {
     using namespace commline;
 
     auto add(
-        const service::settings& settings
+        std::string_view confpath
     ) -> std::unique_ptr<command_node> {
         return command(
             "add",
             "Create a new bucket.",
             options(
                 option<std::string_view>(
-                    {"database"},
-                    "Database connection string.",
-                    "connection",
-                    settings.connection_string
-                ),
-                option<std::string_view>(
-                    {"objects"},
-                    "Path to object files.",
-                    "objects directory",
-                    settings.objects_dir
+                    {"conf", "c"},
+                    "Path to configuration file",
+                    "path",
+                    std::move(confpath)
                 )
             ),
             $add
@@ -100,23 +108,17 @@ namespace fstore::cli {
     }
 
     auto remove(
-        const service::settings& settings
+        std::string_view confpath
     ) -> std::unique_ptr<command_node> {
         return command(
             "remove",
             "Delete a bucket.",
             options(
                 option<std::string_view>(
-                    {"database"},
-                    "Database connection string.",
-                    "connection",
-                    settings.connection_string
-                ),
-                option<std::string_view>(
-                    {"objects"},
-                    "Path to object files.",
-                    "objects directory",
-                    settings.objects_dir
+                    {"conf", "c"},
+                    "Path to configuration file",
+                    "path",
+                    std::move(confpath)
                 )
             ),
             $remove
@@ -124,23 +126,17 @@ namespace fstore::cli {
     }
 
     auto rename(
-        const service::settings& settings
+        std::string_view confpath
     ) -> std::unique_ptr<command_node> {
         return command(
             "rename",
             "Rename a bucket.",
             options(
                 option<std::string_view>(
-                    {"database"},
-                    "Database connection string.",
-                    "connection",
-                    settings.connection_string
-                ),
-                option<std::string_view>(
-                    {"objects"},
-                    "Path to object files.",
-                    "objects directory",
-                    settings.objects_dir
+                    {"conf", "c"},
+                    "Path to configuration file",
+                    "path",
+                    std::move(confpath)
                 )
             ),
             $rename
@@ -148,31 +144,25 @@ namespace fstore::cli {
     }
 
     auto bucket(
-        const service::settings& settings
+        std::string_view confpath
     ) -> std::unique_ptr<command_node> {
         auto cmd = command(
             "bucket",
             "List bucket information",
             options(
                 option<std::string_view>(
-                    {"database"},
-                    "Database connection string.",
-                    "connection",
-                    settings.connection_string
-                ),
-                option<std::string_view>(
-                    {"objects"},
-                    "Path to object files.",
-                    "objects directory",
-                    settings.objects_dir
+                    {"conf", "c"},
+                    "Path to configuration file",
+                    "path",
+                    std::move(confpath)
                 )
             ),
             $bucket
         );
 
-        cmd->subcommand(add(settings));
-        cmd->subcommand(remove(settings));
-        cmd->subcommand(rename(settings));
+        cmd->subcommand(add(confpath));
+        cmd->subcommand(remove(confpath));
+        cmd->subcommand(rename(confpath));
 
         return cmd;
     }
