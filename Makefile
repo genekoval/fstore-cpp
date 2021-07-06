@@ -29,7 +29,6 @@ define test.libs
  $(core.libs)
  $(project)
  gtest
- gtest_main
 endef
 
 $(project).type = executable

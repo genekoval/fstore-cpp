@@ -14,7 +14,7 @@ static auto $start(
     timber::level log_level
 ) -> void {
     const auto settings = fstore::conf::settings::load_file(conf);
-    timber::reporting_level() = log_level;
+    timber::reporting_level = log_level;
 
     INFO()
         << app.name

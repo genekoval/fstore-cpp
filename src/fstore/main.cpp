@@ -7,6 +7,11 @@
 
 const auto default_config = std::filesystem::path(CONFDIR) / "fstore.yml";
 
+static auto initialize_logger() -> void {
+    timber::reporting_level = timber::level::warn;
+    timber::log_handler = &timber::console_logger;
+}
+
 static auto $main(
     const commline::app& app,
     const commline::argv& argv,
@@ -19,6 +24,8 @@ static auto $main(
 }
 
 auto main(int argc, const char** argv) -> int {
+    initialize_logger();
+
     const auto confpath = default_config.string();
 
     auto app = commline::application(
