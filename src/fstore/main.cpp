@@ -8,7 +8,7 @@
 const auto default_config = std::filesystem::path(CONFDIR) / "fstore.yml";
 
 static auto initialize_logger() -> void {
-    timber::reporting_level = timber::level::warn;
+    timber::reporting_level = timber::level::warning;
     timber::log_handler = &timber::console_logger;
 }
 
