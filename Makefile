@@ -36,6 +36,7 @@ $(project).deps = $(internal.libs)
 define $(project).libs
  $(core.libs)
  commline
+ dmon
 endef
 
 $(client).type = shared

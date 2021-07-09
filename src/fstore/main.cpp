@@ -41,10 +41,15 @@ auto main(int argc, const char** argv) -> int {
         $main
     );
 
+    app.on_error([](const auto& e) -> void {
+        CRITICAL() << e.what();
+    });
+
     app.subcommand(fstore::cli::bucket(confpath));
     app.subcommand(fstore::cli::prune(confpath));
     app.subcommand(fstore::cli::start(confpath));
     app.subcommand(fstore::cli::status(confpath));
+    app.subcommand(fstore::cli::stop(confpath));
 
     return app.run(argc, argv);
 }

@@ -20,7 +20,5 @@ namespace fstore::server {
         });
 
         server.listen(unix_socket, callback);
-
-        INFO() << "Shutting down...";
     }
 }
