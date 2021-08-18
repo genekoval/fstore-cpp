@@ -12,7 +12,7 @@ static auto $bucket(
 ) {
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::service::object_store(
-        settings.database,
+        settings.database.str(),
         settings.objects_dir
     );
     const auto buckets = store.fetch_buckets();
@@ -30,7 +30,7 @@ static auto $add(
 
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::service::object_store(
-        settings.database,
+        settings.database.str(),
         settings.objects_dir
     );
 
@@ -49,7 +49,7 @@ static auto $remove(
 
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::service::object_store(
-        settings.database,
+        settings.database.str(),
         settings.objects_dir
     );
 
@@ -71,7 +71,7 @@ static auto $rename(
 
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::service::object_store(
-        settings.database,
+        settings.database.str(),
         settings.objects_dir
     );
 

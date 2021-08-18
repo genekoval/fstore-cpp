@@ -13,7 +13,7 @@ auto $prune(
 ) -> void {
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::service::object_store(
-        settings.database,
+        settings.database.str(),
         settings.objects_dir
     );
 

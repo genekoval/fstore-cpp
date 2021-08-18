@@ -1,5 +1,6 @@
 #pragma once
 
+#include <conftools/database.h>
 #include <ext/unix.h>
 #include <netcore/netcore>
 
@@ -16,7 +17,7 @@ namespace fstore::conf {
         static auto load_file(std::string_view path) -> settings;
 
         s_daemon daemon;
-        std::string database;
+        conftools::database_connection database;
         std::string objects_dir;
         netcore::unix_socket server;
     };

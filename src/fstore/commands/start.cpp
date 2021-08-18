@@ -27,7 +27,7 @@ static auto $start(
     NOTICE() << app.name << " version " << app.version << " starting up";
 
     auto store = fstore::service::object_store(
-        settings.database,
+        settings.database.str(),
         settings.objects_dir
     );
 

@@ -15,6 +15,7 @@ define core.libs
  conftools
  cryptopp
  ext++
+ fmt
  magix
  netcore
  pqxx
