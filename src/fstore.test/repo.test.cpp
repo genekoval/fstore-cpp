@@ -30,10 +30,10 @@ namespace fstore::test {
     }
 
     auto drop_buckets() -> void {
-        db_exec("truncate bucket cascade");
+        db_exec("truncate data.bucket cascade");
     }
 
     auto drop_objects() -> void {
-        db_exec("truncate object cascade");
+        db_exec("truncate data.object cascade");
     }
 }
