@@ -19,4 +19,10 @@ namespace YAML {
         c::required("pidfile", &settings::s_daemon::pidfile),
         c::required("user", &settings::s_daemon::user)
     );
+
+    DECODE(
+        settings::s_database,
+        c::optional("client", &settings::s_database::client),
+        c::required("connection", &settings::s_database::connection)
+    );
 }

@@ -46,6 +46,9 @@ auto main(int argc, const char** argv) -> int {
     });
 
     app.subcommand(fstore::cli::bucket(confpath));
+    app.subcommand(fstore::cli::db(confpath));
+    app.subcommand(fstore::cli::init(confpath));
+    app.subcommand(fstore::cli::migrate(confpath));
     app.subcommand(fstore::cli::prune(confpath));
     app.subcommand(fstore::cli::start(confpath));
     app.subcommand(fstore::cli::status(confpath));

@@ -47,7 +47,6 @@ endef
 
 BUILD = /tmp/$(project)
 
-include mk/db.mk
 include mkbuild/base.mk
 
 confdir = $(prefix)/etc/$(project)
@@ -59,3 +58,6 @@ $(obj)/$(project)/main.o: CXXFLAGS +=\
  -DVERSION='"$(version)"'\
  -DDESCRIPTION='"$(summary)"'\
  -DCONFDIR='"$(confdir)"'
+
+$(obj)/$(project)/db/db.o: CXXFLAGS +=\
+ -DSQLDIR='"$(shell pwd)/db"'

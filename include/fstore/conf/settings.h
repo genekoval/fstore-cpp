@@ -12,12 +12,17 @@ namespace fstore::conf {
             ext::user user;
         };
 
+        struct s_database {
+            std::string client = "psql";
+            conftools::database_connection connection;
+        };
+
         static auto load(std::string_view text) -> settings;
 
         static auto load_file(std::string_view path) -> settings;
 
         s_daemon daemon;
-        conftools::database_connection database;
+        s_database database;
         std::string objects_dir;
         netcore::unix_socket server;
     };

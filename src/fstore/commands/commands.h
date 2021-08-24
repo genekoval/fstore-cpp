@@ -9,6 +9,18 @@ namespace fstore::cli {
         std::string_view confpath
     ) -> std::unique_ptr<commline::command_node>;
 
+    auto db(
+        std::string_view confpath
+    ) -> std::unique_ptr<commline::command_node>;
+
+    auto init(
+        std::string_view confpath
+    ) -> std::unique_ptr<commline::command_node>;
+
+    auto migrate(
+        std::string_view confpath
+    ) -> std::unique_ptr<commline::command_node>;
+
     auto prune(
         std::string_view confpath
     ) -> std::unique_ptr<commline::command_node>;
