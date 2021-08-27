@@ -3,7 +3,7 @@
 #include <fstream>
 #include <span>
 
-namespace fstore::service {
+namespace fstore::core {
     class part {
         std::ofstream out;
     public:

@@ -1,8 +1,8 @@
 #include "commands.h"
 
 #include <fstore/cli.h>
+#include <fstore/core/object_store.h>
 #include <fstore/server/server.h>
-#include <fstore/service/object_store.h>
 
 #include <dmon/dmon>
 #include <timber/timber>
@@ -26,7 +26,7 @@ static auto $start(
 
     NOTICE() << app.name << " version " << app.version << " starting up";
 
-    auto store = fstore::service::object_store(
+    auto store = fstore::core::object_store(
         settings.database.connection.str(),
         settings.objects_dir
     );

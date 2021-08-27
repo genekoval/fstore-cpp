@@ -1,6 +1,6 @@
-#include <fstore/service/part.h>
+#include <fstore/core/part.h>
 
-namespace fstore::service {
+namespace fstore::core {
     part::part(std::string_view id, std::ofstream&& out) :
         out(std::move(out)),
         id(id)

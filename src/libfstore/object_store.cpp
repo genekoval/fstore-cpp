@@ -43,8 +43,8 @@ namespace fstore {
         return client(errors, net::socket(netcore::connect(endpoint)));
     }
 
-    auto object_store::fetch_bucket(std::string_view name) -> service::bucket {
-        return connect().send<service::bucket>(
+    auto object_store::fetch_bucket(std::string_view name) -> core::bucket {
+        return connect().send<core::bucket>(
             event::fetch_bucket,
             name
         );

@@ -48,7 +48,7 @@ TEST_F(RepoBucketTest, RemovalWorks) {
     ASSERT_EQ(0, db.fetch_store_totals().buckets);
 }
 
-/* TODO This test should be moved to 'service'.
+/* TODO This test should be moved to 'core'.
 TEST_F(RepoBucketTest, CreationWithEmptyNameFails) {
     auto test = [this](std::string_view name) {
         try {
@@ -119,7 +119,7 @@ TEST_F(RepoBucketTest, FetchMultipleWorks) {
     test(db.fetch_buckets());
 }
 
-/* TODO This test should be moved to 'service'.
+/* TODO This test should be moved to 'core'.
 TEST_F(RepoBucketTest, RenameWithEmptyNameFails) {
     const auto original = "rename"s;
     auto bucket = create_bucket(original);

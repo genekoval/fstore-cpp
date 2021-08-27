@@ -52,7 +52,7 @@ include mkbuild/base.mk
 
 confdir = $(prefix)/etc/$(project)
 
-$(obj)/$(service)/settings.o: CXXFLAGS += -DCONFDIR='"$(prefix)/etc"'
+$(obj)/$(core)/settings.o: CXXFLAGS += -DCONFDIR='"$(prefix)/etc"'
 
 $(obj)/$(project)/main.o: CXXFLAGS +=\
  -DNAME='"$(project)"'\

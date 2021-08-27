@@ -7,7 +7,7 @@
 
 namespace fstore::server {
     auto listen(
-        service::object_store& store,
+        core::object_store& store,
         const netcore::unix_socket& unix_socket,
         const std::function<void()>& callback
     ) -> void {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fstore/client.h>
-#include <fstore/service/model.h>
+#include <fstore/core/model.h>
 
 #include <zipline/zipline>
 
@@ -24,21 +24,21 @@ namespace zipline {
     };
 
     ZIPLINE_OBJECT(
-        fstore::service::bucket,
-        &fstore::service::bucket::id,
-        &fstore::service::bucket::name,
-        &fstore::service::bucket::date_created,
-        &fstore::service::bucket::size,
-        &fstore::service::bucket::space_used
+        fstore::core::bucket,
+        &fstore::core::bucket::id,
+        &fstore::core::bucket::name,
+        &fstore::core::bucket::date_created,
+        &fstore::core::bucket::size,
+        &fstore::core::bucket::space_used
     );
 
     template <typename Socket>
-    struct transfer<Socket, fstore::service::file> {
+    struct transfer<Socket, fstore::core::file> {
         static auto write(
             Socket& sock,
-            const fstore::service::file& file
+            const fstore::core::file& file
         ) -> void {
-            transfer<Socket, decltype(fstore::service::file::size)>::write(
+            transfer<Socket, decltype(fstore::core::file::size)>::write(
                 sock,
                 file.size
             );
@@ -49,11 +49,11 @@ namespace zipline {
     };
 
     ZIPLINE_OBJECT(
-        fstore::service::object,
-        &fstore::service::object::id,
-        &fstore::service::object::hash,
-        &fstore::service::object::size,
-        &fstore::service::object::mime_type,
-        &fstore::service::object::date_added
+        fstore::core::object,
+        &fstore::core::object::id,
+        &fstore::core::object::hash,
+        &fstore::core::object::size,
+        &fstore::core::object::mime_type,
+        &fstore::core::object::date_added
     );
 }

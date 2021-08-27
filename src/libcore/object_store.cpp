@@ -1,10 +1,10 @@
-#include <fstore/service/object_store.h>
+#include <fstore/core/object_store.h>
 
 #include <filesystem>
 #include <timber/timber>
 #include <uuid++/uuid.h>
 
-namespace fstore::service {
+namespace fstore::core {
     object_store::object_store(
         std::string_view db_connection,
         std::string_view objects_dir

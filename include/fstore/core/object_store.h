@@ -1,14 +1,14 @@
 #pragma once
 
+#include <fstore/core/model.h>
+#include <fstore/core/part.h>
 #include <fstore/repo/database.h>
 #include <fstore/repo/filesystem.h>
-#include <fstore/service/model.h>
-#include <fstore/service/part.h>
 
 #include <optional>
 #include <span>
 
-namespace fstore::service {
+namespace fstore::core {
     class object_store {
         repo::database db;
         repo::fs fs;

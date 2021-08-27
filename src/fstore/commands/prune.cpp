@@ -1,6 +1,6 @@
 #include "commands.h"
 
-#include <fstore/service/object_store.h>
+#include <fstore/core/object_store.h>
 
 #include <ext/data_size.h>
 #include <iostream>
@@ -12,7 +12,7 @@ auto $prune(
     std::string_view confpath
 ) -> void {
     const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::service::object_store(
+    auto store = fstore::core::object_store(
         settings.database.connection.str(),
         settings.objects_dir
     );

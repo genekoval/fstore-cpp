@@ -42,7 +42,7 @@ protected:
     }
 
     fstore::object_store store;
-    const fstore::service::bucket bucket_info;
+    const fstore::core::bucket bucket_info;
     fstore::bucket bucket;
 
     ClientTest() :

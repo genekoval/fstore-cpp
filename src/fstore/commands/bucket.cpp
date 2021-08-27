@@ -1,6 +1,6 @@
 #include "commands.h"
 
-#include <fstore/service/object_store.h>
+#include <fstore/core/object_store.h>
 
 #include <ext/string.h>
 #include <iostream>
@@ -11,7 +11,7 @@ static auto $bucket(
     std::string_view confpath
 ) {
     const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::service::object_store(
+    auto store = fstore::core::object_store(
         settings.database.connection.str(),
         settings.objects_dir
     );
@@ -29,7 +29,7 @@ static auto $add(
     }
 
     const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::service::object_store(
+    auto store = fstore::core::object_store(
         settings.database.connection.str(),
         settings.objects_dir
     );
@@ -48,7 +48,7 @@ static auto $remove(
     }
 
     const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::service::object_store(
+    auto store = fstore::core::object_store(
         settings.database.connection.str(),
         settings.objects_dir
     );
@@ -70,7 +70,7 @@ static auto $rename(
     }
 
     const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::service::object_store(
+    auto store = fstore::core::object_store(
         settings.database.connection.str(),
         settings.objects_dir
     );

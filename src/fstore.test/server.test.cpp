@@ -31,7 +31,7 @@ namespace fstore::test {
             close(pipefd[0]);
 
             auto home = temp_directory();
-            auto store = service::object_store(
+            auto store = core::object_store(
                 db(),
                 repo::fs(home.path)
             );

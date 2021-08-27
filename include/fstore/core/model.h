@@ -4,7 +4,7 @@
 
 #include <netcore/netcore>
 
-namespace fstore::service {
+namespace fstore::core {
     using bucket = repo::bucket;
     using object = repo::object;
     using store_totals = repo::store_totals;

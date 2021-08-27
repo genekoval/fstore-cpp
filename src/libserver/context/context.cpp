@@ -6,13 +6,13 @@
 #include <span>
 
 namespace fstore::server {
-    context::context(service::object_store& store) : store(&store) {}
+    context::context(core::object_store& store) : store(&store) {}
 
     auto context::add_object(
         std::string bucket_id,
         std::optional<std::string> request,
         net::data_stream stream
-    ) -> service::object {
+    ) -> core::object {
         auto part_id = std::string();
 
         {
@@ -30,18 +30,18 @@ namespace fstore::server {
     auto context::create_object_from_file(
         std::string bucket_id,
         std::string path
-    ) -> service::object {
+    ) -> core::object {
         return store->add_object(bucket_id, path);
     }
 
-    auto context::fetch_bucket(std::string bucket_name) -> service::bucket {
+    auto context::fetch_bucket(std::string bucket_name) -> core::bucket {
         return store->fetch_bucket(bucket_name);
     }
 
     auto context::get_object(
         std::string bucket_id,
         std::string object_id
-    ) -> service::file {
+    ) -> core::file {
         auto file = store->get_object(bucket_id, object_id);
         if (!file) throw fstore_error("bucket does not contain object");
 
@@ -51,7 +51,7 @@ namespace fstore::server {
     auto context::get_object_metadata(
         std::string bucket_id,
         std::string object_id
-    ) -> service::object {
+    ) -> core::object {
         auto object = store->get_object_metadata(bucket_id, object_id);
         if (!object) throw fstore_error("bucket does not contain object");
 
@@ -61,7 +61,7 @@ namespace fstore::server {
     auto context::remove_object(
         std::string bucket_id,
         std::string object_id
-    ) -> service::object {
+    ) -> core::object {
         return store->remove_object(bucket_id, object_id);
     }
 }
