@@ -1,7 +1,7 @@
 project := fstore
 summary := Simple object storage.
 
-STD := gnu++2a
+STD := c++20
 
 include mk/internal.mk
 
@@ -45,8 +45,6 @@ $(client).type = shared
 define $(client).libs
  netcore
 endef
-
-BUILD = /tmp/$(project)
 
 include mkbuild/base.mk
 
