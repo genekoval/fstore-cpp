@@ -20,8 +20,11 @@ static auto $status(
 
     auto table = fstore::cli::bucket_table();
 
+    auto bucket_names = std::vector<std::string>();
+    for (const auto& arg : argv) bucket_names.push_back(std::string(arg));
+
     auto buckets = verbose ?
-        store.fetch_buckets() : store.fetch_buckets(argv);
+        store.fetch_buckets() : store.fetch_buckets(bucket_names);
 
     for (auto&& bucket : buckets) table.push_back(std::move(bucket));
 

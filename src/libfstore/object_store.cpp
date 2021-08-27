@@ -1,5 +1,5 @@
 #include <fstore/client.h>
-#include <fstore/server/transfer.h>
+#include <fstore/net/zipline/transfer.h>
 
 #include <netcore/netcore>
 
@@ -43,8 +43,8 @@ namespace fstore {
         return client(errors, net::socket(netcore::connect(endpoint)));
     }
 
-    auto object_store::fetch_bucket(std::string_view name) -> model::bucket {
-        return connect().send<model::bucket>(
+    auto object_store::fetch_bucket(std::string_view name) -> service::bucket {
+        return connect().send<service::bucket>(
             event::fetch_bucket,
             name
         );

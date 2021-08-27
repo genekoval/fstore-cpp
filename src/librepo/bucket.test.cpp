@@ -13,13 +13,13 @@ protected:
         fstore::test::drop_buckets();
     }
 
-    fstore::repo::db db;
+    fstore::repo::database db;
 
     RepoBucketTest() : db(fstore::test::db()) {
         fstore::test::drop_buckets();
     }
 
-    auto create_bucket(std::string_view name) -> fstore::model::bucket {
+    auto create_bucket(std::string_view name) -> fstore::repo::bucket {
         return fstore::test::create_bucket(db, name);
     }
 };
@@ -31,12 +31,7 @@ TEST_F(RepoBucketTest, CreationWorks) {
     const auto id = uuid.string();
     const auto name = "creation"s;
 
-    auto bucket = fstore::model::bucket {
-        .id = id,
-        .name = name
-    };
-
-    db.create_bucket(bucket);
+    const auto bucket = db.create_bucket(id, name);
 
     ASSERT_EQ(id, bucket.id);
     ASSERT_EQ(name, bucket.name);
@@ -91,11 +86,7 @@ TEST_F(RepoBucketTest, FetchWorks) {
     auto bucket = create_bucket("fetch");
     auto fetched = db.fetch_bucket(bucket.name);
 
-    ASSERT_EQ(bucket.id, fetched.id);
-    ASSERT_EQ(bucket.name, fetched.name);
-    ASSERT_EQ(bucket.size, fetched.size);
-    ASSERT_EQ(bucket.space_used, fetched.space_used);
-    ASSERT_EQ(bucket.date_created, fetched.date_created);
+    ASSERT_EQ(bucket, fetched);
 }
 
 TEST_F(RepoBucketTest, FetchMultipleWorks) {
@@ -103,7 +94,7 @@ TEST_F(RepoBucketTest, FetchMultipleWorks) {
         "one", "two", "three"
     };
 
-    const auto names = std::vector<std::string_view>(
+    const auto names = std::vector<std::string>(
         std::begin(name_array),
         std::end(name_array)
     );

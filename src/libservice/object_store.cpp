@@ -16,7 +16,7 @@ namespace fstore::service {
         INFO() << "Object storage: " << std::filesystem::canonical(objects_dir);
     }
 
-    object_store::object_store(repo::db&& db, repo::fs&& fs) :
+    object_store::object_store(repo::database&& db, repo::fs&& fs) :
         db(std::move(db)),
         fs(std::move(fs))
     {}
@@ -24,92 +24,85 @@ namespace fstore::service {
     auto object_store::add_object(
         std::string_view bucket_id,
         std::string_view path
-    ) -> model::object {
+    ) -> object {
         auto uuid = UUID::uuid();
         uuid.generate();
 
-        auto object = model::object {
-            .id = uuid.string(),
-            .hash = fs.hash(path),
-            .size = fs.size(path),
-            .mime_type = fs.mime_type(path)
-        };
+        const auto obj = db.add_object(
+            bucket_id,
+            uuid.string(),
+            fs.hash(path),
+            fs.size(path),
+            fs.mime_type(path)
+        );
 
-        db.add_object(bucket_id, object);
-        fs.copy(path, object.id);
-
-        return object;
+        fs.copy(path, obj.id);
+        return obj;
     }
 
     auto object_store::commit_part(
         std::string_view bucket_id,
         std::string_view part_id
-    ) -> model::object {
+    ) -> object {
         auto part = fs.part_path(part_id);
 
-        auto object = model::object {
-            .id = std::string(part_id),
-            .hash = fs.hash(part),
-            .size = fs.size(part),
-            .mime_type = fs.mime_type(part)
-        };
-
-        db.add_object(bucket_id, object);
+        const auto obj = db.add_object(
+            bucket_id,
+            part_id,
+            fs.hash(part),
+            fs.size(part),
+            fs.mime_type(part)
+        );
 
         // This object was uploaded previously.
-        if (object.id != part_id) fs.remove_part(part_id);
+        if (obj.id != part_id) fs.remove_part(part_id);
         else fs.make_object(part_id);
 
-        return object;
+        return obj;
     }
 
-    auto object_store::create_bucket(std::string_view name) -> model::bucket {
+    auto object_store::create_bucket(std::string_view name) -> bucket {
         auto uuid = UUID::uuid();
         uuid.generate();
 
-        auto bucket = model::bucket {
-            .id = uuid.string(),
-            .name = std::string(name)
-        };
+        const auto bkt = db.create_bucket(uuid.string(), name);
+        INFO() << "Created bucket: " << bkt.name;
 
-        db.create_bucket(bucket);
-        INFO() << "Created bucket: " << bucket.name;
-
-        return bucket;
+        return bkt;
     }
 
-    auto object_store::fetch_bucket(std::string_view name) -> model::bucket {
+    auto object_store::fetch_bucket(std::string_view name) -> bucket {
         return db.fetch_bucket(name);
     }
 
-    auto object_store::fetch_buckets() -> std::vector<model::bucket> {
+    auto object_store::fetch_buckets() -> std::vector<bucket> {
         return db.fetch_buckets();
     }
 
     auto object_store::fetch_buckets(
-        const std::vector<std::string_view>& names
-    ) -> std::vector<model::bucket> {
+        const std::vector<std::string>& names
+    ) -> std::vector<bucket> {
         return db.fetch_buckets(names);
     }
 
-    auto object_store::fetch_store_totals() -> model::object_store {
+    auto object_store::fetch_store_totals() -> store_totals {
         return db.fetch_store_totals();
     }
 
     auto object_store::get_object(
         std::string_view bucket_id,
         std::string_view object_id
-    ) -> std::optional<model::file> {
+    ) -> std::optional<file> {
         auto meta = get_object_metadata(bucket_id, object_id);
         if (!meta) return {};
 
-        return model::file { fs.open(object_id), meta.value().size };
+        return file { fs.open(object_id), meta.value().size };
     }
 
     auto object_store::get_object_metadata(
         std::string_view bucket_id,
         std::string_view object_id
-    ) -> std::optional<model::object> {
+    ) -> std::optional<object> {
         return db.get_object(bucket_id, object_id);
     }
 
@@ -128,7 +121,7 @@ namespace fstore::service {
         return part(id, fs.get_part(id));
     }
 
-    auto object_store::prune() -> std::vector<model::object> {
+    auto object_store::prune() -> std::vector<object> {
         auto orphans = db.remove_orphan_objects();
         for (const auto& obj : orphans) fs.remove(obj.id);
 
@@ -144,7 +137,7 @@ namespace fstore::service {
     auto object_store::remove_object(
         std::string_view bucket_id,
         std::string_view object_id
-    ) -> model::object {
+    ) -> object {
         return db.remove_object(bucket_id, object_id);
     }
 

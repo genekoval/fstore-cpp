@@ -72,9 +72,9 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION add_object(
     a_bucket_id     uuid,
     a_object_id     uuid,
-    a_hash          varchar,
+    a_hash          text,
     a_size          bigint,
-    a_mime_type     varchar
+    a_mime_type     text
 ) RETURNS SETOF data.object AS $$
 BEGIN
     INSERT INTO data.bucket_object (
@@ -106,17 +106,19 @@ $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION create_bucket(
     a_bucket_id     uuid,
-    a_name          varchar
-) RETURNS SETOF data.bucket AS $$
+    a_name          text
+) RETURNS SETOF bucket_view AS $$
 BEGIN
-    RETURN QUERY
     INSERT INTO data.bucket (
         bucket_id,
         name
     ) VALUES (
         a_bucket_id,
         a_name
-    ) RETURNING *;
+    );
+
+    RETURN QUERY
+    SELECT * FROM fetch_bucket(a_name);
 END;
 $$ LANGUAGE plpgsql;
 

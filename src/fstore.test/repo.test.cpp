@@ -12,21 +12,18 @@ namespace fstore::test {
         tx.exec(query);
     }
 
-    auto db() -> repo::db {
-        return repo::db(test_db);
+    auto db() -> repo::database {
+        return repo::database(test_db);
     }
 
-    auto create_bucket(repo::db& db, std::string_view name) -> model::bucket {
+    auto create_bucket(
+        repo::database& db,
+        std::string_view name
+    ) -> repo::bucket {
         auto uuid = UUID::uuid();
         uuid.generate();
 
-        auto bucket = model::bucket {
-            .id = uuid.string(),
-            .name = std::string(name)
-        };
-
-        db.create_bucket(bucket);
-        return bucket;
+        return db.create_bucket(uuid.string(), name);
     }
 
     auto drop_buckets() -> void {

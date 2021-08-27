@@ -14,6 +14,7 @@ define core.libs
  $(internal)
  conftools
  cryptopp
+ entix
  ext++
  fmt
  magix

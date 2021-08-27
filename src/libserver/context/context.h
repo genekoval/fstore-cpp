@@ -13,28 +13,28 @@ namespace fstore::server {
             std::string bucket_id,
             std::optional<std::string> request,
             net::data_stream stream
-        ) -> model::object;
+        ) -> service::object;
 
         auto create_object_from_file(
             std::string bucket_id,
             std::string path
-        ) -> model::object;
+        ) -> service::object;
 
-        auto fetch_bucket(std::string bucket_name) -> model::bucket;
+        auto fetch_bucket(std::string bucket_name) -> service::bucket;
 
         auto get_object(
             std::string bucket_id,
             std::string object_id
-        ) -> model::file;
+        ) -> service::file;
 
         auto get_object_metadata(
             std::string bucket_id,
             std::string object_id
-        ) -> model::object;
+        ) -> service::object;
 
         auto remove_object(
             std::string bucket_id,
             std::string object_id
-        ) -> model::object;
+        ) -> service::object;
     };
 }

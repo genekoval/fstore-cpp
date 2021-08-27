@@ -1,12 +1,12 @@
 #pragma once
 
-#include <fstore/models.h>
+#include <fstore/service/model.h>
 #include <fstore/net/zipline/protocol.h>
 
 #include <ext/dynarray.h>
 
 namespace fstore {
-    using object_meta = model::object;
+    using object_meta = service::object;
     using blob = ext::dynarray<std::byte>;
 
     enum class event : net::event_t {
@@ -48,7 +48,7 @@ namespace fstore {
             std::string_view path
         ) -> object_meta;
 
-        auto fetch_bucket(std::string_view name) -> model::bucket;
+        auto fetch_bucket(std::string_view name) -> service::bucket;
 
         auto get_object(
             std::string_view bucket_id,

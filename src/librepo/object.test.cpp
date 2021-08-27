@@ -13,8 +13,8 @@ protected:
         fstore::test::drop_objects();
     }
 
-    fstore::repo::db db;
-    fstore::model::object object;
+    fstore::repo::database db;
+    fstore::repo::object object;
 
     RepoObjectTest() :
         db(fstore::test::db()),
@@ -107,5 +107,5 @@ TEST_F(RepoObjectTest, GetObject) {
     ASSERT_EQ(object.hash, result.hash);
     ASSERT_EQ(object.size, result.size);
     ASSERT_EQ(object.mime_type, result.mime_type);
-    ASSERT_EQ(object.date_added, result.date_added);
+    ASSERT_FALSE(result.date_added.empty());
 }

@@ -12,7 +12,7 @@ namespace fstore::server {
         std::string bucket_id,
         std::optional<std::string> request,
         net::data_stream stream
-    ) -> model::object {
+    ) -> service::object {
         auto part_id = std::string();
 
         {
@@ -30,18 +30,18 @@ namespace fstore::server {
     auto context::create_object_from_file(
         std::string bucket_id,
         std::string path
-    ) -> model::object {
+    ) -> service::object {
         return store->add_object(bucket_id, path);
     }
 
-    auto context::fetch_bucket(std::string bucket_name) -> model::bucket {
+    auto context::fetch_bucket(std::string bucket_name) -> service::bucket {
         return store->fetch_bucket(bucket_name);
     }
 
     auto context::get_object(
         std::string bucket_id,
         std::string object_id
-    ) -> model::file {
+    ) -> service::file {
         auto file = store->get_object(bucket_id, object_id);
         if (!file) throw fstore_error("bucket does not contain object");
 
@@ -51,7 +51,7 @@ namespace fstore::server {
     auto context::get_object_metadata(
         std::string bucket_id,
         std::string object_id
-    ) -> model::object {
+    ) -> service::object {
         auto object = store->get_object_metadata(bucket_id, object_id);
         if (!object) throw fstore_error("bucket does not contain object");
 
@@ -61,7 +61,7 @@ namespace fstore::server {
     auto context::remove_object(
         std::string bucket_id,
         std::string object_id
-    ) -> model::object {
+    ) -> service::object {
         return store->remove_object(bucket_id, object_id);
     }
 }

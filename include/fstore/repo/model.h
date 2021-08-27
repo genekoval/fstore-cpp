@@ -1,10 +1,10 @@
 #pragma once
 
-#include <netcore/netcore>
+#include <entix/entity>
 #include <string>
 
-namespace fstore::model {
-    struct bucket {
+namespace fstore::repo {
+    struct bucket : entix::entity<5> {
         std::string id;
         std::string name;
         std::string date_created;
@@ -12,12 +12,7 @@ namespace fstore::model {
         uintmax_t space_used;
     };
 
-    struct file {
-        netcore::fd fd;
-        std::size_t size;
-    };
-
-    struct object {
+    struct object : entix::entity<5> {
         std::string id;
         std::string hash;
         uintmax_t size;
@@ -25,7 +20,7 @@ namespace fstore::model {
         std::string date_added;
     };
 
-    struct object_store {
+    struct store_totals : entix::entity<3> {
         std::size_t buckets;
         std::size_t objects;
         uintmax_t space_used;
