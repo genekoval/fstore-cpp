@@ -45,6 +45,7 @@ auto main(int argc, const char** argv) -> int {
         CRITICAL() << e.what();
     });
 
+    app.subcommand(fstore::cli::archive(confpath));
     app.subcommand(fstore::cli::bucket(confpath));
     app.subcommand(fstore::cli::db(confpath));
     app.subcommand(fstore::cli::init(confpath));

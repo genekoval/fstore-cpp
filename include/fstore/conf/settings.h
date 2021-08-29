@@ -6,6 +6,12 @@
 
 namespace fstore::conf {
     struct settings {
+        struct s_archive {
+            std::vector<std::string> options;
+            std::string path;
+            std::string sync = "rsync";
+        };
+
         struct s_daemon {
             ext::group group;
             std::string pidfile;
@@ -15,15 +21,17 @@ namespace fstore::conf {
         struct s_database {
             std::string client = "psql";
             conftools::database_connection connection;
+            std::string dump = "pg_dump";
         };
 
         static auto load(std::string_view text) -> settings;
 
         static auto load_file(std::string_view path) -> settings;
 
+        s_archive archive;
         s_daemon daemon;
         s_database database;
-        std::string objects_dir;
+        std::string home;
         netcore::unix_socket server;
     };
 }

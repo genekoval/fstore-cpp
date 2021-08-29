@@ -38,5 +38,11 @@ namespace fstore::repo {
         auto remove_part(std::string_view id) const -> void;
 
         auto size(const std::filesystem::path& path) const -> uintmax_t;
+
+        auto sync(
+            std::string_view program,
+            std::span<const std::string_view> options,
+            std::string_view dest
+        ) const -> void;
     };
 }

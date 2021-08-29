@@ -2,11 +2,19 @@
 
 #include <fstore/repo/filesystem.h>
 
+#include <ext/unix.h>
 #include <fcntl.h>
+#include <fmt/format.h>
 #include <fstream>
 #include <magix.h>
+#include <timber/timber>
+#include <vector>
 
 namespace fstore::repo {
+    constexpr auto sync_options = std::array {
+        "--archive",
+        "--delete"
+    };
     constexpr auto object_dir = "objects";
     constexpr auto parts_dir = "parts";
 
@@ -83,5 +91,45 @@ namespace fstore::repo {
 
     auto fs::size(const std::filesystem::path& path) const -> uintmax_t {
         return std::filesystem::file_size(path);
+    }
+
+    auto fs::sync(
+        std::string_view program,
+        std::span<const std::string_view> options,
+        std::string_view dest
+    ) const -> void {
+        auto args = std::vector<std::string_view>();
+
+        std::copy(
+            sync_options.begin(),
+            sync_options.end(),
+            std::back_inserter(args)
+        );
+        std::copy(options.begin(), options.end(), std::back_inserter(args));
+        const auto src = objects.string();
+        args.push_back(src);
+        args.push_back(dest);
+
+        if (timber::reporting_level >= timber::level::debug) {
+            auto os = std::ostringstream();
+
+            os << "EXEC " << program;
+            for (const auto& arg : args) os << " " << arg;
+
+            DEBUG() << os.str();
+        }
+
+        const auto exit = ext::wait_exec(program, args);
+
+        if (exit.code != CLD_EXITED) throw std::runtime_error(fmt::format(
+            "{} did not exit properly",
+            program
+        ));
+
+        if (exit.status != 0) throw std::runtime_error(fmt::format(
+            "{} exited with code {}",
+            program,
+            exit.status
+        ));
     }
 }

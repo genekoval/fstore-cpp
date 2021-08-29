@@ -15,7 +15,7 @@ static auto $status(
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::core::object_store(
         settings.database.connection.str(),
-        settings.objects_dir
+        settings.home
     );
 
     auto table = fstore::cli::bucket_table();

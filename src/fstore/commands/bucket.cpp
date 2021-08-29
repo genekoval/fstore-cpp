@@ -13,7 +13,7 @@ static auto $bucket(
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::core::object_store(
         settings.database.connection.str(),
-        settings.objects_dir
+        settings.home
     );
     const auto buckets = store.fetch_buckets();
     for (const auto& bucket : buckets) std::cout << bucket.name << '\n';
@@ -31,7 +31,7 @@ static auto $add(
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::core::object_store(
         settings.database.connection.str(),
-        settings.objects_dir
+        settings.home
     );
 
     const auto bucket = store.create_bucket(argv[0]);
@@ -50,7 +50,7 @@ static auto $remove(
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::core::object_store(
         settings.database.connection.str(),
-        settings.objects_dir
+        settings.home
     );
 
     const auto bucket = store.fetch_bucket(argv[0]);
@@ -72,7 +72,7 @@ static auto $rename(
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::core::object_store(
         settings.database.connection.str(),
-        settings.objects_dir
+        settings.home
     );
 
     const auto old = store.fetch_bucket(argv[0]);

@@ -7,13 +7,13 @@
 namespace fstore::core {
     object_store::object_store(
         std::string_view db_connection,
-        std::string_view objects_dir
+        std::string_view home
     ) :
         db(db_connection),
-        fs(objects_dir)
+        fs(home)
     {
         INFO() << "Database connection: " << db_connection;
-        INFO() << "Object storage: " << std::filesystem::canonical(objects_dir);
+        INFO() << "Object storage: " << std::filesystem::canonical(home);
     }
 
     object_store::object_store(repo::database&& db, repo::fs&& fs) :

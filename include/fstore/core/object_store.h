@@ -15,7 +15,7 @@ namespace fstore::core {
     public:
         object_store(
             std::string_view db_connection,
-            std::string_view objects_dir
+            std::string_view home
         );
 
         object_store(

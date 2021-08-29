@@ -7,10 +7,18 @@ using settings = fstore::conf::settings;
 namespace YAML {
     DECODE(
         settings,
+        c::optional("archive", &settings::archive),
         c::required("daemon", &settings::daemon),
         c::required("database", &settings::database),
-        c::required("objects", &settings::objects_dir),
+        c::required("home", &settings::home),
         c::required("server", &settings::server)
+    );
+
+    DECODE(
+        settings::s_archive,
+        c::optional("options", &settings::s_archive::options),
+        c::required("path", &settings::s_archive::path),
+        c::optional("sync", &settings::s_archive::sync)
     );
 
     DECODE(
@@ -23,6 +31,7 @@ namespace YAML {
     DECODE(
         settings::s_database,
         c::optional("client", &settings::s_database::client),
-        c::required("connection", &settings::s_database::connection)
+        c::required("connection", &settings::s_database::connection),
+        c::optional("dump", &settings::s_database::dump)
     );
 }

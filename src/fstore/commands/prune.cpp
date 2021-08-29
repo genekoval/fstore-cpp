@@ -14,7 +14,7 @@ auto $prune(
     const auto settings = fstore::conf::settings::load_file(confpath);
     auto store = fstore::core::object_store(
         settings.database.connection.str(),
-        settings.objects_dir
+        settings.home
     );
 
     const auto objects = store.prune();

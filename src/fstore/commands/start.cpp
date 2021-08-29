@@ -28,7 +28,7 @@ static auto $start(
 
     auto store = fstore::core::object_store(
         settings.database.connection.str(),
-        settings.objects_dir
+        settings.home
     );
 
     fstore::server::listen(store, settings.server, []() {

@@ -6,6 +6,7 @@
 namespace fs = std::filesystem;
 
 namespace {
+    constexpr auto dump_file = "fstore.dump";
     constexpr auto stop_on_error = "--set=ON_ERROR_STOP=1";
 
     const auto sql_directory = fs::path(SQLDIR);
@@ -17,12 +18,22 @@ namespace {
 namespace fstore::cli::data {
     client::client(const conf::settings& settings) :
         client_program(settings.database.client),
-        connection_string(settings.database.connection.str())
+        connection_string(settings.database.connection.str()),
+        dump_program(settings.database.dump)
     {}
+
+    auto client::dump(fs::path directory) const -> std::string {
+        const auto file = (directory / dump_file).string();
+
+        $(dump_program, "--format", "custom", "--file", file);
+        DEBUG() << "Saved database dump to: " << file;
+
+        return file;
+    }
 
     auto client::exec(
         std::string_view program,
-        const std::vector<std::string_view>& args
+        std::span<const std::string_view> args
     ) const -> void {
         auto arguments = std::vector<std::string_view> {
             "--dbname", connection_string
@@ -42,29 +53,22 @@ namespace fstore::cli::data {
         ext::exec(program, arguments);
     }
 
-    auto client::exec(const std::vector<std::string_view>& args) const -> void {
+    auto client::exec(std::span<const std::string_view> args) const -> void {
         exec(client_program, args);
     }
 
     auto client::init() const -> void {
-        wait_exec(client_program, {
-            stop_on_error,
-            "--file", data_schema
-        });
-
+        $(client_program, stop_on_error, "--file", data_schema);
         migrate();
     }
 
     auto client::migrate() const -> void {
-        wait_exec(client_program, {
-            stop_on_error,
-            "--file", api_schema
-        });
+        $(client_program, stop_on_error, "--file", api_schema);
     }
 
     auto client::wait_exec(
         std::string_view program,
-        const std::vector<std::string_view>& args
+        std::span<const std::string_view> args
     ) const -> void {
         const auto parent = ext::process::fork();
 
