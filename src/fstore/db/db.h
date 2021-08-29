@@ -7,6 +7,9 @@ namespace fstore::cli::data {
         std::string client_program;
         std::string connection_string;
         std::string dump_program;
+        std::string restore_program;
+
+        auto analyze() const -> void;
 
         auto exec(
             std::string_view program,
@@ -26,12 +29,14 @@ namespace fstore::cli::data {
     public:
         client(const conf::settings& settings);
 
-        auto dump(std::filesystem::path file) const -> std::string;
+        auto dump(const std::filesystem::path& directory) const -> std::string;
 
         auto exec(std::span<const std::string_view> args) const -> void;
 
         auto init() const -> void;
 
         auto migrate() const -> void;
+
+        auto restore(const std::filesystem::path& directory) const -> void;
     };
 }

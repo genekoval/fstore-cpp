@@ -19,10 +19,15 @@ namespace fstore::cli::data {
     client::client(const conf::settings& settings) :
         client_program(settings.database.client),
         connection_string(settings.database.connection.str()),
-        dump_program(settings.database.dump)
+        dump_program(settings.database.dump),
+        restore_program(settings.database.restore)
     {}
 
-    auto client::dump(fs::path directory) const -> std::string {
+    auto client::analyze() const -> void {
+        $(client_program, "--command", "ANALYZE");
+    }
+
+    auto client::dump(const fs::path& directory) const -> std::string {
         const auto file = (directory / dump_file).string();
 
         $(dump_program, "--format", "custom", "--file", file);
@@ -41,15 +46,6 @@ namespace fstore::cli::data {
 
         std::copy(args.begin(), args.end(), std::back_inserter(arguments));
 
-        if (timber::reporting_level >= timber::level::debug) {
-            auto os = std::ostringstream();
-
-            os << "EXEC " << program;
-            for (const auto& arg : arguments) os << " " << arg;
-
-            DEBUG() << os.str();
-        }
-
         ext::exec(program, arguments);
     }
 
@@ -64,6 +60,15 @@ namespace fstore::cli::data {
 
     auto client::migrate() const -> void {
         $(client_program, stop_on_error, "--file", api_schema);
+    }
+
+    auto client::restore(const std::filesystem::path& directory) const -> void {
+        const auto file = (directory / dump_file).string();
+
+        $(restore_program, "--clean", "--if-exists", file);
+        analyze();
+
+        fs::remove(file);
     }
 
     auto client::wait_exec(
