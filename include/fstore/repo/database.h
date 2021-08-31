@@ -51,6 +51,11 @@ namespace fstore::repo {
             std::string_view object_id
         ) -> object;
 
+        auto remove_objects(
+            std::string_view bucket_id,
+            const std::vector<std::string>& objects
+        ) -> remove_result;
+
         auto remove_orphan_objects() -> std::vector<object>;
 
         auto rename_bucket(std::string_view id, std::string_view name) -> void;

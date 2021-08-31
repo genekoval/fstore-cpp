@@ -8,6 +8,7 @@
 namespace fstore {
     using object_meta = core::object;
     using blob = ext::dynarray<std::byte>;
+    using remove_result = core::remove_result;
 
     enum class event : net::event_t {
         add_object,
@@ -15,7 +16,8 @@ namespace fstore {
         fetch_bucket,
         get_object,
         get_object_metadata,
-        remove_object
+        remove_object,
+        remove_objects
     };
 
     using client = zipline::client<net::socket, event, net::error_list>;
@@ -70,6 +72,11 @@ namespace fstore {
             std::string_view bucket_id,
             std::string_view object_id
         ) -> object_meta;
+
+        auto remove_objects(
+            std::string_view bucket_id,
+            std::span<const std::string> objects
+        ) -> remove_result;
     };
 
     class bucket {
@@ -100,5 +107,9 @@ namespace fstore {
         ) -> object_meta;
 
         auto remove(std::string_view object_id) -> object_meta;
+
+        auto remove(
+            std::span<const std::string> objects
+        ) -> remove_result;
     };
 }

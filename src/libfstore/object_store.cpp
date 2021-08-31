@@ -102,4 +102,15 @@ namespace fstore {
             object_id
         );
     }
+
+    auto object_store::remove_objects(
+        std::string_view bucket_id,
+        std::span<const std::string> objects
+    ) -> core::remove_result {
+        return connect().send<remove_result>(
+            event::remove_objects,
+            bucket_id,
+            objects
+        );
+    }
 }

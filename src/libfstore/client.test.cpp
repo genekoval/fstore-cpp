@@ -133,3 +133,29 @@ TEST_F(ClientTest, GetObjectNoObject) {
         );
     }
 }
+
+TEST_F(ClientTest, RemoveObjects) {
+    constexpr auto data = std::array {"foo"sv, "bar"sv, "baz"sv };
+
+    auto size = 0ul;
+    for (const auto& text : data) size += text.size();
+
+    const auto expected = fstore::remove_result {
+        .objects_removed = data.size(),
+        .space_freed = size
+    };
+
+    auto objects = std::vector<std::string>();
+
+    for (const auto& text : data) {
+        const auto obj = bucket.add({}, text.size(), [&](auto&& part) {
+            const auto* bytes = reinterpret_cast<const std::byte*>(text.data());
+            part.write(std::span<const std::byte>(bytes, text.size()));
+        });
+
+        objects.push_back(obj.id);
+    }
+
+    const auto result = bucket.remove(objects);
+    ASSERT_EQ(expected, result);
+}

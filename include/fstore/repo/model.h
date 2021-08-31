@@ -20,6 +20,11 @@ namespace fstore::repo {
         std::string date_added;
     };
 
+    struct remove_result : entix::entity<2> {
+        std::size_t objects_removed;
+        uintmax_t space_freed;
+    };
+
     struct store_totals : entix::entity<3> {
         std::size_t buckets;
         std::size_t objects;

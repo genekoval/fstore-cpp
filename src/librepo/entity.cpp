@@ -22,6 +22,12 @@ namespace entix {
     );
 
     READ_ENTITY(
+        remove_result,
+        &remove_result::objects_removed,
+        &remove_result::space_freed
+    );
+
+    READ_ENTITY(
         store_totals,
         &store_totals::buckets,
         &store_totals::objects,

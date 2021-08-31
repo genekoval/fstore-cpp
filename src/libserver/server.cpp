@@ -25,7 +25,8 @@ namespace {
             &context::fetch_bucket,
             &context::get_object,
             &context::get_object_metadata,
-            &context::remove_object
+            &context::remove_object,
+            &context::remove_objects
         );
     }
 }

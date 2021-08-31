@@ -7,5 +7,6 @@
 namespace entix {
     ENTITY(fstore::repo::bucket);
     ENTITY(fstore::repo::object);
+    ENTITY(fstore::repo::remove_result);
     ENTITY(fstore::repo::store_totals);
 }

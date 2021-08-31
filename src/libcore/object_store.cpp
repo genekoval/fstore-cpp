@@ -141,6 +141,13 @@ namespace fstore::core {
         return db.remove_object(bucket_id, object_id);
     }
 
+    auto object_store::remove_objects(
+        std::string_view bucket_id,
+        const std::vector<std::string>& objects
+    ) -> remove_result {
+        return db.remove_objects(bucket_id, objects);
+    }
+
     auto object_store::rename_bucket(
         std::string_view bucket_id,
         std::string_view bucket_name

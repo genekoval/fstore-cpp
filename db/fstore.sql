@@ -34,6 +34,11 @@ FROM data.object
 LEFT JOIN data.bucket_object bucket_objects USING (object_id)
 GROUP BY object_id;
 
+CREATE TYPE remove_result AS (
+    objects_removed bigint,
+    space_freed     bigint
+);
+
 CREATE TYPE store_totals AS (
     buckets         bigint,
     objects         bigint,
@@ -172,7 +177,7 @@ BEGIN
     SELECT
         (SELECT count(*) FROM data.bucket) AS buckets,
         (SELECT count(*) FROM data.object) AS objects,
-        (SELECT COALESCE(sum(size)::bigint, 0) FROM data.object) AS space_used;
+        (SELECT coalesce(sum(size)::bigint, 0) FROM data.object) AS space_used;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -224,13 +229,32 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE FUNCTION remove_objects(
+    a_bucket_id     uuid,
+    a_objects       uuid[]
+) RETURNS SETOF remove_result AS $$
+BEGIN
+    RETURN QUERY
+    WITH deleted AS (
+        DELETE FROM data.bucket_object
+        WHERE bucket_id = a_bucket_id AND object_id = ANY(a_objects)
+        RETURNING object_id
+    )
+    SELECT
+        count(*) AS objects_removed,
+        coalesce(sum(size)::bigint, 0) AS space_freed
+    FROM deleted
+    JOIN data.object USING (object_id);
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE FUNCTION remove_orphan_objects()
 RETURNS SETOF data.object AS $$
 BEGIN
     RETURN QUERY
     DELETE FROM data.object obj USING object_ref ref
     WHERE obj.object_id = ref.object_id AND reference_count = 0
-    RETURNING id, hash, size, mime_type, date_added;
+    RETURNING obj.object_id, hash, size, mime_type, date_added;
 END;
 $$ LANGUAGE plpgsql;
 

@@ -36,5 +36,10 @@ namespace fstore::server {
             std::string bucket_id,
             std::string object_id
         ) -> core::object;
+
+        auto remove_objects(
+            std::string bucket_id,
+            std::vector<std::string> objects
+        ) -> core::remove_result;
     };
 }

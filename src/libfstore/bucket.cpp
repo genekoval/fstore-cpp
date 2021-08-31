@@ -40,4 +40,10 @@ namespace fstore {
     auto bucket::remove(std::string_view object_id) -> object_meta {
         return store->remove_object(id, object_id);
     }
+
+    auto bucket::remove(
+        std::span<const std::string> objects
+    ) -> remove_result {
+        return store->remove_objects(id, objects);
+    }
 }

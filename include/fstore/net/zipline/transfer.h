@@ -56,4 +56,10 @@ namespace zipline {
         &fstore::core::object::mime_type,
         &fstore::core::object::date_added
     );
+
+    ZIPLINE_OBJECT(
+        fstore::core::remove_result,
+        &fstore::core::remove_result::objects_removed,
+        &fstore::core::remove_result::space_freed
+    );
 }

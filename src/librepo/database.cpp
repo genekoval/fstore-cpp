@@ -20,6 +20,7 @@ namespace fstore::repo {
         c.prepare("get_object", 2);
         c.prepare("remove_bucket", 1);
         c.prepare("remove_object", 2);
+        c.prepare("remove_objects", 2);
         c.prepare("remove_orphan_objects", 0);
         c.prepare("rename_bucket", 2);
     }
@@ -159,6 +160,19 @@ namespace fstore::repo {
         catch (const pqxx::unexpected_rows& ex) {
             throw fstore_error("bucket does not contain object");
         }
+    }
+
+    auto database::remove_objects(
+        std::string_view bucket_id,
+        const std::vector<std::string>& objects
+    ) -> remove_result {
+        auto tx = ntx();
+        return entix::make_entity<remove_result>(
+            tx,
+            __FUNCTION__,
+            bucket_id,
+            objects
+        );
     }
 
     auto database::remove_orphan_objects() -> std::vector<object> {
