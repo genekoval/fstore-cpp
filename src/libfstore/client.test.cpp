@@ -48,7 +48,7 @@ protected:
     ClientTest() :
         store(socket_file.string()),
         bucket_info(store.fetch_bucket(bucket_name)),
-        bucket(bucket_info.id, store)
+        bucket(store, bucket_info.id)
     {
         fstore::test::drop_objects();
     }

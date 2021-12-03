@@ -1,9 +1,9 @@
 #include <fstore/client.h>
 
 namespace fstore {
-    bucket::bucket(std::string_view id, object_store& store) :
-        id(id),
-        store(&store)
+    bucket::bucket(object_store& store, std::string_view id) :
+        store(&store),
+        id(id)
     {}
 
     auto bucket::add(

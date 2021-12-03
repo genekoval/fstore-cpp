@@ -80,10 +80,11 @@ namespace fstore {
     };
 
     class bucket {
-        const std::string id;
         object_store* store;
     public:
-        bucket(std::string_view id, object_store& store);
+        const std::string id;
+
+        bucket(object_store& store, std::string_view id);
 
         auto add(
             std::optional<std::string_view> part_id,
