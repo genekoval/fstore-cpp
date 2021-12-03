@@ -11,18 +11,18 @@ namespace fstore::repo {
     {
         auto c = entix::connection(connection);
 
-        c.prepare("add_object", 5);
-        c.prepare("create_bucket", 2);
-        c.prepare("fetch_bucket", 1);
-        c.prepare("fetch_buckets", 1);
-        c.prepare("fetch_buckets_all", "fetch_buckets", 0);
-        c.prepare("fetch_store_totals", 0);
-        c.prepare("get_object", 2);
-        c.prepare("remove_bucket", 1);
-        c.prepare("remove_object", 2);
-        c.prepare("remove_objects", 2);
-        c.prepare("remove_orphan_objects", 0);
-        c.prepare("rename_bucket", 2);
+        c.prepare("add_object", {"uuid", "uuid", "text", "bigint", "text"});
+        c.prepare("create_bucket", {"uuid", "text"});
+        c.prepare("fetch_bucket", {"text"});
+        c.prepare("fetch_buckets", {});
+        c.prepare("fetch_buckets", {"text[]"});
+        c.prepare("fetch_store_totals", {});
+        c.prepare("get_object", {"uuid", "uuid"});
+        c.prepare("remove_bucket", {"uuid"});
+        c.prepare("remove_object", {"uuid", "uuid"});
+        c.prepare("remove_objects", {"uuid", "uuid[]"});
+        c.prepare("remove_orphan_objects", {});
+        c.prepare("rename_bucket", {"uuid", "text"});
     }
 
     auto database::add_object(
