@@ -6,7 +6,10 @@
 #include <span>
 
 namespace fstore::server {
-    context::context(core::object_store& store) : store(&store) {}
+    context::context(core::object_store& store, const server_info& info) :
+        info(&info),
+        store(&store)
+    {}
 
     auto context::add_object(
         std::string bucket_id,
@@ -56,6 +59,10 @@ namespace fstore::server {
         if (!object) throw fstore_error("bucket does not contain object");
 
         return std::move(*object);
+    }
+
+    auto context::get_server_info() -> server_info {
+        return *info;
     }
 
     auto context::remove_object(

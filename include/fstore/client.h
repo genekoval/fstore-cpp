@@ -2,6 +2,7 @@
 
 #include <fstore/core/model.h>
 #include <fstore/net/zipline/protocol.h>
+#include <fstore/server/server_info.h>
 
 #include <ext/dynarray.h>
 
@@ -16,6 +17,7 @@ namespace fstore {
         fetch_bucket,
         get_object,
         get_object_metadata,
+        get_server_info,
         remove_object,
         remove_objects
     };
@@ -67,6 +69,8 @@ namespace fstore {
             std::string_view bucket_id,
             std::string_view object_id
         ) -> object_meta;
+
+        auto get_server_info() -> server::server_info;
 
         auto remove_object(
             std::string_view bucket_id,

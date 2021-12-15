@@ -31,7 +31,11 @@ static auto $start(
         settings.home
     );
 
-    fstore::server::listen(store, settings.server, []() {
+    const auto info = fstore::server::server_info {
+        .version = std::string(app.version)
+    };
+
+    fstore::server::listen(store, info, settings.server, []() {
         INFO() << "Server started. Listening for connections...";
     });
 

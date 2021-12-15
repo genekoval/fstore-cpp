@@ -92,6 +92,10 @@ namespace fstore {
         );
     }
 
+    auto object_store::get_server_info() -> server::server_info {
+        return connect().send<server::server_info>(event::get_server_info);
+    }
+
     auto object_store::remove_object(
         std::string_view bucket_id,
         std::string_view object_id

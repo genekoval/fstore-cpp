@@ -2,12 +2,14 @@
 
 #include <fstore/net/zipline/protocol.h>
 #include <fstore/core/object_store.h>
+#include <fstore/server/server_info.h>
 
 namespace fstore::server {
     class context {
+        const server_info* const info;
         core::object_store* store;
     public:
-        context(core::object_store& store);
+        context(core::object_store& store, const server_info& info);
 
         auto add_object(
             std::string bucket_id,
@@ -31,6 +33,8 @@ namespace fstore::server {
             std::string bucket_id,
             std::string object_id
         ) -> core::object;
+
+        auto get_server_info() -> server_info;
 
         auto remove_object(
             std::string bucket_id,
