@@ -14,8 +14,8 @@ namespace fstore::repo {
         c.prepare("add_object", {"uuid", "uuid", "text", "bigint", "text"});
         c.prepare("create_bucket", {"uuid", "text"});
         c.prepare("fetch_bucket", {"text"});
-        c.prepare("fetch_buckets", {});
         c.prepare("fetch_buckets", {"text[]"});
+        c.prepare("fetch_buckets_all", {});
         c.prepare("fetch_store_totals", {});
         c.prepare("get_object", {"uuid", "uuid"});
         c.prepare("remove_bucket", {"uuid"});

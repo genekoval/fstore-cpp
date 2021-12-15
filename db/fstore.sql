@@ -138,15 +138,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION fetch_buckets()
-RETURNS SETOF bucket_view AS $$
-BEGIN
-    RETURN QUERY
-    SELECT *
-    FROM bucket_view;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE FUNCTION fetch_buckets(
     a_names         text[]
 ) RETURNS SETOF bucket_view AS $$
@@ -167,6 +158,15 @@ BEGIN
     FROM names
     JOIN bucket_view USING (name)
     ORDER BY ordinality;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION fetch_buckets_all()
+RETURNS SETOF bucket_view AS $$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM bucket_view;
 END;
 $$ LANGUAGE plpgsql;
 
