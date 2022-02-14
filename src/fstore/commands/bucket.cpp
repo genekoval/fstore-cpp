@@ -1,89 +1,80 @@
 #include "commands.h"
+#include "../options/opts.h"
 
 #include <fstore/core/object_store.h>
 
 #include <ext/string.h>
 #include <iostream>
 
-static auto $bucket(
-    const commline::app& app,
-    const commline::argv& argv,
-    std::string_view confpath
-) {
-    const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::core::object_store(
-        settings.database.connection.str(),
-        settings.home
-    );
-    const auto buckets = store.fetch_buckets();
-    for (const auto& bucket : buckets) std::cout << bucket.name << '\n';
-}
-
-static auto $add(
-    const commline::app& app,
-    const commline::argv& argv,
-    std::string_view confpath
-) -> void {
-    if (argv.empty()) {
-        throw commline::cli_error("No bucket name given.");
+namespace {
+    auto $bucket(
+        const commline::app& app,
+        std::string_view confpath
+    ) {
+        const auto settings = fstore::conf::settings::load_file(confpath);
+        auto store = fstore::core::object_store(
+            settings.database.connection.str(),
+            settings.home
+        );
+        const auto buckets = store.fetch_buckets();
+        for (const auto& bucket : buckets) std::cout << bucket.name << '\n';
     }
 
-    const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::core::object_store(
-        settings.database.connection.str(),
-        settings.home
-    );
+    auto $add(
+        const commline::app& app,
+        std::string_view confpath,
+        std::string_view name
+    ) -> void {
+        const auto settings = fstore::conf::settings::load_file(confpath);
+        auto store = fstore::core::object_store(
+            settings.database.connection.str(),
+            settings.home
+        );
 
-    const auto bucket = store.create_bucket(argv[0]);
-    std::cout << "bucket created: " << bucket.name << std::endl;
-}
-
-static auto $remove(
-    const commline::app& app,
-    const commline::argv& argv,
-    std::string_view confpath
-) -> void {
-    if (argv.empty()) {
-        throw commline::cli_error("No bucket name given.");
+        const auto bucket = store.create_bucket(name);
+        std::cout << "bucket created: " << bucket.name << std::endl;
     }
 
-    const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::core::object_store(
-        settings.database.connection.str(),
-        settings.home
-    );
+    auto $remove(
+        const commline::app& app,
+        std::string_view confpath,
+        std::string_view name
+    ) -> void {
+        const auto settings = fstore::conf::settings::load_file(confpath);
+        auto store = fstore::core::object_store(
+            settings.database.connection.str(),
+            settings.home
+        );
 
-    const auto bucket = store.fetch_bucket(argv[0]);
+        const auto bucket = store.fetch_bucket(name);
 
-    store.remove_bucket(bucket.id);
+        store.remove_bucket(bucket.id);
 
-    std::cout << "bucket removed: " << bucket.name << std::endl;
-}
-
-static auto $rename(
-    const commline::app& app,
-    const commline::argv& argv,
-    std::string_view confpath
-) -> void {
-    if (argv.size() < 2) {
-        throw commline::cli_error("Old and new bucket name required.");
+        std::cout << "bucket removed: " << bucket.name << std::endl;
     }
 
-    const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::core::object_store(
-        settings.database.connection.str(),
-        settings.home
-    );
+    auto $rename(
+        const commline::app& app,
+        std::string_view confpath,
+        std::string_view old_name,
+        std::string_view new_name
+    ) -> void {
+        const auto settings = fstore::conf::settings::load_file(confpath);
+        auto store = fstore::core::object_store(
+            settings.database.connection.str(),
+            settings.home
+        );
 
-    const auto old = store.fetch_bucket(argv[0]);
-    store.rename_bucket(old.id, argv[1]);
+        const auto old = store.fetch_bucket(old_name);
+        store.rename_bucket(old.id, new_name);
 
-    const auto bucket = store.fetch_bucket(argv[1]);
+        const auto bucket = store.fetch_bucket(new_name);
 
-    std::cout
-        << "bucket " QUOTE(old.name)
-        << " renamed to: " << argv[1]
-        << std::endl;
+        std::cout
+            << "bucket " QUOTE(old.name)
+            << " renamed to: " << bucket.name
+            << std::endl;
+    }
 }
 
 namespace fstore::cli {
@@ -94,14 +85,12 @@ namespace fstore::cli {
     ) -> std::unique_ptr<command_node> {
         return command(
             "add",
-            "Create a new bucket.",
+            "Create a new bucket",
             options(
-                option<std::string_view>(
-                    {"conf", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
+            ),
+            arguments(
+                required<std::string_view>("name")
             ),
             $add
         );
@@ -112,14 +101,12 @@ namespace fstore::cli {
     ) -> std::unique_ptr<command_node> {
         return command(
             "remove",
-            "Delete a bucket.",
+            "Delete a bucket",
             options(
-                option<std::string_view>(
-                    {"conf", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
+            ),
+            arguments(
+                required<std::string_view>("name")
             ),
             $remove
         );
@@ -130,14 +117,13 @@ namespace fstore::cli {
     ) -> std::unique_ptr<command_node> {
         return command(
             "rename",
-            "Rename a bucket.",
+            "Rename a bucket",
             options(
-                option<std::string_view>(
-                    {"conf", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
+            ),
+            arguments(
+                required<std::string_view>("old_name"),
+                required<std::string_view>("new_name")
             ),
             $rename
         );
@@ -150,13 +136,9 @@ namespace fstore::cli {
             "bucket",
             "List bucket information",
             options(
-                option<std::string_view>(
-                    {"conf", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
             ),
+            arguments(),
             $bucket
         );
 

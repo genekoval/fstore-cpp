@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "../options/opts.h"
 
 #include <fstore/core/object_store.h>
 
@@ -6,57 +7,54 @@
 #include <iostream>
 #include <numeric>
 
-auto $prune(
-    const commline::app& app,
-    const commline::argv& argv,
-    std::string_view confpath
-) -> void {
-    const auto settings = fstore::conf::settings::load_file(confpath);
-    auto store = fstore::core::object_store(
-        settings.database.connection.str(),
-        settings.home
-    );
+using namespace commline;
 
-    const auto objects = store.prune();
+namespace {
+    auto $prune(
+        const app& app,
+        std::string_view confpath
+    ) -> void {
+        const auto settings = fstore::conf::settings::load_file(confpath);
+        auto store = fstore::core::object_store(
+            settings.database.connection.str(),
+            settings.home
+        );
 
-    if (objects.empty()) {
-        std::cout << "No objects to prune." << std::endl;
-        return;
-    }
+        const auto objects = store.prune();
 
-    auto space_freed = std::accumulate(
-        objects.begin(),
-        objects.end(),
-        uintmax_t(0),
-        [](uintmax_t sum, const auto& object) -> uintmax_t {
-            return sum + object.size;
+        if (objects.empty()) {
+            std::cout << "No objects to prune." << std::endl;
+            return;
         }
-    );
 
-    std::cout
-        << "removed " << objects.size()
-        << " object" << (objects.size() == 1 ? "" : "s") << '\n'
-        << "freeing " << ext::data_size::format(space_freed).str(2)
-        << std::endl;
+        const auto space_freed = std::accumulate(
+            objects.begin(),
+            objects.end(),
+            uintmax_t(0),
+            [](uintmax_t sum, const auto& object) -> uintmax_t {
+                return sum + object.size;
+            }
+        );
+
+        std::cout
+            << "removed " << objects.size()
+            << " object" << (objects.size() == 1 ? "" : "s") << '\n'
+            << "freeing " << ext::data_size::format(space_freed).str(2)
+            << std::endl;
+    }
 }
 
 namespace fstore::cli {
-    using namespace commline;
-
     auto prune(
         std::string_view confpath
     ) -> std::unique_ptr<command_node> {
         return command(
             "prune",
-            "Remove any objects not referenced by a bucket.",
+            "Remove any objects not referenced by a bucket",
             options(
-                option<std::string_view>(
-                    {"conf", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
             ),
+            arguments(),
             $prune
         );
     }

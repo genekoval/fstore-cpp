@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "../db/db.h"
+#include "../options/opts.h"
 
 #include <fstore/cli.h>
 #include <fstore/repo/filesystem.h>
@@ -11,7 +12,6 @@ using namespace commline;
 namespace {
     auto $archive(
         const app& app,
-        const argv& argv,
         std::string_view confpath,
         std::optional<std::string_view> file,
         timber::level log_level
@@ -55,24 +55,15 @@ namespace fstore::cli {
             __FUNCTION__,
             "Create a backup of the database and object files",
             options(
-                option<std::string_view>(
-                    {"config", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                ),
+                opts::config(confpath),
                 option<std::optional<std::string_view>>(
-                    {"file", "f"},
+                    {"f", "file"},
                     "Send output to the specified file or directory",
                     "file"
                 ),
-                option<timber::level>(
-                    {"log-level", "l"},
-                    "Log level",
-                    "level",
-                    timber::level::info
-                )
+                opts::log_level()
             ),
+            arguments(),
             $archive
         );
     }

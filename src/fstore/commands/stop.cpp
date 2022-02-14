@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "../options/opts.h"
 
 #include <fstore/conf/settings.h>
 
@@ -9,7 +10,6 @@ using namespace commline;
 namespace {
     auto $stop(
         const app& app,
-        const argv&,
         std::string_view confpath
     ) -> void {
         const auto settings = fstore::conf::settings::load_file(confpath);
@@ -25,13 +25,9 @@ namespace fstore::cli {
             "stop",
             "Stop the server daemon",
             options(
-                option<std::string_view>(
-                    {"config", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
             ),
+            arguments(),
             $stop
         );
     }

@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "../db/db.h"
+#include "../options/opts.h"
 
 #include <fstore/cli.h>
 #include <fstore/repo/filesystem.h>
@@ -16,18 +17,17 @@ namespace {
 
     auto $restore(
         const app& app,
-        const argv& argv,
         std::string_view confpath,
         std::optional<std::string_view> user,
-        timber::level log_level
+        timber::level log_level,
+        std::optional<std::string> filename
     ) -> void {
         timber::reporting_level = log_level;
 
         auto settings = fstore::conf::settings::load_file(confpath);
 
-        auto archive = std::string(
-            argv.empty() ? settings.archive.path : argv.front()
-        );
+        auto archive = filename.value_or(settings.archive.path);
+
         if (archive.empty()) throw std::runtime_error(
             "archive location not specified"
         );
@@ -73,23 +73,16 @@ namespace fstore::cli {
             __FUNCTION__,
             "Create a backup of the database and object files",
             options(
-                option<std::string_view>(
-                    {"config", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                ),
+                opts::config(confpath),
                 option<std::optional<std::string_view>>(
-                    {"user", "u"},
+                    {"u", "user"},
                     "User name to connect as",
                     "username"
                 ),
-                option<timber::level>(
-                    {"log-level", "l"},
-                    "Log level",
-                    "level",
-                    timber::level::info
-                )
+                opts::log_level()
+            ),
+            arguments(
+                optional<std::string>("filename")
             ),
             $restore
         );

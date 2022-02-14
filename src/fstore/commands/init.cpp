@@ -1,12 +1,12 @@
 #include "commands.h"
 #include "../db/db.h"
+#include "../options/opts.h"
 
 using namespace commline;
 
 namespace {
     auto $init(
         const app& app,
-        const argv& argv,
         std::string_view confpath
     ) -> void {
         const auto settings = fstore::conf::settings::load_file(confpath);
@@ -24,13 +24,9 @@ namespace fstore::cli {
             "init",
             "Initialize the database",
             options(
-                option<std::string_view>(
-                    {"config", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
             ),
+            arguments(),
             $init
         );
     }

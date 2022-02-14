@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "../options/opts.h"
 
 #include <fstore/cli.h>
 #include <fstore/core/object_store.h>
@@ -7,39 +8,40 @@
 #include <dmon/dmon>
 #include <timber/timber>
 
-static auto $start(
-    const commline::app& app,
-    const commline::argv& argv,
-    std::string_view conf,
-    bool daemon,
-    timber::level log_level
-) -> void {
-    const auto settings = fstore::conf::settings::load_file(conf);
-    timber::reporting_level = log_level;
+namespace {
+    auto $start(
+        const commline::app& app,
+        std::string_view conf,
+        bool daemon,
+        timber::level log_level
+    ) -> void {
+        const auto settings = fstore::conf::settings::load_file(conf);
+        timber::reporting_level = log_level;
 
-    if (daemon && !dmon::daemonize({
-        .group = settings.daemon.group,
-        .identifier = app.name,
-        .pidfile = settings.daemon.pidfile,
-        .user = settings.daemon.user
-    })) return;
+        if (daemon && !dmon::daemonize({
+            .group = settings.daemon.group,
+            .identifier = app.name,
+            .pidfile = settings.daemon.pidfile,
+            .user = settings.daemon.user
+        })) return;
 
-    NOTICE() << app.name << " version " << app.version << " starting up";
+        NOTICE() << app.name << " version " << app.version << " starting up";
 
-    auto store = fstore::core::object_store(
-        settings.database.connection.str(),
-        settings.home
-    );
+        auto store = fstore::core::object_store(
+            settings.database.connection.str(),
+            settings.home
+        );
 
-    const auto info = fstore::server::server_info {
-        .version = std::string(app.version)
-    };
+        const auto info = fstore::server::server_info {
+            .version = std::string(app.version)
+        };
 
-    fstore::server::listen(store, info, settings.server, []() {
-        INFO() << "Server started. Listening for connections...";
-    });
+        fstore::server::listen(store, info, settings.server, []() {
+            INFO() << "Server started. Listening for connections...";
+        });
 
-    NOTICE() << app.name << " shutting down";
+        NOTICE() << app.name << " shutting down";
+    }
 }
 
 namespace fstore::cli {
@@ -50,25 +52,16 @@ namespace fstore::cli {
     ) -> std::unique_ptr<command_node> {
         return command(
             "start",
-            "Start the server.",
+            "Start the server",
             options(
-                option<std::string_view>(
-                    {"conf", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                ),
+                opts::config(confpath),
                 flag(
-                    {"daemon", "d"},
+                    {"d", "daemon"},
                     "Run the program as a daemon"
                 ),
-                option<timber::level>(
-                    {"log-level", "l"},
-                    "Minimum log level to display.",
-                    "log level",
-                    timber::level::info
-                )
+                opts::log_level()
             ),
+            arguments(),
             $start
         );
     }

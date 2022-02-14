@@ -1,18 +1,19 @@
 #include "commands.h"
 #include "../db/db.h"
+#include "../options/opts.h"
 
 using namespace commline;
 
 namespace {
     auto $db(
         const app& app,
-        const argv& argv,
-        std::string_view confpath
+        std::string_view confpath,
+        const std::vector<std::string_view>& commands
     ) -> void {
         const auto settings = fstore::conf::settings::load_file(confpath);
         const auto client = fstore::cli::data::client(settings);
 
-        client.exec(argv);
+        client.exec(commands);
     }
 }
 
@@ -24,12 +25,10 @@ namespace fstore::cli {
             "db",
             "Connect to the database using the psql client",
             options(
-                option<std::string_view>(
-                    {"config", "c"},
-                    "Path to configuration file",
-                    "path",
-                    std::move(confpath)
-                )
+                opts::config(confpath)
+            ),
+            arguments(
+                variadic<std::string_view>("command")
             ),
             $db
         );
