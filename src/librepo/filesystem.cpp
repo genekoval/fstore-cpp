@@ -10,18 +10,26 @@
 #include <timber/timber>
 #include <vector>
 
-namespace fstore::repo {
+namespace {
+    constexpr auto object_permmissions =
+        std::filesystem::perms::owner_read |
+        std::filesystem::perms::owner_write |
+        std::filesystem::perms::group_read;
+
     constexpr auto sync_options = std::array {
         "--archive",
         "--delete"
     };
+
     constexpr auto object_dir = "objects";
     constexpr auto parts_dir = "parts";
 
-    static auto magic_mime_type() -> magix::magic {
+    auto magic_mime_type() -> magix::magic {
         return magix::magic(MAGIC_MIME_TYPE);
     }
+}
 
+namespace fstore::repo {
     fs::fs(const std::filesystem::path& home) :
         objects(home/object_dir),
         parts(home/parts_dir)
@@ -34,11 +42,15 @@ namespace fstore::repo {
         const std::filesystem::path& source,
         std::string_view id
     ) const -> void {
+        const auto object = path_to(id);
+
         std::filesystem::copy_file(
             source,
-            path_to(id),
+            object,
             std::filesystem::copy_options::skip_existing
         );
+
+        std::filesystem::permissions(object, object_permmissions);
     }
 
     auto fs::get_part(std::string_view id) const -> std::ofstream {
@@ -58,10 +70,11 @@ namespace fstore::repo {
     }
 
     auto fs::make_object(std::string_view part_id) -> void {
-        auto part = parts/part_id;
-        auto object = objects/part_id;
+        const auto part = part_path(part_id);
+        const auto object = path_to(part_id);
 
         std::filesystem::rename(part, object);
+        std::filesystem::permissions(object, object_permmissions);
     }
 
     auto fs::mime_type(const std::filesystem::path& path) const -> std::string {
