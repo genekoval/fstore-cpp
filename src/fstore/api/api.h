@@ -1,11 +1,13 @@
 #pragma once
 
 #include <fstore/conf/settings.h>
+#include <fstore/core/db/database.h>
 #include <fstore/core/filesystem.h>
 #include <fstore/core/object_store.h>
 
 namespace fstore::cli {
     class api_container {
+        fstore::core::db::database database;
         fstore::core::filesystem fs;
         fstore::core::object_store store;
     public:

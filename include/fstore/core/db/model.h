@@ -3,7 +3,7 @@
 #include <entix/entity>
 #include <string>
 
-namespace fstore::repo {
+namespace fstore::core::db {
     struct bucket : entix::entity<5> {
         std::string id;
         std::string name;

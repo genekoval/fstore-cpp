@@ -20,8 +20,8 @@ protected:
         fstore::test::drop_objects();
     }
 
-    fstore::repo::database db = fstore::test::db();
-    const std::vector<fstore::repo::object> objects = {
+    fstore::core::db::database db = fstore::test::db();
+    const std::vector<fstore::core::db::object> objects = {
         {
             .id = "a4f33eab-1fbf-49ab-af6b-9fc72714f8c5",
             .hash =
@@ -113,7 +113,7 @@ TEST_F(RepoObjectTest, GetObject) {
 }
 
 TEST_F(RepoObjectTest, RemoveObjectsEmptyList) {
-    constexpr auto expected = fstore::repo::remove_result {
+    constexpr auto expected = fstore::core::db::remove_result {
         .objects_removed = 0,
         .space_freed = 0
     };
@@ -125,7 +125,7 @@ TEST_F(RepoObjectTest, RemoveObjectsEmptyList) {
 
 TEST_F(RepoObjectTest, RemoveObjectsSingle) {
     const auto& object = objects.front();
-    const auto expected = fstore::repo::remove_result {
+    const auto expected = fstore::core::db::remove_result {
         .objects_removed = 1,
         .space_freed = object.size
     };
@@ -145,7 +145,7 @@ TEST_F(RepoObjectTest, RemoveObjectsMultiple) {
         db.add_object(bucket, object);
     }
 
-    const auto expected = fstore::repo::remove_result {
+    const auto expected = fstore::core::db::remove_result {
         .objects_removed = objects.size(),
         .space_freed = size
     };
@@ -173,7 +173,7 @@ TEST_F(RepoObjectTest, RemoveObjectsSubset) {
 }
 
 TEST_F(RepoObjectTest, RemoveObjectsNonexistent) {
-    constexpr auto expected = fstore::repo::remove_result {
+    constexpr auto expected = fstore::core::db::remove_result {
         .objects_removed = 0,
         .space_freed = 0
     };

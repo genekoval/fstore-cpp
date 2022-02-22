@@ -1,11 +1,11 @@
 #include <fstore/error.h>
-#include <fstore/repo/database.h>
-#include <fstore/repo/entity.h>
+#include <fstore/core/db/database.h>
+#include <fstore/core/db/entity.h>
 
 #include <ext/string.h>
 #include <pqxx/pqxx>
 
-namespace fstore::repo {
+namespace fstore::core::db {
     database::database(std::string_view connection_string) :
         connection(std::string(connection_string))
     {

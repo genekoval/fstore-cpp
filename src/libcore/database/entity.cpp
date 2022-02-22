@@ -1,6 +1,6 @@
-#include <fstore/repo/entity.h>
+#include <fstore/core/db/entity.h>
 
-using namespace fstore::repo;
+using namespace fstore::core::db;
 
 namespace entix {
     READ_ENTITY(

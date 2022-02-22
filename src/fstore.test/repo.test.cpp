@@ -12,14 +12,14 @@ namespace fstore::test {
         tx.exec(query);
     }
 
-    auto db() -> repo::database {
-        return repo::database(test_db);
+    auto db() -> core::db::database {
+        return core::db::database(test_db);
     }
 
     auto create_bucket(
-        repo::database& db,
+        core::db::database& db,
         std::string_view name
-    ) -> repo::bucket {
+    ) -> core::db::bucket {
         auto uuid = UUID::uuid();
         uuid.generate();
 

@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-namespace fstore::repo {
+namespace fstore::core::db {
     class database {
         pqxx::connection connection;
 

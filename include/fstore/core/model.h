@@ -1,14 +1,14 @@
 #pragma once
 
-#include <fstore/repo/model.h>
+#include <fstore/core/db/model.h>
 
 #include <netcore/netcore>
 
 namespace fstore::core {
-    using bucket = repo::bucket;
-    using object = repo::object;
-    using remove_result = repo::remove_result;
-    using store_totals = repo::store_totals;
+    using bucket = db::bucket;
+    using object = db::object;
+    using remove_result = db::remove_result;
+    using store_totals = db::store_totals;
 
     struct file {
         netcore::fd fd;

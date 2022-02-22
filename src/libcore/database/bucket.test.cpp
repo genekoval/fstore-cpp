@@ -13,13 +13,13 @@ protected:
         fstore::test::drop_buckets();
     }
 
-    fstore::repo::database db;
+    fstore::core::db::database db;
 
     RepoBucketTest() : db(fstore::test::db()) {
         fstore::test::drop_buckets();
     }
 
-    auto create_bucket(std::string_view name) -> fstore::repo::bucket {
+    auto create_bucket(std::string_view name) -> fstore::core::db::bucket {
         return fstore::test::create_bucket(db, name);
     }
 };

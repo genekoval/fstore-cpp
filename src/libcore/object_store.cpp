@@ -1,3 +1,4 @@
+#include <fstore/core/db/database.h>
 #include <fstore/core/filesystem.h>
 #include <fstore/core/object_store.h>
 
@@ -5,8 +6,8 @@
 #include <uuid++/uuid.h>
 
 namespace fstore::core {
-    object_store::object_store(repo::database&& db, filesystem& fs) :
-        db(std::move(db)),
+    object_store::object_store(db::database& database, filesystem& fs) :
+        database(&database),
         fs(&fs)
     {}
 
@@ -17,7 +18,7 @@ namespace fstore::core {
         auto uuid = UUID::uuid();
         uuid.generate();
 
-        const auto obj = db.add_object(
+        const auto obj = database->add_object(
             bucket_id,
             uuid.string(),
             fs->hash(path),
@@ -35,7 +36,7 @@ namespace fstore::core {
     ) -> object {
         auto part = fs->part_path(part_id);
 
-        const auto obj = db.add_object(
+        const auto obj = database->add_object(
             bucket_id,
             part_id,
             fs->hash(part),
@@ -54,28 +55,28 @@ namespace fstore::core {
         auto uuid = UUID::uuid();
         uuid.generate();
 
-        const auto bkt = db.create_bucket(uuid.string(), name);
+        const auto bkt = database->create_bucket(uuid.string(), name);
         INFO() << "Created bucket: " << bkt.name;
 
         return bkt;
     }
 
     auto object_store::fetch_bucket(std::string_view name) -> bucket {
-        return db.fetch_bucket(name);
+        return database->fetch_bucket(name);
     }
 
     auto object_store::fetch_buckets() -> std::vector<bucket> {
-        return db.fetch_buckets();
+        return database->fetch_buckets();
     }
 
     auto object_store::fetch_buckets(
         const std::vector<std::string>& names
     ) -> std::vector<bucket> {
-        return db.fetch_buckets(names);
+        return database->fetch_buckets(names);
     }
 
     auto object_store::fetch_store_totals() -> store_totals {
-        return db.fetch_store_totals();
+        return database->fetch_store_totals();
     }
 
     auto object_store::get_object(
@@ -92,7 +93,7 @@ namespace fstore::core {
         std::string_view bucket_id,
         std::string_view object_id
     ) -> std::optional<object> {
-        return db.get_object(bucket_id, object_id);
+        return database->get_object(bucket_id, object_id);
     }
 
     auto object_store::get_part(
@@ -111,7 +112,7 @@ namespace fstore::core {
     }
 
     auto object_store::prune() -> std::vector<object> {
-        auto orphans = db.remove_orphan_objects();
+        auto orphans = database->remove_orphan_objects();
         for (const auto& obj : orphans) fs->remove(obj.id);
 
         INFO() << "Pruned " << orphans.size() << " objects";
@@ -120,27 +121,27 @@ namespace fstore::core {
     }
 
     auto object_store::remove_bucket(std::string_view bucket_id) -> void {
-        db.remove_bucket(bucket_id);
+        database->remove_bucket(bucket_id);
     }
 
     auto object_store::remove_object(
         std::string_view bucket_id,
         std::string_view object_id
     ) -> object {
-        return db.remove_object(bucket_id, object_id);
+        return database->remove_object(bucket_id, object_id);
     }
 
     auto object_store::remove_objects(
         std::string_view bucket_id,
         const std::vector<std::string>& objects
     ) -> remove_result {
-        return db.remove_objects(bucket_id, objects);
+        return database->remove_objects(bucket_id, objects);
     }
 
     auto object_store::rename_bucket(
         std::string_view bucket_id,
         std::string_view bucket_name
     ) -> void {
-        db.rename_bucket(bucket_id, bucket_name);
+        database->rename_bucket(bucket_id, bucket_name);
     }
 }

@@ -2,19 +2,22 @@
 
 #include <fstore/core/model.h>
 #include <fstore/core/part.h>
-#include <fstore/repo/database.h>
 
 #include <optional>
 #include <span>
 
 namespace fstore::core {
+    namespace db {
+        class database;
+    }
+
     class filesystem;
 
     class object_store {
-        repo::database db;
+        db::database* database;
         filesystem* fs;
     public:
-        object_store(repo::database&& db, filesystem& fs);
+        object_store(db::database& db, filesystem& fs);
 
         auto add_object(
             std::string_view bucket_id,

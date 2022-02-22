@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fstore/repo/database.h>
+#include <fstore/core/db/database.h>
 
 #include <filesystem>
 
@@ -12,12 +12,12 @@ namespace fstore::test {
         ~temp_directory();
     };
 
-    auto db() -> repo::database;
+    auto db() -> core::db::database;
 
     auto create_bucket(
-        repo::database& db,
+        core::db::database& db,
         std::string_view name
-    ) -> repo::bucket;
+    ) -> core::db::bucket;
 
     auto drop_buckets() -> void;
 
