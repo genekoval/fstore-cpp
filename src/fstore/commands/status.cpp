@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "../api/api.h"
 #include "../options/opts.h"
 
 #include <fstore/cli.h>
@@ -16,11 +17,8 @@ namespace {
         bool verbose,
         const std::vector<std::string>& names
     ) -> void {
-        const auto settings = fstore::conf::settings::load_file(confpath);
-        auto store = fstore::core::object_store(
-            settings.database.connection.str(),
-            settings.home
-        );
+        auto api = fstore::cli::api_container(confpath);
+        auto& store = api.object_store();
 
         auto table = fstore::cli::bucket_table();
 

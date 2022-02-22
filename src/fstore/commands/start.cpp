@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "../api/api.h"
 #include "../options/opts.h"
 
 #include <fstore/cli.h>
@@ -16,6 +17,9 @@ namespace {
         timber::level log_level
     ) -> void {
         const auto settings = fstore::conf::settings::load_file(conf);
+        auto api = fstore::cli::api_container(settings);
+        auto& store = api.object_store();
+
         timber::reporting_level = log_level;
 
         if (daemon && !dmon::daemonize({
@@ -26,11 +30,6 @@ namespace {
         })) return;
 
         NOTICE() << app.name << " version " << app.version << " starting up";
-
-        auto store = fstore::core::object_store(
-            settings.database.connection.str(),
-            settings.home
-        );
 
         const auto info = fstore::server::server_info {
             .version = std::string(app.version)

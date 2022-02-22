@@ -1,4 +1,4 @@
-#include <fstore/repo/filesystem.h>
+#include <fstore/core/filesystem.h>
 #include <fstore/test.h>
 
 #include <fstream>
@@ -30,7 +30,7 @@ namespace test_file {
 class RepoFilesystemTest : public testing::Test {
 protected:
     const fstore::test::temp_directory home;
-    const fstore::repo::fs fs;
+    const fstore::core::filesystem fs;
     const std::filesystem::path test_file_path;
 
     RepoFilesystemTest() :

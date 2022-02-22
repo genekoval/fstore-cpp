@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "../api/api.h"
 #include "../options/opts.h"
 
 #include <fstore/core/object_store.h>
@@ -11,11 +12,9 @@ namespace {
         const commline::app& app,
         std::string_view confpath
     ) {
-        const auto settings = fstore::conf::settings::load_file(confpath);
-        auto store = fstore::core::object_store(
-            settings.database.connection.str(),
-            settings.home
-        );
+        auto api = fstore::cli::api_container(confpath);
+        auto& store = api.object_store();
+
         const auto buckets = store.fetch_buckets();
         for (const auto& bucket : buckets) std::cout << bucket.name << '\n';
     }
@@ -25,11 +24,8 @@ namespace {
         std::string_view confpath,
         std::string_view name
     ) -> void {
-        const auto settings = fstore::conf::settings::load_file(confpath);
-        auto store = fstore::core::object_store(
-            settings.database.connection.str(),
-            settings.home
-        );
+        auto api = fstore::cli::api_container(confpath);
+        auto& store = api.object_store();
 
         const auto bucket = store.create_bucket(name);
         std::cout << "bucket created: " << bucket.name << std::endl;
@@ -40,11 +36,8 @@ namespace {
         std::string_view confpath,
         std::string_view name
     ) -> void {
-        const auto settings = fstore::conf::settings::load_file(confpath);
-        auto store = fstore::core::object_store(
-            settings.database.connection.str(),
-            settings.home
-        );
+        auto api = fstore::cli::api_container(confpath);
+        auto& store = api.object_store();
 
         const auto bucket = store.fetch_bucket(name);
 
@@ -59,11 +52,8 @@ namespace {
         std::string_view old_name,
         std::string_view new_name
     ) -> void {
-        const auto settings = fstore::conf::settings::load_file(confpath);
-        auto store = fstore::core::object_store(
-            settings.database.connection.str(),
-            settings.home
-        );
+        auto api = fstore::cli::api_container(confpath);
+        auto& store = api.object_store();
 
         const auto old = store.fetch_bucket(old_name);
         store.rename_bucket(old.id, new_name);

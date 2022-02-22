@@ -1,3 +1,4 @@
+#include <fstore/core/filesystem.h>
 #include <fstore/test.h>
 #include <fstore/repo/filesystem.h>
 #include <fstore/server/server.h>
@@ -31,10 +32,8 @@ namespace fstore::test {
             close(pipefd[0]);
 
             auto home = temp_directory();
-            auto store = core::object_store(
-                db(),
-                repo::fs(home.path)
-            );
+            auto fs = core::filesystem(home.path);
+            auto store = core::object_store(db(), fs);
 
             const auto info = server::server_info { .version = "0.0.0" };
 

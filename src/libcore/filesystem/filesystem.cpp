@@ -1,6 +1,6 @@
-#include "crypto.h"
+#include "crypto/crypto.h"
 
-#include <fstore/repo/filesystem.h>
+#include <fstore/core/filesystem.h>
 
 #include <ext/unix.h>
 #include <fcntl.h>
@@ -29,8 +29,8 @@ namespace {
     }
 }
 
-namespace fstore::repo {
-    fs::fs(const std::filesystem::path& home) :
+namespace fstore::core {
+    filesystem::filesystem(const std::filesystem::path& home) :
         objects(home/object_dir),
         parts(home/parts_dir)
     {
@@ -38,7 +38,7 @@ namespace fstore::repo {
         std::filesystem::create_directories(parts);
     }
 
-    auto fs::copy(
+    auto filesystem::copy(
         const std::filesystem::path& source,
         std::string_view id
     ) const -> void {
@@ -53,7 +53,7 @@ namespace fstore::repo {
         std::filesystem::permissions(object, object_permmissions);
     }
 
-    auto fs::get_part(std::string_view id) const -> std::ofstream {
+    auto filesystem::get_part(std::string_view id) const -> std::ofstream {
         auto path = parts/id;
         return std::ofstream(
             path,
@@ -61,15 +61,19 @@ namespace fstore::repo {
         );
     }
 
-    auto fs::hash(std::span<const std::byte> buffer) const -> std::string {
+    auto filesystem::hash(
+        std::span<const std::byte> buffer
+    ) const -> std::string {
         return crypto::sha256sum(buffer);
     }
 
-    auto fs::hash(const std::filesystem::path& path) const -> std::string {
+    auto filesystem::hash(
+        const std::filesystem::path& path
+    ) const -> std::string {
         return crypto::sha256sum(path);
     }
 
-    auto fs::make_object(std::string_view part_id) -> void {
+    auto filesystem::make_object(std::string_view part_id) -> void {
         const auto part = part_path(part_id);
         const auto object = path_to(part_id);
 
@@ -77,36 +81,44 @@ namespace fstore::repo {
         std::filesystem::permissions(object, object_permmissions);
     }
 
-    auto fs::mime_type(const std::filesystem::path& path) const -> std::string {
+    auto filesystem::mime_type(
+        const std::filesystem::path& path
+    ) const -> std::string {
         return magic_mime_type().file(path);
     }
 
-    auto fs::open(std::string_view id) const -> netcore::fd {
+    auto filesystem::open(std::string_view id) const -> netcore::fd {
         auto path = path_to(id);
         return ::open(path.c_str(), O_RDONLY);
     }
 
-    auto fs::part_path(std::string_view id) const -> std::filesystem::path {
+    auto filesystem::part_path(
+        std::string_view id
+    ) const -> std::filesystem::path {
         return parts/id;
     }
 
-    auto fs::path_to(std::string_view id) const -> std::filesystem::path {
+    auto filesystem::path_to(
+        std::string_view id
+    ) const -> std::filesystem::path {
         return objects/id;
     }
 
-    auto fs::remove(std::string_view id) const -> void {
+    auto filesystem::remove(std::string_view id) const -> void {
         std::filesystem::remove(path_to(id));
     }
 
-    auto fs::remove_part(std::string_view id) const -> void {
+    auto filesystem::remove_part(std::string_view id) const -> void {
         std::filesystem::remove(parts/id);
     }
 
-    auto fs::size(const std::filesystem::path& path) const -> uintmax_t {
+    auto filesystem::size(
+        const std::filesystem::path& path
+    ) const -> uintmax_t {
         return std::filesystem::file_size(path);
     }
 
-    auto fs::sync(
+    auto filesystem::sync(
         std::string_view program,
         std::span<const std::string_view> options,
         std::string_view dest

@@ -5,12 +5,12 @@
 #include <netcore/fd.h>
 #include <span>
 
-namespace fstore::repo {
-    class fs {
+namespace fstore::core {
+    class filesystem {
         const std::filesystem::path objects;
         const std::filesystem::path parts;
     public:
-        fs(const std::filesystem::path& home);
+        filesystem(const std::filesystem::path& home);
 
         auto copy(
             const std::filesystem::path& source,

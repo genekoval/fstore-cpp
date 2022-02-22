@@ -3,7 +3,7 @@
 #include "../options/opts.h"
 
 #include <fstore/cli.h>
-#include <fstore/repo/filesystem.h>
+#include <fstore/core/filesystem.h>
 
 #include <fmt/format.h>
 
@@ -28,7 +28,7 @@ namespace {
 
         const auto dump_file = client.dump(settings.home);
 
-        const auto fs = fstore::repo::fs(settings.home);
+        const auto fs = fstore::core::filesystem(settings.home);
 
         auto options = std::vector<std::string_view>();
         for (const auto& option : settings.archive.options) {

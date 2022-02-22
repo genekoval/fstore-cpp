@@ -1,24 +1,13 @@
+#include <fstore/core/filesystem.h>
 #include <fstore/core/object_store.h>
 
-#include <filesystem>
 #include <timber/timber>
 #include <uuid++/uuid.h>
 
 namespace fstore::core {
-    object_store::object_store(
-        std::string_view db_connection,
-        std::string_view home
-    ) :
-        db(db_connection),
-        fs(home)
-    {
-        INFO() << "Database connection: " << db_connection;
-        INFO() << "Object storage: " << std::filesystem::canonical(home);
-    }
-
-    object_store::object_store(repo::database&& db, repo::fs&& fs) :
+    object_store::object_store(repo::database&& db, filesystem& fs) :
         db(std::move(db)),
-        fs(std::move(fs))
+        fs(&fs)
     {}
 
     auto object_store::add_object(
@@ -31,12 +20,12 @@ namespace fstore::core {
         const auto obj = db.add_object(
             bucket_id,
             uuid.string(),
-            fs.hash(path),
-            fs.size(path),
-            fs.mime_type(path)
+            fs->hash(path),
+            fs->size(path),
+            fs->mime_type(path)
         );
 
-        fs.copy(path, obj.id);
+        fs->copy(path, obj.id);
         return obj;
     }
 
@@ -44,19 +33,19 @@ namespace fstore::core {
         std::string_view bucket_id,
         std::string_view part_id
     ) -> object {
-        auto part = fs.part_path(part_id);
+        auto part = fs->part_path(part_id);
 
         const auto obj = db.add_object(
             bucket_id,
             part_id,
-            fs.hash(part),
-            fs.size(part),
-            fs.mime_type(part)
+            fs->hash(part),
+            fs->size(part),
+            fs->mime_type(part)
         );
 
         // This object was uploaded previously.
-        if (obj.id != part_id) fs.remove_part(part_id);
-        else fs.make_object(part_id);
+        if (obj.id != part_id) fs->remove_part(part_id);
+        else fs->make_object(part_id);
 
         return obj;
     }
@@ -96,7 +85,7 @@ namespace fstore::core {
         auto meta = get_object_metadata(bucket_id, object_id);
         if (!meta) return {};
 
-        return file { fs.open(object_id), meta.value().size };
+        return file { fs->open(object_id), meta.value().size };
     }
 
     auto object_store::get_object_metadata(
@@ -118,12 +107,12 @@ namespace fstore::core {
             id = uuid.string();
         }
 
-        return part(id, fs.get_part(id));
+        return part(id, fs->get_part(id));
     }
 
     auto object_store::prune() -> std::vector<object> {
         auto orphans = db.remove_orphan_objects();
-        for (const auto& obj : orphans) fs.remove(obj.id);
+        for (const auto& obj : orphans) fs->remove(obj.id);
 
         INFO() << "Pruned " << orphans.size() << " objects";
 

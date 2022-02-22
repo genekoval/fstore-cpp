@@ -6,9 +6,9 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/sha.h>
 
-namespace fstore::crypto {
-    using namespace CryptoPP;
+using namespace CryptoPP;
 
+namespace fstore::core::crypto {
     auto sha256sum(std::span<const std::byte> buffer) -> std::string {
         auto hash = SHA256();
         auto sum = std::string();
