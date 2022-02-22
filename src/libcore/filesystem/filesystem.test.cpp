@@ -30,7 +30,7 @@ namespace test_file {
 class RepoFilesystemTest : public testing::Test {
 protected:
     const fstore::test::temp_directory home;
-    const fstore::core::filesystem fs;
+    const fstore::core::fs::filesystem fs;
     const std::filesystem::path test_file_path;
 
     RepoFilesystemTest() :

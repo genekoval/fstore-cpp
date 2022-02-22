@@ -5,7 +5,7 @@
 #include <netcore/fd.h>
 #include <span>
 
-namespace fstore::core {
+namespace fstore::core::fs {
     class filesystem {
         const std::filesystem::path objects;
         const std::filesystem::path parts;

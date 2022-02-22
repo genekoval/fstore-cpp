@@ -8,7 +8,7 @@
 namespace fstore::cli {
     class api_container {
         fstore::core::db::database database;
-        fstore::core::filesystem fs;
+        fstore::core::fs::filesystem fs;
         fstore::core::object_store store;
     public:
         api_container(std::string_view confpath);

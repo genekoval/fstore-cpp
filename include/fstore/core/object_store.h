@@ -11,13 +11,15 @@ namespace fstore::core {
         class database;
     }
 
-    class filesystem;
+    namespace fs {
+        class filesystem;
+    }
 
     class object_store {
         db::database* database;
-        filesystem* fs;
+        fs::filesystem* filesystem;
     public:
-        object_store(db::database& db, filesystem& fs);
+        object_store(db::database& database, fs::filesystem& filesystem);
 
         auto add_object(
             std::string_view bucket_id,

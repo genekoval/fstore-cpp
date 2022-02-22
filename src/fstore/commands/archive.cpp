@@ -28,7 +28,7 @@ namespace {
 
         const auto dump_file = client.dump(settings.home);
 
-        const auto fs = fstore::core::filesystem(settings.home);
+        const auto fs = fstore::core::fs::filesystem(settings.home);
 
         auto options = std::vector<std::string_view>();
         for (const auto& option : settings.archive.options) {

@@ -33,7 +33,7 @@ namespace fstore::test {
 
             auto home = temp_directory();
             auto database = db();
-            auto fs = core::filesystem(home.path);
+            auto fs = core::fs::filesystem(home.path);
             auto store = core::object_store(database, fs);
 
             const auto info = server::server_info { .version = "0.0.0" };

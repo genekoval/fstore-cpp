@@ -6,9 +6,12 @@
 #include <uuid++/uuid.h>
 
 namespace fstore::core {
-    object_store::object_store(db::database& database, filesystem& fs) :
+    object_store::object_store(
+        db::database& database,
+        fs::filesystem& filesystem
+    ) :
         database(&database),
-        fs(&fs)
+        filesystem(&filesystem)
     {}
 
     auto object_store::add_object(
@@ -21,12 +24,12 @@ namespace fstore::core {
         const auto obj = database->add_object(
             bucket_id,
             uuid.string(),
-            fs->hash(path),
-            fs->size(path),
-            fs->mime_type(path)
+            filesystem->hash(path),
+            filesystem->size(path),
+            filesystem->mime_type(path)
         );
 
-        fs->copy(path, obj.id);
+        filesystem->copy(path, obj.id);
         return obj;
     }
 
@@ -34,19 +37,19 @@ namespace fstore::core {
         std::string_view bucket_id,
         std::string_view part_id
     ) -> object {
-        auto part = fs->part_path(part_id);
+        auto part = filesystem->part_path(part_id);
 
         const auto obj = database->add_object(
             bucket_id,
             part_id,
-            fs->hash(part),
-            fs->size(part),
-            fs->mime_type(part)
+            filesystem->hash(part),
+            filesystem->size(part),
+            filesystem->mime_type(part)
         );
 
         // This object was uploaded previously.
-        if (obj.id != part_id) fs->remove_part(part_id);
-        else fs->make_object(part_id);
+        if (obj.id != part_id) filesystem->remove_part(part_id);
+        else filesystem->make_object(part_id);
 
         return obj;
     }
@@ -86,7 +89,7 @@ namespace fstore::core {
         auto meta = get_object_metadata(bucket_id, object_id);
         if (!meta) return {};
 
-        return file { fs->open(object_id), meta.value().size };
+        return file { filesystem->open(object_id), meta.value().size };
     }
 
     auto object_store::get_object_metadata(
@@ -108,12 +111,12 @@ namespace fstore::core {
             id = uuid.string();
         }
 
-        return part(id, fs->get_part(id));
+        return part(id, filesystem->get_part(id));
     }
 
     auto object_store::prune() -> std::vector<object> {
         auto orphans = database->remove_orphan_objects();
-        for (const auto& obj : orphans) fs->remove(obj.id);
+        for (const auto& obj : orphans) filesystem->remove(obj.id);
 
         INFO() << "Pruned " << orphans.size() << " objects";
 

@@ -29,7 +29,7 @@ namespace {
     }
 }
 
-namespace fstore::core {
+namespace fstore::core::fs {
     filesystem::filesystem(const std::filesystem::path& home) :
         objects(home/object_dir),
         parts(home/parts_dir)
