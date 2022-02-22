@@ -60,3 +60,9 @@ $(obj)/$(project)/main.o: CXXFLAGS +=\
 
 $(obj)/$(project)/db/db.o: CXXFLAGS +=\
  -DSQLDIR='"$(shell pwd)/db"'
+
+edit.config:
+	$(EDITOR) $(confdir)/fstore.yml
+
+start:
+	$($(project)) start
