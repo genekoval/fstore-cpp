@@ -3,7 +3,6 @@
 #include "../options/opts.h"
 
 #include <fstore/cli.h>
-#include <fstore/repo/filesystem.h>
 
 #include <fmt/format.h>
 
