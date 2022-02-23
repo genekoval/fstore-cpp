@@ -9,6 +9,11 @@ namespace fstore::core::fs {
     class filesystem {
         const std::filesystem::path objects;
         const std::filesystem::path parts;
+
+        auto make_object(
+            std::string_view object_id,
+            std::function<void(const std::filesystem::path&)>&& action
+        ) const -> void;
     public:
         filesystem(const std::filesystem::path& home);
 
@@ -27,11 +32,11 @@ namespace fstore::core::fs {
 
         auto mime_type(const std::filesystem::path& path) const -> std::string;
 
+        auto object_path(std::string_view id) const -> std::filesystem::path;
+
         auto open(std::string_view id) const -> netcore::fd;
 
         auto part_path(std::string_view id) const -> std::filesystem::path;
-
-        auto path_to(std::string_view id) const -> std::filesystem::path;
 
         auto remove(std::string_view id) const -> void;
 

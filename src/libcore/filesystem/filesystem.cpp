@@ -42,19 +42,20 @@ namespace fstore::core::fs {
         const std::filesystem::path& source,
         std::string_view id
     ) const -> void {
-        const auto object = path_to(id);
-
-        std::filesystem::copy_file(
-            source,
-            object,
-            std::filesystem::copy_options::skip_existing
-        );
-
-        std::filesystem::permissions(object, object_permmissions);
+        make_object(id, [&source](const auto& dest) {
+            if (std::filesystem::copy_file(
+                source,
+                dest,
+                std::filesystem::copy_options::skip_existing
+            )) {
+                DEBUG()
+                    << "Copied file: '" << source << "' -> '" << dest << "'";
+            }
+        });
     }
 
     auto filesystem::get_part(std::string_view id) const -> std::ofstream {
-        auto path = parts/id;
+        auto path = part_path(id);
         return std::ofstream(
             path,
             std::ios::out | std::ios::app | std::ios::binary
@@ -75,10 +76,26 @@ namespace fstore::core::fs {
 
     auto filesystem::make_object(std::string_view part_id) -> void {
         const auto part = part_path(part_id);
-        const auto object = path_to(part_id);
 
-        std::filesystem::rename(part, object);
-        std::filesystem::permissions(object, object_permmissions);
+        make_object(part_id, [&part](const auto& dest) {
+            std::filesystem::rename(part, dest);
+            DEBUG() << "Renamed file: '" << part << "' -> '" << dest << "'";
+        });
+    }
+
+    auto filesystem::make_object(
+        std::string_view object_id,
+        std::function<void(const std::filesystem::path&)>&& action
+    ) const -> void {
+        const auto path = object_path(object_id);
+
+        if (std::filesystem::create_directories(path.parent_path())) {
+            DEBUG() << "Created directories: " << path;
+        }
+
+        action(path);
+
+        std::filesystem::permissions(path, object_permmissions);
     }
 
     auto filesystem::mime_type(
@@ -87,8 +104,14 @@ namespace fstore::core::fs {
         return magic_mime_type().file(path);
     }
 
+    auto filesystem::object_path(
+        std::string_view id
+    ) const -> std::filesystem::path {
+        return objects / id.substr(0, 2) / id.substr(2, 4) / id;
+    }
+
     auto filesystem::open(std::string_view id) const -> netcore::fd {
-        auto path = path_to(id);
+        auto path = object_path(id);
         return ::open(path.c_str(), O_RDONLY);
     }
 
@@ -98,18 +121,15 @@ namespace fstore::core::fs {
         return parts/id;
     }
 
-    auto filesystem::path_to(
-        std::string_view id
-    ) const -> std::filesystem::path {
-        return objects/id;
-    }
-
     auto filesystem::remove(std::string_view id) const -> void {
-        std::filesystem::remove(path_to(id));
+        std::filesystem::remove(object_path(id));
     }
 
     auto filesystem::remove_part(std::string_view id) const -> void {
-        std::filesystem::remove(parts/id);
+        const auto part = part_path(id);
+
+        if (std::filesystem::remove(part)) DEBUG() << "Removed part: " << part;
+        else WARNING() << "Tried to remove nonexistent file: " << part;
     }
 
     auto filesystem::size(

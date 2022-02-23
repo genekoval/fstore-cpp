@@ -47,7 +47,7 @@ TEST_F(RepoFilesystemTest, CopyObject) {
 
     fs.copy(test_file_path, id);
 
-    auto object = fs.path_to(id);
+    auto object = fs.object_path(id);
 
     ASSERT_TRUE(std::filesystem::exists(object));
 
