@@ -34,8 +34,8 @@ namespace fstore::core::fs {
         objects(home/object_dir),
         parts(home/parts_dir)
     {
-        std::filesystem::create_directories(objects);
-        std::filesystem::create_directories(parts);
+        create_directories(objects);
+        create_directories(parts);
     }
 
     auto filesystem::copy(
@@ -49,9 +49,17 @@ namespace fstore::core::fs {
                 std::filesystem::copy_options::skip_existing
             )) {
                 DEBUG()
-                    << "Copied file: '" << source << "' -> '" << dest << "'";
+                    << "Copied file: " << source << " -> " << dest;
             }
         });
+    }
+
+    auto filesystem::create_directories(
+        const std::filesystem::path& path
+    ) const -> void {
+        if (std::filesystem::create_directories(path)) {
+            DEBUG() << "Created directories: " << path;
+        }
     }
 
     auto filesystem::get_part(std::string_view id) const -> std::ofstream {
@@ -74,12 +82,12 @@ namespace fstore::core::fs {
         return crypto::sha256sum(path);
     }
 
-    auto filesystem::make_object(std::string_view part_id) -> void {
+    auto filesystem::make_object(std::string_view part_id) const -> void {
         const auto part = part_path(part_id);
 
         make_object(part_id, [&part](const auto& dest) {
             std::filesystem::rename(part, dest);
-            DEBUG() << "Renamed file: '" << part << "' -> '" << dest << "'";
+            DEBUG() << "Renamed file: " << part << " -> " << dest;
         });
     }
 
@@ -88,10 +96,7 @@ namespace fstore::core::fs {
         std::function<void(const std::filesystem::path&)>&& action
     ) const -> void {
         const auto path = object_path(object_id);
-
-        if (std::filesystem::create_directories(path.parent_path())) {
-            DEBUG() << "Created directories: " << path;
-        }
+        create_directories(path.parent_path());
 
         action(path);
 
@@ -107,7 +112,7 @@ namespace fstore::core::fs {
     auto filesystem::object_path(
         std::string_view id
     ) const -> std::filesystem::path {
-        return objects / id.substr(0, 2) / id.substr(2, 4) / id;
+        return objects / id.substr(0, 2) / id.substr(2, 2) / id;
     }
 
     auto filesystem::open(std::string_view id) const -> netcore::fd {

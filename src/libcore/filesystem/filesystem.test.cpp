@@ -1,71 +1,45 @@
+#include "filesystem.test.h"
+
 #include <fstore/core/filesystem.h>
-#include <fstore/test.h>
 
 #include <fstream>
 #include <gtest/gtest.h>
 #include <uuid++/uuid.h>
 
-using namespace std::literals;
+TEST_F(FilesystemTest, CopyObject) {
+    constexpr auto id = "37daf6fc-bacc-47a7-9298-dd40f80d1b90";
 
-namespace test_file {
-    static constexpr auto content = "MyObjectFile";
-    static constexpr auto hash = // SHA-256 sum of file content
-        "348fa060a89f766f80d703887208fe66"
-        "278712f1e2329bda348a4fc3a3abe617"sv;
-    static constexpr auto size = 12;
-    static constexpr auto type = "text/plain"sv;
+    filesystem.copy(fstore::test::file::path, id);
 
-    static auto write(
-        const std::filesystem::path& directory
-    ) -> std::filesystem::path {
-        const auto path = directory/content;
+    const auto path = filesystem.object_path(id);
 
-        auto file = std::ofstream(path);
-        file << content << std::flush;
+    ASSERT_TRUE(std::filesystem::exists(path));
+    ASSERT_EQ(filesystem.objects / "37" / "da" / id, path);
 
-        return path;
-    }
+    auto file = std::ifstream(path);
+    auto content = std::string();
+    file >> content;
+
+    ASSERT_EQ(fstore::test::file::content, content);
 }
 
-class RepoFilesystemTest : public testing::Test {
-protected:
-    const fstore::test::temp_directory home;
-    const fstore::core::fs::filesystem fs;
-    const std::filesystem::path test_file_path;
-
-    RepoFilesystemTest() :
-        fs(home.path),
-        test_file_path(test_file::write(home.path))
-    {}
-};
-
-TEST_F(RepoFilesystemTest, CopyObject) {
-    auto uuid = UUID::uuid();
-    uuid.generate();
-
-    auto id = uuid.string();
-
-    fs.copy(test_file_path, id);
-
-    auto object = fs.object_path(id);
-
-    ASSERT_TRUE(std::filesystem::exists(object));
-
-    auto object_file = std::ifstream(object);
-    auto object_content = std::string();
-    object_file >> object_content;
-
-    ASSERT_EQ(test_file::content, object_content);
+TEST_F(FilesystemTest, Hash) {
+    ASSERT_EQ(
+        fstore::test::file::hash,
+        filesystem.hash(fstore::test::file::path)
+    );
 }
 
-TEST_F(RepoFilesystemTest, Hash) {
-    ASSERT_EQ(test_file::hash, fs.hash(test_file_path));
+TEST_F(FilesystemTest, MimeType) {
+    ASSERT_EQ(
+        fstore::test::file::type,
+        filesystem.mime_type(fstore::test::file::path)
+    );
 }
 
-TEST_F(RepoFilesystemTest, MimeType) {
-    ASSERT_EQ(test_file::type, fs.mime_type(test_file_path));
-}
-
-TEST_F(RepoFilesystemTest, Size) {
-    ASSERT_EQ(test_file::size, fs.size(test_file_path));
+TEST_F(FilesystemTest, Size) {
+    ASSERT_EQ(
+        fstore::test::file::size,
+        filesystem.size(fstore::test::file::path)
+    );
 }

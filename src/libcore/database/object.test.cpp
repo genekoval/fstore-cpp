@@ -1,89 +1,38 @@
-#include <fstore/error.h>
-#include <fstore/test.h>
+#include "database.test.h"
 
-#include <gtest/gtest.h>
+#include <fstore/error.h>
+
 #include <uuid++/uuid.h>
 
-using namespace std::literals;
-
-class RepoObjectTest : public testing::Test {
-protected:
-    static constexpr auto bucket = "69595d19-8381-4c1f-ac52-52680df83675";
-    static constexpr auto bucket_name = "repo-object-test";
-
-    static auto SetUpTestSuite() -> void {
-        fstore::test::db().create_bucket(bucket, bucket_name);
-    }
-
-    static auto TearDownTestSuite() -> void {
-        fstore::test::drop_buckets();
-        fstore::test::drop_objects();
-    }
-
-    fstore::core::db::database db = fstore::test::db();
-    const std::vector<fstore::core::db::object> objects = {
-        {
-            .id = "a4f33eab-1fbf-49ab-af6b-9fc72714f8c5",
-            .hash =
-                "eab32d918fc1c07d87eddb59a4508666"
-                "6f9117538d6d9c40ee0efeda635bd330",
-            .size = 7,
-            .mime_type = "text/plain"
-        },
-        {
-            .id = "4ca61fdd-9058-4d08-a16b-744d3afc4b6d",
-            .hash = "1c661c11465816c9bbcd70ac08a655cd"
-                    "bf8dedf2122bd0ed1cb2d6b36b0e09ed",
-            .size = 250,
-            .mime_type = "text/plain"
-        },
-        {
-            .id = "d7303d5a-3892-4888-a47e-b201f5219ee1",
-            .hash = "ca3a6440be51f6a8687d25a683ff85c0"
-                    "a9676d45b2f57f27b841b6b259893dc9",
-            .size = 500,
-            .mime_type = "text/plain"
-        }
-    };
-
-    RepoObjectTest() {
-        fstore::test::drop_objects();
-    }
-};
-
-TEST_F(RepoObjectTest, BucketAdditionRemoval) {
+TEST_F(ObjectTest, BucketAdditionRemoval) {
     const auto& object = objects.front();
 
-    auto count = [&]() -> std::size_t {
-        return db.fetch_bucket(bucket_name).size;
-    };
-
     // The bucket should be initially empty.
-    ASSERT_EQ(0, count());
+    ASSERT_EQ(0, bucket_size());
 
     // Add the object to the bucket.
-    db.add_object(bucket, object);
-    ASSERT_EQ(1, count());
+    add_object(object);
+    ASSERT_EQ(1, bucket_size());
 
     // Adding the same object does nothing.
-    for (auto i = 0u; i < 5u; i++) db.add_object(bucket, object);
-    ASSERT_EQ(1, count());
+    for (auto i = 0u; i < 5u; i++) add_object(object);
+    ASSERT_EQ(1, bucket_size());
 
     // Remove the object.
-    db.remove_object(bucket, object.id);
-    ASSERT_EQ(0, count());
+    database.remove_object(bucket_id, object.id);
+    ASSERT_EQ(0, bucket_size());
 
     // The object we removed can be added again...
-    db.add_object(bucket, object);
-    ASSERT_EQ(1, count());
+    add_object(object);
+    ASSERT_EQ(1, bucket_size());
 
     // ...and removed again.
-    db.remove_object(bucket, object.id);
-    ASSERT_EQ(0, count());
+    database.remove_object(bucket_id, object.id);
+    ASSERT_EQ(0, bucket_size());
 
     // Removing an object that does not exist results in an error.
     try {
-        db.remove_object(bucket, object.id);
+        database.remove_object(bucket_id, object.id);
         FAIL() << "Removing a nonexistent object should have failed";
     }
     catch (const fstore::fstore_error& ex) {
@@ -91,16 +40,16 @@ TEST_F(RepoObjectTest, BucketAdditionRemoval) {
     }
 }
 
-TEST_F(RepoObjectTest, GetObjectNoObject) {
-    auto opt = db.get_object(bucket, objects.front().id);
+TEST_F(ObjectTest, GetObjectNoObject) {
+    auto opt = database.get_object(bucket_id, objects.front().id);
     ASSERT_FALSE(opt);
 }
 
-TEST_F(RepoObjectTest, GetObject) {
+TEST_F(ObjectTest, GetObject) {
     const auto& object = objects.front();
-    db.add_object(bucket, object);
+    add_object(object);
 
-    auto opt = db.get_object(bucket, object.id);
+    auto opt = database.get_object(bucket_id, object.id);
     ASSERT_TRUE(opt);
 
     const auto result = opt.value();
@@ -112,37 +61,37 @@ TEST_F(RepoObjectTest, GetObject) {
     ASSERT_FALSE(result.date_added.empty());
 }
 
-TEST_F(RepoObjectTest, RemoveObjectsEmptyList) {
+TEST_F(ObjectTest, RemoveObjectsEmptyList) {
     constexpr auto expected = fstore::core::db::remove_result {
         .objects_removed = 0,
         .space_freed = 0
     };
 
-    const auto result = db.remove_objects(bucket, {});
+    const auto result = database.remove_objects(bucket_id, {});
 
     ASSERT_EQ(expected, result);
 }
 
-TEST_F(RepoObjectTest, RemoveObjectsSingle) {
+TEST_F(ObjectTest, RemoveObjectsSingle) {
     const auto& object = objects.front();
     const auto expected = fstore::core::db::remove_result {
         .objects_removed = 1,
         .space_freed = object.size
     };
 
-    db.add_object(bucket, object);
+    add_object(object);
 
-    const auto result = db.remove_objects(bucket, {object.id});
+    const auto result = database.remove_objects(bucket_id, {object.id});
     ASSERT_EQ(expected, result);
-    ASSERT_EQ(0, db.fetch_bucket(bucket_name).size);
-    ASSERT_EQ(1, db.fetch_store_totals().objects);
+    ASSERT_EQ(0, bucket_size());
+    ASSERT_EQ(1, count(fstore::test::table::object));
 }
 
-TEST_F(RepoObjectTest, RemoveObjectsMultiple) {
+TEST_F(ObjectTest, RemoveObjectsMultiple) {
     auto size = 0ul;
     for (const auto& object : objects) {
         size += object.size;
-        db.add_object(bucket, object);
+        add_object(object);
     }
 
     const auto expected = fstore::core::db::remove_result {
@@ -160,33 +109,31 @@ TEST_F(RepoObjectTest, RemoveObjectsMultiple) {
         }
     );
 
-    const auto result = db.remove_objects(bucket, ids);
+    const auto result = database.remove_objects(bucket_id, ids);
     ASSERT_EQ(expected, result);
 }
 
-TEST_F(RepoObjectTest, RemoveObjectsSubset) {
-    for (const auto& object : objects) db.add_object(bucket, object);
-    db.remove_objects(bucket, {objects[0].id, objects[1].id});
+TEST_F(ObjectTest, RemoveObjectsSubset) {
+    for (const auto& object : objects) add_object(object);
+    database.remove_objects(bucket_id, {objects[0].id, objects[1].id});
 
-    ASSERT_EQ(1, db.fetch_bucket(bucket_name).size);
-    ASSERT_TRUE(db.get_object(bucket, objects[2].id));
+    ASSERT_EQ(1, bucket_size());
+    ASSERT_TRUE(database.get_object(bucket_id, objects[2].id));
 }
 
-TEST_F(RepoObjectTest, RemoveObjectsNonexistent) {
+TEST_F(ObjectTest, RemoveObjectsNonexistent) {
     constexpr auto expected = fstore::core::db::remove_result {
         .objects_removed = 0,
         .space_freed = 0
     };
 
-    for (const auto& object : {objects[0], objects[1]}) {
-        db.add_object(bucket, object);
-    }
+    for (const auto& object : {objects[0], objects[1]}) add_object(object);
 
-    const auto result = db.remove_objects(bucket, {objects[2].id});
+    const auto result = database.remove_objects(bucket_id, {objects[2].id});
     ASSERT_EQ(expected, result);
 
-    ASSERT_EQ(2, db.fetch_bucket(bucket_name).size);
+    ASSERT_EQ(2, bucket_size());
     for (auto i = 0; i <= 1; ++i) {
-        ASSERT_TRUE(db.get_object(bucket, objects[i].id));
+        ASSERT_TRUE(database.get_object(bucket_id, objects[i].id));
     }
 }

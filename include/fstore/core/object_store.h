@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <span>
+#include <uuid++/uuid.h>
 
 namespace fstore::core {
     namespace db {
@@ -16,10 +17,19 @@ namespace fstore::core {
     }
 
     class object_store {
+        using uuid_generator = auto (*)() -> UUID::uuid;
+
         db::database* database;
         fs::filesystem* filesystem;
+        uuid_generator generate_uuid;
     public:
         object_store(db::database& database, fs::filesystem& filesystem);
+
+        object_store(
+            db::database& database,
+            fs::filesystem& filesystem,
+            uuid_generator generate_uuid
+        );
 
         auto add_object(
             std::string_view bucket_id,

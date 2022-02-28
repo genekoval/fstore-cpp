@@ -9,7 +9,7 @@ namespace fstore::core::db {
     database::database(std::string_view connection_string) :
         connection(std::string(connection_string))
     {
-        auto c = entix::connection(connection);
+        auto c = entix::connection(*connection);
 
         c.prepare("add_object", {"uuid", "uuid", "text", "bigint", "text"});
         c.prepare("create_bucket", {"uuid", "text"});
@@ -41,19 +41,6 @@ namespace fstore::core::db {
             hash,
             size,
             mime_type
-        );
-    }
-
-    auto database::add_object(
-        std::string_view bucket_id,
-        const object& obj
-    ) -> void {
-        add_object(
-            bucket_id,
-            obj.id,
-            obj.hash,
-            obj.size,
-            obj.mime_type
         );
     }
 
@@ -136,7 +123,7 @@ namespace fstore::core::db {
     }
 
     auto database::ntx() -> pqxx::nontransaction {
-        return pqxx::nontransaction(connection);
+        return pqxx::nontransaction(*connection);
     }
 
     auto database::remove_bucket(std::string_view bucket_id) -> void {

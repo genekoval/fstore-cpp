@@ -1,7 +1,6 @@
-#include <fstore/test.h>
+#include <fstore/core/fs/filesystem.test.env.h>
 
-#include <memory>
-#include <stdlib.h>
+namespace fs = std::filesystem;
 
 namespace {
     constexpr auto directory_template = "fstore.test.XXXXXX";
@@ -17,12 +16,25 @@ namespace {
 
         return std::filesystem::path(mkdtemp(directory.get()));
     }
+
+    struct temp_directory {
+        const std::filesystem::path path;
+
+        temp_directory() : path(make_temp_directory()) {}
+
+        ~temp_directory() {
+            std::filesystem::remove_all(path);
+        }
+    };
 }
 
 namespace fstore::test {
-    temp_directory::temp_directory() : path(make_temp_directory()) {}
+    auto FilesystemEnvironment::path() -> fs::path {
+        static auto directory = temp_directory();
+        return directory.path;
+    }
 
-    temp_directory::~temp_directory() {
-        std::filesystem::remove_all(path);
+    auto FilesystemEnvironment::SetUp() -> void {
+        path();
     }
 }

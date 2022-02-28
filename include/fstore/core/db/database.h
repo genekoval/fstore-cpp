@@ -2,19 +2,29 @@
 
 #include "model.h"
 
+#include <fstore/test.h>
+
 #include <pqxx/pqxx>
 #include <string>
 #include <string_view>
 
 namespace fstore::core::db {
     class database {
-        pqxx::connection connection;
+        std::optional<pqxx::connection> connection;
 
         auto ntx() -> pqxx::nontransaction;
     public:
+        database() = default;
+
         database(std::string_view connection_string);
 
-        auto add_object(
+        database(const database&) = delete;
+
+        database(database&& other)  = default;
+
+        VIRTUAL_DESTRUCTOR(database);
+
+        VIRTUAL auto add_object(
             std::string_view bucket_id,
             std::string_view object_id,
             std::string_view hash,
@@ -22,42 +32,40 @@ namespace fstore::core::db {
             std::string mime_type
         ) -> object;
 
-        auto add_object(std::string_view bucket_id, const object& obj) -> void;
-
-        auto create_bucket(
+        VIRTUAL auto create_bucket(
             std::string_view bucket_id,
             std::string_view name
         ) -> bucket;
 
-        auto fetch_bucket(std::string_view name) -> bucket;
+        VIRTUAL auto fetch_bucket(std::string_view name) -> bucket;
 
-        auto fetch_buckets() -> std::vector<bucket>;
+        VIRTUAL auto fetch_buckets() -> std::vector<bucket>;
 
-        auto fetch_buckets(
+        VIRTUAL auto fetch_buckets(
             const std::vector<std::string>& names
         ) -> std::vector<bucket>;
 
-        auto fetch_store_totals() -> store_totals;
+        VIRTUAL auto fetch_store_totals() -> store_totals;
 
-        auto get_object(
+        VIRTUAL auto get_object(
             std::string_view bucket_id,
             std::string_view object_id
         ) -> std::optional<object>;
 
-        auto remove_bucket(std::string_view id) -> void;
+        VIRTUAL auto remove_bucket(std::string_view id) -> void;
 
-        auto remove_object(
+        VIRTUAL auto remove_object(
             std::string_view bucket_id,
             std::string_view object_id
         ) -> object;
 
-        auto remove_objects(
+        VIRTUAL auto remove_objects(
             std::string_view bucket_id,
             const std::vector<std::string>& objects
         ) -> remove_result;
 
-        auto remove_orphan_objects() -> std::vector<object>;
+        VIRTUAL auto remove_orphan_objects() -> std::vector<object>;
 
-        auto rename_bucket(std::string_view id, std::string_view name) -> void;
+        VIRTUAL auto rename_bucket(std::string_view id, std::string_view name) -> void;
     };
 }

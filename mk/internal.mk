@@ -10,5 +10,5 @@ server = libserver
 $(server).type = static
 $(server).deps = $(core)
 
-internal = conf core server
+internal = conf server core
 internal.libs = $(addprefix lib,$(internal))

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <fstore/test.h>
+
+#include <functional>
 #include <filesystem>
 #include <fstream>
 #include <netcore/fd.h>
@@ -7,44 +10,62 @@
 
 namespace fstore::core::fs {
     class filesystem {
-        const std::filesystem::path objects;
-        const std::filesystem::path parts;
+        VIRTUAL auto create_directories(
+            const std::filesystem::path& path
+        ) const -> void;
 
-        auto make_object(
+        VIRTUAL auto make_object(
             std::string_view object_id,
             std::function<void(const std::filesystem::path&)>&& action
         ) const -> void;
     public:
+        const std::filesystem::path objects;
+        const std::filesystem::path parts;
+
+        filesystem() = default;
+
         filesystem(const std::filesystem::path& home);
 
-        auto copy(
+        VIRTUAL_DESTRUCTOR(filesystem);
+
+        VIRTUAL auto copy(
             const std::filesystem::path& source,
             std::string_view id
         ) const -> void;
 
-        auto get_part(std::string_view id) const -> std::ofstream;
+        VIRTUAL auto get_part(std::string_view id) const -> std::ofstream;
 
-        auto hash(std::span<const std::byte> buffer) const -> std::string;
+        VIRTUAL auto hash(
+            std::span<const std::byte> buffer
+        ) const -> std::string;
 
-        auto hash(const std::filesystem::path& path) const -> std::string;
+        VIRTUAL auto hash(
+            const std::filesystem::path& path
+        ) const -> std::string;
 
-        auto make_object(std::string_view part_id) -> void;
+        VIRTUAL auto make_object(std::string_view part_id) const -> void;
 
-        auto mime_type(const std::filesystem::path& path) const -> std::string;
+        VIRTUAL auto mime_type(
+            const std::filesystem::path& path
+        ) const -> std::string;
 
-        auto object_path(std::string_view id) const -> std::filesystem::path;
+        VIRTUAL auto object_path(
+            std::string_view id
+        ) const -> std::filesystem::path;
 
-        auto open(std::string_view id) const -> netcore::fd;
+        VIRTUAL auto open(std::string_view id) const -> netcore::fd;
 
-        auto part_path(std::string_view id) const -> std::filesystem::path;
+        VIRTUAL auto part_path(
+            std::string_view id
+        ) const -> std::filesystem::path;
 
-        auto remove(std::string_view id) const -> void;
+        VIRTUAL auto remove(std::string_view id) const -> void;
 
-        auto remove_part(std::string_view id) const -> void;
+        VIRTUAL auto remove_part(std::string_view id) const -> void;
 
-        auto size(const std::filesystem::path& path) const -> uintmax_t;
+        VIRTUAL auto size(const std::filesystem::path& path) const -> uintmax_t;
 
-        auto sync(
+        VIRTUAL auto sync(
             std::string_view program,
             std::span<const std::string_view> options,
             std::string_view dest

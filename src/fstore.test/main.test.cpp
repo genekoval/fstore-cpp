@@ -1,3 +1,7 @@
+#include <fstore/conf/settings.test.env.h>
+#include <fstore/core/db/database.test.env.h>
+#include <fstore/core/fs/filesystem.test.env.h>
+
 #include <filesystem>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -22,5 +26,9 @@ auto main(int argc, char** argv) -> int {
     timber::log_handler = &file_logger;
 
     testing::InitGoogleTest(&argc, argv);
+    testing::AddGlobalTestEnvironment(new fstore::test::SettingsEnvironment);
+    testing::AddGlobalTestEnvironment(new fstore::test::DatabaseEnvironment);
+    testing::AddGlobalTestEnvironment(new fstore::test::FilesystemEnvironment);
+
     return RUN_ALL_TESTS();
 }

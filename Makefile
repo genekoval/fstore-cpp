@@ -31,6 +31,8 @@ define test.libs
  $(core.libs)
  $(project)
  gtest
+ gmock
+ pthread
 endef
 
 $(project).type = executable
@@ -47,6 +49,10 @@ define $(client).libs
 endef
 
 include mkbuild/base.mk
+
+ifeq ($(environment),$(environment.develop))
+ CXXFLAGS += -DTEST
+endif
 
 confdir = $(prefix)/etc/$(project)
 
