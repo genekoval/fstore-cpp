@@ -11,9 +11,9 @@ namespace {
         const std::vector<std::string_view>& commands
     ) -> void {
         const auto settings = fstore::conf::settings::load_file(confpath);
-        const auto client = fstore::cli::data::client(settings);
+        const auto db = fstore::cli::database(settings);
 
-        client.exec(commands);
+        db.exec(commands);
     }
 }
 

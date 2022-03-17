@@ -13,20 +13,21 @@ namespace {
     auto $archive(
         const app& app,
         std::string_view confpath,
-        std::optional<std::string_view> file,
+        std::optional<std::string_view> output,
         timber::level log_level
     ) -> void {
         timber::reporting_level = log_level;
 
         const auto settings = fstore::conf::settings::load_file(confpath);
-        const auto client = fstore::cli::data::client(settings);
+        const auto db = fstore::cli::database(settings);
 
-        const auto archive = file.value_or(settings.archive.path);
+        const auto archive = output.value_or(settings.archive.path);
         if (archive.empty()) throw std::runtime_error(
             "archive location not specified"
         );
 
-        const auto dump_file = client.dump(settings.home);
+        const auto dump_file = fstore::cli::dump_file(settings);
+        db.dump(dump_file);
 
         const auto fs = fstore::core::fs::filesystem(settings.home);
 
@@ -57,9 +58,9 @@ namespace fstore::cli {
             options(
                 opts::config(confpath),
                 option<std::optional<std::string_view>>(
-                    {"f", "file"},
-                    "Send output to the specified file or directory",
-                    "file"
+                    {"o", "output"},
+                    "Send data to the specified directory",
+                    "directory"
                 ),
                 opts::log_level()
             ),

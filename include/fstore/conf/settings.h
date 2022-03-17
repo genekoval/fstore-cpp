@@ -19,10 +19,10 @@ namespace fstore::conf {
         };
 
         struct s_database {
-            std::string client = "psql";
+            std::optional<std::string> client;
             conftools::database_connection connection;
-            std::string dump = "pg_dump";
-            std::string restore = "pg_restore";
+            std::optional<std::string> dump;
+            std::optional<std::string> restore;
         };
 
         static auto load(std::string_view text) -> settings;

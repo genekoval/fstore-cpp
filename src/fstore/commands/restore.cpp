@@ -58,9 +58,10 @@ namespace {
         ));
 
         if (user) settings.database.connection.parameters["user"] = *user;
-        const auto client = fstore::cli::data::client(settings);
+        const auto db = fstore::cli::database(settings);
+        const auto dump_file = fstore::cli::dump_file(settings);
 
-        client.restore(settings.home);
+        db.restore(dump_file);
     }
 }
 
@@ -70,7 +71,7 @@ namespace fstore::cli {
     ) -> std::unique_ptr<command_node> {
         return command(
             __FUNCTION__,
-            "Create a backup of the database and object files",
+            "Restore database data and object files from a backup",
             options(
                 opts::config(confpath),
                 option<std::optional<std::string_view>>(

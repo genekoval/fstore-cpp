@@ -40,6 +40,7 @@ $(project).deps = $(internal.libs)
 define $(project).libs
  $(core.libs)
  commline
+ dbtools
  dmon
 endef
 

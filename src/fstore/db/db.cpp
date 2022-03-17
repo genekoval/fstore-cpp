@@ -1,108 +1,25 @@
 #include "db.h"
 
-#include <fmt/format.h>
-#include <timber/timber>
-
-namespace fs = std::filesystem;
-
 namespace {
-    constexpr auto dump_file = "fstore.dump";
-    constexpr auto stop_on_error = "--set=ON_ERROR_STOP=1";
-
-    const auto sql_directory = fs::path(SQLDIR);
-
-    const auto api_schema = (sql_directory / "fstore.sql").string();
-    const auto data_schema = (sql_directory / "data.sql").string();
+    constexpr auto dump_filename = "fstore.dump";
 }
 
-namespace fstore::cli::data {
-    client::client(const conf::settings& settings) :
-        client_program(settings.database.client),
-        connection_string(settings.database.connection.str()),
-        dump_program(settings.database.dump),
-        restore_program(settings.database.restore)
-    {}
+namespace fstore::cli {
+    auto database(const conf::settings& settings) -> dbtools::postgresql {
+        const auto& config = settings.database;
+        auto options = dbtools::postgresql::options();
 
-    auto client::analyze() const -> void {
-        $(client_program, "--command", "ANALYZE");
+        if (config.client) options.client_program = *config.client;
+        options.connection_string = config.connection.str();
+        if (config.dump) options.dump_program = *config.dump;
+        if (config.restore) options.restore_program = *config.restore;
+
+        options.sql_directory = std::filesystem::path(SQLDIR);
+
+        return dbtools::postgresql(std::move(options));
     }
 
-    auto client::dump(const fs::path& directory) const -> std::string {
-        const auto file = (directory / dump_file).string();
-
-        $(dump_program, "--format", "custom", "--file", file);
-        DEBUG() << "Saved database dump to: " << file;
-
-        return file;
-    }
-
-    auto client::exec(
-        std::string_view program,
-        std::span<const std::string_view> args
-    ) const -> void {
-        auto arguments = std::vector<std::string_view> {
-            "--dbname", connection_string
-        };
-
-        std::copy(args.begin(), args.end(), std::back_inserter(arguments));
-
-        ext::exec(program, arguments);
-    }
-
-    auto client::exec(std::span<const std::string_view> args) const -> void {
-        exec(client_program, args);
-    }
-
-    auto client::init() const -> void {
-        $(client_program, stop_on_error, "--file", data_schema);
-        migrate();
-    }
-
-    auto client::migrate() const -> void {
-        $(client_program, stop_on_error, "--file", api_schema);
-    }
-
-    auto client::restore(const std::filesystem::path& directory) const -> void {
-        const auto file = (directory / dump_file).string();
-
-        $(restore_program, "--clean", "--if-exists", file);
-        analyze();
-
-        fs::remove(file);
-    }
-
-    auto client::wait_exec(
-        std::string_view program,
-        std::span<const std::string_view> args
-    ) const -> void {
-        const auto parent = ext::process::fork();
-
-        if (!parent) exec(program, args);
-
-        const auto process = *parent;
-        const auto exit = process.wait();
-
-        if (exit.code == CLD_EXITED) {
-            if (exit.status == 0) return;
-
-            throw std::runtime_error(fmt::format(
-                "{} exited with code {}",
-                program,
-                exit.status
-            ));
-        }
-
-        if (exit.code == CLD_KILLED || exit.code == CLD_DUMPED) {
-            throw std::runtime_error(fmt::format(
-                "{} was killed by signal {}",
-                program,
-                exit.status
-            ));
-        }
-
-        throw std::runtime_error(fmt::format(
-            "{} did not succeed",
-            program
-        ));
+    auto dump_file(const conf::settings& settings) -> std::string {
+        return std::filesystem::path(settings.home) / dump_filename;
     }
 }

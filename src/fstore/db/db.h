@@ -2,41 +2,10 @@
 
 #include <fstore/conf/settings.h>
 
-namespace fstore::cli::data {
-    class client {
-        std::string client_program;
-        std::string connection_string;
-        std::string dump_program;
-        std::string restore_program;
+#include <dbtools/dbtools>
 
-        auto analyze() const -> void;
+namespace fstore::cli {
+    auto database(const conf::settings& settings) -> dbtools::postgresql;
 
-        auto exec(
-            std::string_view program,
-            std::span<const std::string_view> args
-        ) const -> void;
-
-        auto wait_exec(
-            std::string_view program,
-            std::span<const std::string_view> args
-        ) const -> void;
-
-        template <typename ...Args>
-        auto $(std::string_view program, Args&&... args) const -> void {
-            const auto arg_list = std::vector<std::string_view> {args...};
-            wait_exec(program, arg_list);
-        }
-    public:
-        client(const conf::settings& settings);
-
-        auto dump(const std::filesystem::path& directory) const -> std::string;
-
-        auto exec(std::span<const std::string_view> args) const -> void;
-
-        auto init() const -> void;
-
-        auto migrate() const -> void;
-
-        auto restore(const std::filesystem::path& directory) const -> void;
-    };
+    auto dump_file(const conf::settings& settings) -> std::string;
 }
