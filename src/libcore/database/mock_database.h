@@ -11,7 +11,8 @@ namespace fstore::test {
             std::string_view object_id,
             std::string_view hash,
             uintmax_t size,
-            std::string mime_type
+            std::string_view type,
+            std::string_view subtype
         ), (override));
 
         MOCK_METHOD(core::db::bucket, create_bucket, (

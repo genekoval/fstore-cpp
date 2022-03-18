@@ -53,7 +53,8 @@ namespace zipline {
         &fstore::core::object::id,
         &fstore::core::object::hash,
         &fstore::core::object::size,
-        &fstore::core::object::mime_type,
+        &fstore::core::object::type,
+        &fstore::core::object::subtype,
         &fstore::core::object::date_added
     );
 

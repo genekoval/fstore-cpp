@@ -19,7 +19,8 @@ auto ObjectTest::add_object(const fstore::core::db::object& object) -> void {
         object.id,
         object.hash,
         object.size,
-        object.mime_type
+        object.type,
+        object.subtype
     );
 }
 

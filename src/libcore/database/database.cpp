@@ -11,7 +11,10 @@ namespace fstore::core::db {
     {
         auto c = entix::connection(*connection);
 
-        c.prepare("add_object", {"uuid", "uuid", "text", "bigint", "text"});
+        c.prepare(
+            "add_object",
+            {"uuid", "uuid", "text", "bigint", "text", "text"}
+        );
         c.prepare("create_bucket", {"uuid", "text"});
         c.prepare("fetch_bucket", {"text"});
         c.prepare("fetch_buckets", {"text[]"});
@@ -30,7 +33,8 @@ namespace fstore::core::db {
         std::string_view object_id,
         std::string_view hash,
         uintmax_t size,
-        std::string mime_type
+        std::string_view type,
+        std::string_view subtype
     ) -> object {
         auto tx = ntx();
         return entix::make_entity<object>(
@@ -40,7 +44,8 @@ namespace fstore::core::db {
             object_id,
             hash,
             size,
-            mime_type
+            type,
+            subtype
         );
     }
 

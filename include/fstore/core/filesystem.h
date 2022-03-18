@@ -9,6 +9,11 @@
 #include <span>
 
 namespace fstore::core::fs {
+    struct mime {
+        std::string type;
+        std::string subtype;
+    };
+
     class filesystem {
         VIRTUAL auto create_directories(
             const std::filesystem::path& path
@@ -47,7 +52,7 @@ namespace fstore::core::fs {
 
         VIRTUAL auto mime_type(
             const std::filesystem::path& path
-        ) const -> std::string;
+        ) const -> mime;
 
         VIRTUAL auto object_path(
             std::string_view id

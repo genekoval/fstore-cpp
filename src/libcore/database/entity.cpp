@@ -17,7 +17,8 @@ namespace entix {
         &object::id,
         &object::hash,
         &object::size,
-        &object::mime_type,
+        &object::type,
+        &object::subtype,
         &object::date_added
     );
 

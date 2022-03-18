@@ -14,14 +14,26 @@ namespace fstore::core::db {
         auto operator==(const bucket&) const -> bool = default;
     };
 
-    struct object : entix::entity<5> {
+    struct object : entix::entity<6> {
         std::string id;
         std::string hash;
         uintmax_t size;
-        std::string mime_type;
+        std::string type;
+        std::string subtype;
         std::string date_added;
 
         auto operator==(const object&) const -> bool = default;
+
+        auto mime_type() const -> std::string {
+            auto result = std::string();
+            result.reserve(type.size() + subtype.size() + 1);
+
+            result += type;
+            result += "/";
+            result += subtype;
+
+            return result;
+        }
     };
 
     struct remove_result : entix::entity<2> {

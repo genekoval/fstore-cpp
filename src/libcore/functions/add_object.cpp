@@ -8,12 +8,15 @@ namespace fstore::core {
         auto uuid = UUID::uuid();
         uuid.generate();
 
+        const auto mime = filesystem->mime_type(path);
+
         const auto obj = database->add_object(
             bucket_id,
             uuid.string(),
             filesystem->hash(path),
             filesystem->size(path),
-            filesystem->mime_type(path)
+            mime.type,
+            mime.subtype
         );
 
         filesystem->copy(path, obj.id);

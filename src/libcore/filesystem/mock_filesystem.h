@@ -27,7 +27,7 @@ namespace fstore::test {
             std::string_view part_id
         ), (const, override));
 
-        MOCK_METHOD(std::string, mime_type, (
+        MOCK_METHOD(core::fs::mime, mime_type, (
             const std::filesystem::path& path
         ), (const, override));
 

@@ -31,10 +31,10 @@ TEST_F(FilesystemTest, Hash) {
 }
 
 TEST_F(FilesystemTest, MimeType) {
-    ASSERT_EQ(
-        fstore::test::file::type,
-        filesystem.mime_type(fstore::test::file::path)
-    );
+    const auto mime = filesystem.mime_type(fstore::test::file::path);
+
+    ASSERT_EQ(fstore::test::file::type, mime.type);
+    ASSERT_EQ(fstore::test::file::subtype, mime.subtype);
 }
 
 TEST_F(FilesystemTest, Size) {

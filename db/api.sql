@@ -21,10 +21,21 @@ SELECT
     object_id,
     hash,
     size,
-    mime_type,
+    "type",
+    subtype,
     bucket_object.date_added
 FROM data.bucket_object
 JOIN data.object USING (object_id);
+
+CREATE VIEW object AS
+SELECT
+    object_id,
+    hash,
+    size,
+    "type",
+    subtype,
+    date_added
+FROM data.object;
 
 CREATE VIEW object_ref AS
 SELECT
@@ -49,7 +60,8 @@ CREATE FUNCTION create_object(
     a_object_id     uuid,
     a_hash          text,
     a_size          bigint,
-    a_mime_type     text
+    a_type          text,
+    a_subtype       text
 ) RETURNS uuid AS $$
 DECLARE
     id_for_hash     uuid;
@@ -58,12 +70,14 @@ BEGIN
         object_id,
         hash,
         size,
-        mime_type
+        "type",
+        subtype
     ) VALUES (
         a_object_id,
         a_hash,
         a_size,
-        a_mime_type
+        a_type,
+        a_subtype
     ) ON CONFLICT DO NOTHING;
 
     SELECT object_id INTO id_for_hash
@@ -79,8 +93,9 @@ CREATE FUNCTION add_object(
     a_object_id     uuid,
     a_hash          text,
     a_size          bigint,
-    a_mime_type     text
-) RETURNS SETOF data.object AS $$
+    a_type          text,
+    a_subtype       text
+) RETURNS SETOF object AS $$
 BEGIN
     INSERT INTO data.bucket_object (
         bucket_id,
@@ -92,7 +107,8 @@ BEGIN
                 a_object_id,
                 a_hash,
                 a_size,
-                a_mime_type
+                a_type,
+                a_subtype
             )
         )
     ) ON CONFLICT DO NOTHING;
@@ -102,7 +118,8 @@ BEGIN
         object_id,
         hash,
         size,
-        mime_type,
+        "type",
+        subtype,
         date_added
     FROM bucket_contents
     WHERE bucket_id = a_bucket_id AND hash = a_hash;
@@ -184,14 +201,15 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION get_object(
     a_bucket_id     uuid,
     a_object_id     uuid
-) RETURNS SETOF data.object AS $$
+) RETURNS SETOF object AS $$
 BEGIN
     RETURN QUERY
     SELECT
         object_id,
         hash,
         size,
-        mime_type,
+        "type",
+        subtype,
         date_added
     FROM bucket_contents
     WHERE bucket_id = a_bucket_id AND object_id = a_object_id;
@@ -210,7 +228,7 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION remove_object(
     a_bucket_id     uuid,
     a_object_id     uuid
-) RETURNS SETOF data.object AS $$
+) RETURNS SETOF object AS $$
 BEGIN
     RETURN QUERY
     WITH deleted AS (
@@ -222,7 +240,8 @@ BEGIN
         object_id,
         hash,
         size,
-        mime_type,
+        "type",
+        subtype,
         deleted.date_added
     FROM deleted
     JOIN data.object USING (object_id);
@@ -249,12 +268,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION remove_orphan_objects()
-RETURNS SETOF data.object AS $$
+RETURNS SETOF object AS $$
 BEGIN
     RETURN QUERY
     DELETE FROM data.object obj USING object_ref ref
     WHERE obj.object_id = ref.object_id AND reference_count = 0
-    RETURNING obj.object_id, hash, size, mime_type, date_added;
+    RETURNING obj.object_id, hash, size, "type", subtype, date_added;
 END;
 $$ LANGUAGE plpgsql;
 

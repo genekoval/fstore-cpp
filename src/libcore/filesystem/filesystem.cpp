@@ -105,8 +105,14 @@ namespace fstore::core::fs {
 
     auto filesystem::mime_type(
         const std::filesystem::path& path
-    ) const -> std::string {
-        return magic_mime_type().file(path);
+    ) const -> mime {
+        const auto type = magic_mime_type().file(path);
+        const auto index = type.find("/");
+
+        return {
+            .type = type.substr(0, index),
+            .subtype = type.substr(index + 1)
+        };
     }
 
     auto filesystem::object_path(

@@ -11,7 +11,8 @@ namespace fstore::test::file {
     const std::filesystem::path path =
         FilesystemEnvironment::path() / "test_file";
     const std::size_t size = 12;
-    const std::string type = "text/plain";
+    const std::string type = "text";
+    const std::string subtype = "plain";
 }
 
 class FilesystemTest : public testing::Test {

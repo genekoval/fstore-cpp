@@ -18,21 +18,24 @@ protected:
                 "eab32d918fc1c07d87eddb59a4508666"
                 "6f9117538d6d9c40ee0efeda635bd330",
             .size = 7,
-            .mime_type = "text/plain"
+            .type = "text",
+            .subtype = "plain"
         },
         {
             .id = "4ca61fdd-9058-4d08-a16b-744d3afc4b6d",
             .hash = "1c661c11465816c9bbcd70ac08a655cd"
                     "bf8dedf2122bd0ed1cb2d6b36b0e09ed",
             .size = 250,
-            .mime_type = "text/plain"
+            .type = "text",
+            .subtype = "plain"
         },
         {
             .id = "d7303d5a-3892-4888-a47e-b201f5219ee1",
             .hash = "ca3a6440be51f6a8687d25a683ff85c0"
                     "a9676d45b2f57f27b841b6b259893dc9",
             .size = 500,
-            .mime_type = "text/plain"
+            .type = "text",
+            .subtype = "plain"
         }
     };
 

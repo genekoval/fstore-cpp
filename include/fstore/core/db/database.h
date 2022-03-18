@@ -29,7 +29,8 @@ namespace fstore::core::db {
             std::string_view object_id,
             std::string_view hash,
             uintmax_t size,
-            std::string mime_type
+            std::string_view type,
+            std::string_view subtype
         ) -> object;
 
         VIRTUAL auto create_bucket(

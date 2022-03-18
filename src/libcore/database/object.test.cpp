@@ -57,7 +57,8 @@ TEST_F(ObjectTest, GetObject) {
     ASSERT_EQ(object.id, result.id);
     ASSERT_EQ(object.hash, result.hash);
     ASSERT_EQ(object.size, result.size);
-    ASSERT_EQ(object.mime_type, result.mime_type);
+    ASSERT_EQ(object.type, result.type);
+    ASSERT_EQ(object.subtype, result.subtype);
     ASSERT_FALSE(result.date_added.empty());
 }
 

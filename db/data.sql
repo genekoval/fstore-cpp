@@ -24,8 +24,9 @@ CREATE TABLE object (
     -- Size of the object's contents in bytes.
     size            bigint NOT NULL,
 
-    -- Mime type of the object's contents.
-    mime_type       text NOT NULL,
+    -- MIME type of the object's contents.
+    "type"          text NOT NULL,
+    subtype         text NOT NULL,
 
     -- The time this object was first added to the object store.
     date_added      timestamptz NOT NULL DEFAULT NOW()

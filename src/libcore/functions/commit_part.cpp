@@ -7,12 +7,15 @@ namespace fstore::core {
     ) -> object {
         auto part = filesystem->part_path(part_id);
 
+        const auto mime = filesystem->mime_type(part);
+
         const auto obj = database->add_object(
             bucket_id,
             part_id,
             filesystem->hash(part),
             filesystem->size(part),
-            filesystem->mime_type(part)
+            mime.type,
+            mime.subtype
         );
 
         // This object was uploaded previously.
