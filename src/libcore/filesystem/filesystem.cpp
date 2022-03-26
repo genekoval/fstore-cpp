@@ -4,7 +4,7 @@
 
 #include <ext/unix.h>
 #include <fcntl.h>
-#include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <fstream>
 #include <magix.h>
 #include <timber/timber>
@@ -48,8 +48,7 @@ namespace fstore::core::fs {
                 dest,
                 std::filesystem::copy_options::skip_existing
             )) {
-                DEBUG()
-                    << "Copied file: " << source << " -> " << dest;
+                TIMBER_DEBUG("Copied file: {} -> {}", source, dest);
             }
         });
     }
@@ -58,7 +57,7 @@ namespace fstore::core::fs {
         const std::filesystem::path& path
     ) const -> void {
         if (std::filesystem::create_directories(path)) {
-            DEBUG() << "Created directories: " << path;
+            TIMBER_DEBUG("Created directories: {}", path);
         }
     }
 
@@ -87,7 +86,7 @@ namespace fstore::core::fs {
 
         make_object(part_id, [&part](const auto& dest) {
             std::filesystem::rename(part, dest);
-            DEBUG() << "Renamed file: " << part << " -> " << dest;
+            TIMBER_DEBUG("Renamed file: {} -> {}", part, dest);
         });
     }
 
@@ -139,8 +138,12 @@ namespace fstore::core::fs {
     auto filesystem::remove_part(std::string_view id) const -> void {
         const auto part = part_path(id);
 
-        if (std::filesystem::remove(part)) DEBUG() << "Removed part: " << part;
-        else WARNING() << "Tried to remove nonexistent file: " << part;
+        if (std::filesystem::remove(part)) {
+            TIMBER_DEBUG("Removed part: {}", part);
+        }
+        else {
+            TIMBER_WARNING("Tried to remove nonexistent file: {}", part);
+        }
     }
 
     auto filesystem::size(
@@ -166,14 +169,7 @@ namespace fstore::core::fs {
         args.push_back(src);
         args.push_back(dest);
 
-        if (timber::reporting_level >= timber::level::debug) {
-            auto os = std::ostringstream();
-
-            os << "EXEC " << program;
-            for (const auto& arg : args) os << " " << arg;
-
-            DEBUG() << os.str();
-        }
+        TIMBER_DEBUG("EXEC {} {}", program, fmt::join(args, " "));
 
         const auto exit = ext::wait_exec(program, args);
 

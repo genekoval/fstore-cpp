@@ -46,7 +46,7 @@ auto main(int argc, const char** argv) -> int {
     );
 
     app.on_error([](const auto& e) -> void {
-        CRITICAL() << e.what();
+        TIMBER_CRITICAL(e.what());
     });
 
     app.subcommand(fstore::cli::archive(confpath));

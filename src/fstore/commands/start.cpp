@@ -29,17 +29,17 @@ namespace {
             .user = settings.daemon.user
         })) return;
 
-        NOTICE() << app.name << " version " << app.version << " starting up";
+        TIMBER_NOTICE("{} version {} starting up", app.name, app.version);
 
         const auto info = fstore::server::server_info {
             .version = std::string(app.version)
         };
 
         fstore::server::listen(store, info, settings.server, []() {
-            INFO() << "Server started. Listening for connections...";
+            TIMBER_INFO("Server started. Listening for connections...");
         });
 
-        NOTICE() << app.name << " shutting down";
+        TIMBER_NOTICE("{} shutting down", app.name);
     }
 }
 

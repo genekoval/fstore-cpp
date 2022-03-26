@@ -5,7 +5,7 @@ namespace fstore::core {
         auto orphans = database->remove_orphan_objects();
         for (const auto& obj : orphans) filesystem->remove(obj.id);
 
-        INFO() << "Pruned " << orphans.size() << " objects";
+        TIMBER_INFO("Pruned {} objects", orphans.size());
 
         return orphans;
     }
