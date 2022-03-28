@@ -29,17 +29,33 @@ namespace {
             .user = settings.daemon.user
         })) return;
 
+        auto startup_timer = timber::timer(
+            "Server started in",
+            timber::level::info
+        );
+
         TIMBER_NOTICE("{} version {} starting up", app.name, app.version);
 
         const auto info = fstore::server::server_info {
             .version = std::string(app.version)
         };
 
-        fstore::server::listen(store, info, settings.server, []() {
-            TIMBER_INFO("Server started. Listening for connections...");
-        });
+        auto uptime_timer = timber::timer(
+            "Server shutting down. Up",
+            timber::level::notice
+        );
 
-        TIMBER_NOTICE("{} shutting down", app.name);
+        fstore::server::listen(
+            store,
+            info,
+            settings.server,
+            [&startup_timer, &uptime_timer]() {
+                startup_timer.stop();
+                uptime_timer.reset();
+            }
+        );
+
+        uptime_timer.stop();
     }
 }
 
