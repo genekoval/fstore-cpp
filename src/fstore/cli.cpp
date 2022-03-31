@@ -4,12 +4,14 @@
 #include <ext/string.h>
 
 namespace commline {
-    template <>
-    auto parse(std::string_view argument) -> timber::level {
+    auto parser<timber::level>::parse(
+        std::string_view argument
+    ) -> timber::level {
         auto level = timber::parse_level(argument);
 
         if (!level) throw commline::cli_error(
-            "unknown log level: " + std::string(argument)
+            "unknown log level: {}",
+            argument
         );
 
         return *level;

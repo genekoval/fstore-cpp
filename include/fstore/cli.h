@@ -8,7 +8,9 @@
 
 namespace commline {
     template <>
-    auto parse(std::string_view argument) -> timber::level;
+    struct parser<timber::level> {
+        static auto parse(std::string_view argument) -> timber::level;
+    };
 }
 
 namespace fstore::cli {
