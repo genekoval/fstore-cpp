@@ -65,6 +65,12 @@ namespace fstore {
             std::byte* buffer
         ) -> void;
 
+        auto get_object(
+            std::string_view bucket_id,
+            std::string_view object_id,
+            std::ostream& out
+        ) -> void;
+
         auto get_object_metadata(
             std::string_view bucket_id,
             std::string_view object_id
@@ -105,6 +111,11 @@ namespace fstore {
         auto get(
             std::string_view object_id,
             std::byte* buffer
+        ) -> void;
+
+        auto get(
+            std::string_view object_id,
+            std::ostream& out
         ) -> void;
 
         auto meta(

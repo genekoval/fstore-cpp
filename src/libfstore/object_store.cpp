@@ -81,6 +81,26 @@ namespace fstore {
         });
     }
 
+    auto object_store::get_object(
+        std::string_view bucket_id,
+        std::string_view object_id,
+        std::ostream& out
+    ) -> void {
+        auto client = connect();
+        auto stream = client.send<net::data_stream>(
+            event::get_object,
+            bucket_id,
+            object_id
+        );
+
+        stream.read([&out](auto&& chunk) {
+            out.write(
+                reinterpret_cast<const char*>(chunk.data()),
+                chunk.size()
+            );
+        });
+    }
+
     auto object_store::get_object_metadata(
         std::string_view bucket_id,
         std::string_view object_id

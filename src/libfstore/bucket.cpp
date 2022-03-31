@@ -31,6 +31,13 @@ namespace fstore {
         store->get_object(id, object_id, buffer);
     }
 
+    auto bucket::get(
+        std::string_view object_id,
+        std::ostream& out
+    ) -> void {
+        store->get_object(id, object_id, out);
+    }
+
     auto bucket::meta(
         std::string_view object_id
     ) -> object_meta {
