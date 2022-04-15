@@ -4,8 +4,9 @@
 
 class ObjectTest : public DatabaseTest {
 protected:
-    static constexpr auto bucket_id = "69595d19-8381-4c1f-ac52-52680df83675";
     static constexpr auto bucket_name = "object-test";
+
+    static const UUID::uuid bucket_id;
 
     static auto SetUpTestSuite() -> void;
 

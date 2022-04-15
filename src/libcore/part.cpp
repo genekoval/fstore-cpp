@@ -1,7 +1,7 @@
 #include <fstore/core/part.h>
 
 namespace fstore::core {
-    part::part(std::string_view id, std::ofstream&& out) :
+    part::part(const UUID::uuid& id, std::ofstream&& out) :
         out(std::move(out)),
         id(id)
     {}

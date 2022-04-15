@@ -25,8 +25,8 @@ namespace fstore::core::db {
         VIRTUAL_DESTRUCTOR(database);
 
         VIRTUAL auto add_object(
-            std::string_view bucket_id,
-            std::string_view object_id,
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id,
             std::string_view hash,
             uintmax_t size,
             std::string_view type,
@@ -34,7 +34,7 @@ namespace fstore::core::db {
         ) -> object;
 
         VIRTUAL auto create_bucket(
-            std::string_view bucket_id,
+            const UUID::uuid& bucket_id,
             std::string_view name
         ) -> bucket;
 
@@ -49,24 +49,27 @@ namespace fstore::core::db {
         VIRTUAL auto fetch_store_totals() -> store_totals;
 
         VIRTUAL auto get_object(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> std::optional<object>;
 
         VIRTUAL auto remove_bucket(std::string_view id) -> void;
 
         VIRTUAL auto remove_object(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> object;
 
         VIRTUAL auto remove_objects(
-            std::string_view bucket_id,
-            const std::vector<std::string>& objects
+            const UUID::uuid& bucket_id,
+            const std::vector<UUID::uuid>& objects
         ) -> remove_result;
 
         VIRTUAL auto remove_orphan_objects() -> std::vector<object>;
 
-        VIRTUAL auto rename_bucket(std::string_view id, std::string_view name) -> void;
+        VIRTUAL auto rename_bucket(
+            const UUID::uuid& id,
+            std::string_view name
+        ) -> void;
     };
 }

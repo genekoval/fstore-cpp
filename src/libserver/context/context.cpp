@@ -12,11 +12,11 @@ namespace fstore::server {
     {}
 
     auto context::add_object(
-        std::string bucket_id,
-        std::optional<std::string> request,
+        UUID::uuid bucket_id,
+        std::optional<UUID::uuid> request,
         net::data_stream stream
     ) -> core::object {
-        auto part_id = std::string();
+        auto part_id = UUID::uuid();
 
         {
             auto part = store->get_part(request);
@@ -31,7 +31,7 @@ namespace fstore::server {
 
 
     auto context::create_object_from_file(
-        std::string bucket_id,
+        UUID::uuid bucket_id,
         std::string path
     ) -> core::object {
         return store->add_object(bucket_id, path);
@@ -42,8 +42,8 @@ namespace fstore::server {
     }
 
     auto context::get_object(
-        std::string bucket_id,
-        std::string object_id
+        UUID::uuid bucket_id,
+        UUID::uuid object_id
     ) -> core::file {
         auto file = store->get_object(bucket_id, object_id);
         if (!file) throw fstore_error("bucket does not contain object");
@@ -52,8 +52,8 @@ namespace fstore::server {
     }
 
     auto context::get_object_metadata(
-        std::string bucket_id,
-        std::string object_id
+        UUID::uuid bucket_id,
+        UUID::uuid object_id
     ) -> core::object {
         auto object = store->get_object_metadata(bucket_id, object_id);
         if (!object) throw fstore_error("bucket does not contain object");
@@ -66,15 +66,15 @@ namespace fstore::server {
     }
 
     auto context::remove_object(
-        std::string bucket_id,
-        std::string object_id
+        UUID::uuid bucket_id,
+        UUID::uuid object_id
     ) -> core::object {
         return store->remove_object(bucket_id, object_id);
     }
 
     auto context::remove_objects(
-        std::string bucket_id,
-        std::vector<std::string> objects
+        UUID::uuid bucket_id,
+        std::vector<UUID::uuid> objects
     ) -> core::remove_result {
         return store->remove_objects(bucket_id, objects);
     }

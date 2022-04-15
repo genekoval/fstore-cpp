@@ -2,14 +2,15 @@
 
 #include <fstream>
 #include <span>
+#include <uuid++/uuid++>
 
 namespace fstore::core {
     class part {
         std::ofstream out;
     public:
-        const std::string id;
+        const UUID::uuid id;
 
-        part(std::string_view id, std::ofstream&& out);
+        part(const UUID::uuid& id, std::ofstream&& out);
 
         auto write(std::span<const std::byte> data) -> void;
     };

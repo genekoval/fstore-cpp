@@ -100,12 +100,12 @@ TEST_F(ObjectTest, RemoveObjectsMultiple) {
         .space_freed = size
     };
 
-    auto ids = std::vector<std::string>();
+    auto ids = std::vector<UUID::uuid>();
     std::transform(
         objects.begin(),
         objects.end(),
         std::back_inserter(ids),
-        [](const auto& object) -> std::string {
+        [](const auto& object) -> UUID::uuid {
             return object.id;
         }
     );

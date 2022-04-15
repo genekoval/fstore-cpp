@@ -2,7 +2,7 @@
 
 namespace fstore::core {
     auto object_store::rename_bucket(
-        std::string_view bucket_id,
+        const UUID::uuid& bucket_id,
         std::string_view bucket_name
     ) -> void {
         const auto name = process_bucket_name(bucket_name);

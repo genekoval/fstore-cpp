@@ -2,27 +2,28 @@
 
 #include <entix/entity>
 #include <string>
+#include <uuid++/uuid++>
 
 namespace fstore::core::db {
     struct bucket : entix::entity<5> {
-        std::string id;
+        UUID::uuid id;
         std::string name;
         std::string date_created;
         std::size_t size;
         uintmax_t space_used;
 
-        auto operator==(const bucket&) const -> bool = default;
+        auto operator<=>(const bucket&) const = default;
     };
 
     struct object : entix::entity<6> {
-        std::string id;
+        UUID::uuid id;
         std::string hash;
         uintmax_t size;
         std::string type;
         std::string subtype;
         std::string date_added;
 
-        auto operator==(const object&) const -> bool = default;
+        auto operator<=>(const object&) const = default;
 
         auto mime_type() const -> std::string {
             auto result = std::string();
@@ -40,7 +41,7 @@ namespace fstore::core::db {
         std::size_t objects_removed;
         uintmax_t space_freed;
 
-        auto operator==(const remove_result&) const -> bool = default;
+        auto operator<=>(const remove_result&) const = default;
     };
 
     struct store_totals : entix::entity<3> {
@@ -48,6 +49,6 @@ namespace fstore::core::db {
         std::size_t objects;
         uintmax_t space_used;
 
-        auto operator==(const store_totals&) const -> bool = default;
+        auto operator<=>(const store_totals&) const = default;
     };
 }

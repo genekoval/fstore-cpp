@@ -41,91 +41,79 @@ namespace fstore {
         object_store(std::string_view path);
 
         auto add_object(
-            std::string_view bucket_id,
-            std::optional<std::string_view> part_id,
+            const UUID::uuid& bucket_id,
+            std::optional<UUID::uuid> part_id,
             std::size_t stream_size,
             std::function<void(part&&)> pipe
         ) -> object_meta;
 
         auto create_object_from_file(
-            std::string_view bucket_id,
+            const UUID::uuid& bucket_id,
             std::string_view path
         ) -> object_meta;
 
         auto fetch_bucket(std::string_view name) -> core::bucket;
 
         auto get_object(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> blob;
 
         auto get_object(
-            std::string_view bucket_id,
-            std::string_view object_id,
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id,
             std::byte* buffer
         ) -> void;
 
         auto get_object(
-            std::string_view bucket_id,
-            std::string_view object_id,
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id,
             std::ostream& out
         ) -> void;
 
         auto get_object_metadata(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> object_meta;
 
         auto get_server_info() -> server::server_info;
 
         auto remove_object(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> object_meta;
 
         auto remove_objects(
-            std::string_view bucket_id,
-            std::span<const std::string> objects
+            const UUID::uuid& bucket_id,
+            std::span<const UUID::uuid> objects
         ) -> remove_result;
     };
 
     class bucket {
         object_store* store;
     public:
-        const std::string id;
+        const UUID::uuid id;
 
-        bucket(object_store& store, std::string_view id);
+        bucket(object_store& store, const UUID::uuid& id);
 
         auto add(
-            std::optional<std::string_view> part_id,
+            std::optional<UUID::uuid> part_id,
             std::size_t stream_size,
             std::function<void(part&&)> pipe
         ) -> object_meta;
 
         auto add(std::string_view path) -> object_meta;
 
-        auto get(
-            std::string_view object_id
-        ) -> blob;
+        auto get(const UUID::uuid& object_id) -> blob;
 
-        auto get(
-            std::string_view object_id,
-            std::byte* buffer
-        ) -> void;
+        auto get(const UUID::uuid& object_id, std::byte* buffer) -> void;
 
-        auto get(
-            std::string_view object_id,
-            std::ostream& out
-        ) -> void;
+        auto get(const UUID::uuid& object_id, std::ostream& out) -> void;
 
-        auto meta(
-            std::string_view object_id
-        ) -> object_meta;
+        auto meta(const UUID::uuid& object_id) -> object_meta;
 
-        auto remove(std::string_view object_id) -> object_meta;
+        auto remove(const UUID::uuid& object_id) -> object_meta;
 
-        auto remove(
-            std::span<const std::string> objects
-        ) -> remove_result;
+        auto remove(std::span<const UUID::uuid> objects) -> remove_result;
     };
 }

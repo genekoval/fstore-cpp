@@ -3,6 +3,7 @@
 #include <fstore/client.h>
 #include <fstore/core/model.h>
 
+#include <uuid++/zipline>
 #include <zipline/zipline>
 
 namespace zipline {

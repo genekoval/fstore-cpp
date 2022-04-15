@@ -29,8 +29,8 @@ namespace fstore::core::db {
     }
 
     auto database::add_object(
-        std::string_view bucket_id,
-        std::string_view object_id,
+        const UUID::uuid& bucket_id,
+        const UUID::uuid& object_id,
         std::string_view hash,
         uintmax_t size,
         std::string_view type,
@@ -50,7 +50,7 @@ namespace fstore::core::db {
     }
 
     auto database::create_bucket(
-            std::string_view bucket_id,
+            const UUID::uuid& bucket_id,
             std::string_view name
     ) -> bucket {
         auto tx = ntx();
@@ -109,8 +109,8 @@ namespace fstore::core::db {
     }
 
     auto database::get_object(
-        std::string_view bucket_id,
-        std::string_view object_id
+        const UUID::uuid& bucket_id,
+        const UUID::uuid& object_id
     ) -> std::optional<object> {
         auto tx = ntx();
 
@@ -136,8 +136,8 @@ namespace fstore::core::db {
     }
 
     auto database::remove_object(
-        std::string_view bucket_id,
-        std::string_view object_id
+        const UUID::uuid& bucket_id,
+        const UUID::uuid& object_id
     ) -> object {
         auto tx = ntx();
 
@@ -155,8 +155,8 @@ namespace fstore::core::db {
     }
 
     auto database::remove_objects(
-        std::string_view bucket_id,
-        const std::vector<std::string>& objects
+        const UUID::uuid& bucket_id,
+        const std::vector<UUID::uuid>& objects
     ) -> remove_result {
         auto tx = ntx();
         return entix::make_entity<remove_result>(
@@ -173,7 +173,7 @@ namespace fstore::core::db {
     }
 
     auto database::rename_bucket(
-        std::string_view id,
+        const UUID::uuid& id,
         std::string_view name
     ) -> void {
         try {

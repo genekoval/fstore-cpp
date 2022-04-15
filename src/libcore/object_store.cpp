@@ -6,10 +6,7 @@
 
 namespace {
     auto generate_random_uuid() -> UUID::uuid {
-        auto uuid = UUID::uuid();
-        uuid.generate();
-
-        return uuid;
+        return UUID::generate();
     }
 }
 

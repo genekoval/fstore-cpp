@@ -5,7 +5,6 @@
 
 #include <optional>
 #include <span>
-#include <uuid++/uuid.h>
 
 namespace fstore::core {
     namespace db {
@@ -32,13 +31,13 @@ namespace fstore::core {
         );
 
         auto add_object(
-            std::string_view bucket_id,
+            const UUID::uuid& bucket_id,
             std::string_view path
         ) -> object;
 
         auto commit_part(
-            std::string_view bucket_id,
-            std::string_view part_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& part_id
         ) -> object;
 
         auto create_bucket(std::string_view name) -> bucket;
@@ -54,33 +53,33 @@ namespace fstore::core {
         auto fetch_store_totals() -> store_totals;
 
         auto get_object(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> std::optional<file>;
 
         auto get_object_metadata(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> std::optional<object>;
 
-        auto get_part(std::optional<std::string_view> part_id) -> part;
+        auto get_part(std::optional<UUID::uuid> part_id) -> part;
 
         auto prune() -> std::vector<object>;
 
-        auto remove_bucket(std::string_view bucket_id) -> void;
+        auto remove_bucket(const UUID::uuid& bucket_id) -> void;
 
         auto remove_object(
-            std::string_view bucket_id,
-            std::string_view object_id
+            const UUID::uuid& bucket_id,
+            const UUID::uuid& object_id
         ) -> object;
 
         auto remove_objects(
-            std::string_view bucket_id,
-            const std::vector<std::string>& objects
+            const UUID::uuid& bucket_id,
+            const std::vector<UUID::uuid>& objects
         ) -> remove_result;
 
         auto rename_bucket(
-            std::string_view bucket_id,
+            const UUID::uuid& bucket_id,
             std::string_view bucket_name
         ) -> void;
     };

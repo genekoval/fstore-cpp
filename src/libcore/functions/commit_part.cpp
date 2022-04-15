@@ -2,8 +2,8 @@
 
 namespace fstore::core {
     auto object_store::commit_part(
-        std::string_view bucket_id,
-        std::string_view part_id
+        const UUID::uuid& bucket_id,
+        const UUID::uuid& part_id
     ) -> object {
         auto part = filesystem->part_path(part_id);
 

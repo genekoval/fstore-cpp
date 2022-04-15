@@ -13,32 +13,30 @@ namespace {
 
 TEST_F(ObjectStoreTest, RenameBucket) {
     constexpr auto name = "foo"sv;
-    const auto id = std::string(fstore::test::test_id.string());
 
     EXPECT_CALL(database, rename_bucket(
-        std::string_view(id),
+        fstore::test::test_id,
         name
     )).WillOnce(Return());
 
-    store.rename_bucket(id, name);
+    store.rename_bucket(fstore::test::test_id, name);
 }
 
 TEST_F(ObjectStoreTest, RenameBucketNameTrimmed) {
     constexpr auto name = " \t   foo   \n "sv;
     constexpr auto trimmed = "foo"sv;
-    const auto id = std::string(fstore::test::test_id.string());
 
     EXPECT_CALL(database, rename_bucket(
-        std::string_view(id),
+        fstore::test::test_id,
         trimmed
     )).WillOnce(Return());
 
-    store.rename_bucket(id, name);
+    store.rename_bucket(fstore::test::test_id, name);
 }
 
 TEST_F(ObjectStoreTest, RenameBucketEmptyName) {
     try {
-        store.rename_bucket(fstore::test::test_id.string(), "");
+        store.rename_bucket(fstore::test::test_id, "");
         FAIL() << "Bucket renamed with empty name";
     }
     catch (const fstore::fstore_error& error) {
@@ -48,7 +46,7 @@ TEST_F(ObjectStoreTest, RenameBucketEmptyName) {
 
 TEST_F(ObjectStoreTest, RenameBucketWhitespaceName) {
     try {
-        store.rename_bucket(fstore::test::test_id.string(), " \t   \n ");
+        store.rename_bucket(fstore::test::test_id, " \t   \n ");
         FAIL() << "Bucket renamed with whiltespace name";
     }
     catch (const fstore::fstore_error& error) {

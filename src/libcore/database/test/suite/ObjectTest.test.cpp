@@ -3,6 +3,8 @@
 
 #include <fstore/core/db/database.test.env.h>
 
+const UUID::uuid ObjectTest::bucket_id = "69595d19-8381-4c1f-ac52-52680df83675";
+
 auto ObjectTest::SetUpTestSuite() -> void {
     fstore::test::DatabaseEnvironment::database()
         .create_bucket(bucket_id, bucket_name);

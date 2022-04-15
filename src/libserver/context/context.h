@@ -12,38 +12,38 @@ namespace fstore::server {
         context(core::object_store& store, const server_info& info);
 
         auto add_object(
-            std::string bucket_id,
-            std::optional<std::string> request,
+            UUID::uuid bucket_id,
+            std::optional<UUID::uuid> request,
             net::data_stream stream
         ) -> core::object;
 
         auto create_object_from_file(
-            std::string bucket_id,
+            UUID::uuid bucket_id,
             std::string path
         ) -> core::object;
 
         auto fetch_bucket(std::string bucket_name) -> core::bucket;
 
         auto get_object(
-            std::string bucket_id,
-            std::string object_id
+            UUID::uuid bucket_id,
+            UUID::uuid object_id
         ) -> core::file;
 
         auto get_object_metadata(
-            std::string bucket_id,
-            std::string object_id
+            UUID::uuid bucket_id,
+            UUID::uuid object_id
         ) -> core::object;
 
         auto get_server_info() -> server_info;
 
         auto remove_object(
-            std::string bucket_id,
-            std::string object_id
+            UUID::uuid bucket_id,
+            UUID::uuid object_id
         ) -> core::object;
 
         auto remove_objects(
-            std::string bucket_id,
-            std::vector<std::string> objects
+            UUID::uuid bucket_id,
+            std::vector<UUID::uuid> objects
         ) -> core::remove_result;
     };
 }

@@ -9,10 +9,7 @@
 using namespace std::literals;
 
 TEST_F(BucketTest, Creation) {
-    auto uuid = UUID::uuid();
-    uuid.generate();
-
-    const auto id = uuid.string();
+    const auto id = UUID::generate();
     const auto name = "creation"s;
 
     const auto bucket = database.create_bucket(id, name);

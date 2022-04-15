@@ -2,17 +2,9 @@
 
 namespace fstore::core {
     auto object_store::get_part(
-        std::optional<std::string_view> part_id
+        std::optional<UUID::uuid> part_id
     ) -> part {
-        std::string id;
-
-        if (part_id) id = *part_id;
-        else {
-            auto uuid = UUID::uuid();
-            uuid.generate();
-            id = uuid.string();
-        }
-
+        const auto id = part_id.value_or(generate_uuid());
         return part(id, filesystem->get_part(id));
     }
 }

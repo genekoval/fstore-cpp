@@ -47,6 +47,7 @@ endef
 $(client).type = shared
 define $(client).libs
  netcore
+ uuid++
 endef
 
 include mkbuild/base.mk
