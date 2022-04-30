@@ -15,6 +15,13 @@ namespace fstore::core::db {
         auto operator<=>(const bucket&) const = default;
     };
 
+    struct object_error : entix::entity<2> {
+        UUID::uuid id;
+        std::string message;
+
+        auto operator<=>(const object_error&) const = default;
+    };
+
     struct object : entix::entity<6> {
         UUID::uuid id;
         std::string hash;

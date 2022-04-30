@@ -2,6 +2,8 @@
 #include <fstore/core/db/database.test.env.h>
 
 namespace {
+    constexpr auto connection_count = 1;
+
     auto connection_string() -> const std::string& {
         static auto instance = fstore::test::SettingsEnvironment::settings()
             .database
@@ -19,7 +21,10 @@ namespace fstore::test {
     }
 
     auto DatabaseEnvironment::database() -> core::db::database& {
-        static auto instance = core::db::database(connection_string());
+        static auto instance = core::db::database(
+            connection_string(),
+            connection_count
+        );
         return instance;
     }
 

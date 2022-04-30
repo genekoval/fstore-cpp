@@ -39,3 +39,8 @@ CREATE TABLE bucket_object (
 
     PRIMARY KEY (bucket_id, object_id)
 );
+
+CREATE TABLE object_error (
+    object_id       uuid PRIMARY KEY REFERENCES object ON DELETE CASCADE,
+    message         text NOT NULL
+);

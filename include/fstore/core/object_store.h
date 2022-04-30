@@ -21,6 +21,8 @@ namespace fstore::core {
         db::database* database;
         fs::filesystem* filesystem;
         uuid_generator generate_uuid;
+
+        auto check_object(const object& obj) -> bool;
     public:
         object_store(db::database& database, fs::filesystem& filesystem);
 
@@ -34,6 +36,8 @@ namespace fstore::core {
             const UUID::uuid& bucket_id,
             std::string_view path
         ) -> object;
+
+        auto check(int jobs, check_progress& progress) -> std::size_t;
 
         auto commit_part(
             const UUID::uuid& bucket_id,
@@ -51,6 +55,8 @@ namespace fstore::core {
         ) -> std::vector<bucket>;
 
         auto fetch_store_totals() -> store_totals;
+
+        auto get_errors() -> std::vector<object_error>;
 
         auto get_object(
             const UUID::uuid& bucket_id,

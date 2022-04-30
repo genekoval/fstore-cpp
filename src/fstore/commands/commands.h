@@ -13,7 +13,15 @@ namespace fstore::cli {
         std::string_view confpath
     ) -> std::unique_ptr<commline::command_node>;
 
+    auto check(
+        std::string_view confpath
+    ) -> std::unique_ptr<commline::command_node>;
+
     auto db(
+        std::string_view confpath
+    ) -> std::unique_ptr<commline::command_node>;
+
+    auto errors(
         std::string_view confpath
     ) -> std::unique_ptr<commline::command_node>;
 

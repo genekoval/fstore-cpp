@@ -23,6 +23,12 @@ namespace entix {
     );
 
     READ_ENTITY(
+        object_error,
+        &object_error::id,
+        &object_error::message
+    );
+
+    READ_ENTITY(
         remove_result,
         &remove_result::objects_removed,
         &remove_result::space_freed

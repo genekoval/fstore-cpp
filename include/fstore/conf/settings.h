@@ -21,6 +21,7 @@ namespace fstore::conf {
         struct s_database {
             std::optional<std::string> client;
             conftools::database_connection connection;
+            int connections = 1;
             std::optional<std::string> dump;
             std::optional<std::string> restore;
         };

@@ -37,6 +37,12 @@ SELECT
     date_added
 FROM data.object;
 
+CREATE VIEW object_error AS
+SELECT
+    object_id,
+    message
+FROM data.object_error;
+
 CREATE VIEW object_ref AS
 SELECT
     object_id,
@@ -55,6 +61,15 @@ CREATE TYPE store_totals AS (
     objects         bigint,
     space_used      bigint
 );
+
+CREATE FUNCTION clear_error(
+    a_object_id     uuid
+) RETURNS void AS $$
+BEGIN
+    DELETE FROM data.object_error
+    WHERE object_id = a_object_id;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE FUNCTION create_object(
     a_object_id     uuid,
@@ -85,6 +100,22 @@ BEGIN
     WHERE hash = a_hash;
 
     RETURN id_for_hash;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION add_error(
+    a_object_id     uuid,
+    a_message       text
+) RETURNS void AS $$
+BEGIN
+    INSERT INTO data.object_error (
+        object_id,
+        message
+    ) VALUES (
+        a_object_id,
+        a_message
+    ) ON CONFLICT (object_id)
+    DO UPDATE SET message = a_message;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -198,6 +229,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE FUNCTION get_errors()
+RETURNS SETOF object_error AS $$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM object_error;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE FUNCTION get_object(
     a_bucket_id     uuid,
     a_object_id     uuid
@@ -213,6 +253,19 @@ BEGIN
         date_added
     FROM bucket_contents
     WHERE bucket_id = a_bucket_id AND object_id = a_object_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION get_objects() RETURNS refcursor AS $$
+DECLARE
+    ref refcursor;
+BEGIN
+    OPEN ref FOR
+    SELECT *
+    FROM object
+    ORDER BY object_id;
+
+    RETURN ref;
 END;
 $$ LANGUAGE plpgsql;
 

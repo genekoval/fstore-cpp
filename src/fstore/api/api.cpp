@@ -6,7 +6,7 @@ namespace fstore::cli {
     {}
 
     api_container::api_container(const fstore::conf::settings& config) :
-        database(config.database.connection.str()),
+        database(config.database.connection.str(), config.database.connections),
         fs(config.home),
         store(database, fs)
     {}

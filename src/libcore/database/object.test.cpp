@@ -2,7 +2,19 @@
 
 #include <fstore/error.h>
 
+#include <unordered_set>
 #include <uuid++/uuid.h>
+
+namespace db = fstore::core::db;
+
+namespace std {
+    template <>
+    struct hash<db::object> {
+        auto operator()(const db::object& object) const noexcept -> size_t {
+            return hash<decltype(db::object::id)>{}(object.id);
+        }
+    };
+}
 
 TEST_F(ObjectTest, BucketAdditionRemoval) {
     const auto& object = objects.front();
@@ -60,6 +72,24 @@ TEST_F(ObjectTest, GetObject) {
     ASSERT_EQ(object.type, result.type);
     ASSERT_EQ(object.subtype, result.subtype);
     ASSERT_FALSE(result.date_added.empty());
+}
+
+TEST_F(ObjectTest, GetObjects) {
+    for (const auto& object : objects) add_object(object);
+
+    auto calls = 0;
+    auto result_count = 0;
+    auto objects_returned = std::unordered_set<db::object>();
+
+    database.get_objects(2, [&](auto results) {
+        ++calls;
+        result_count += results.size();
+        for (const auto& result : results) objects_returned.insert(result);
+    });
+
+    ASSERT_EQ(2, calls);
+    ASSERT_EQ(3, result_count);
+    ASSERT_EQ(3, objects_returned.size());
 }
 
 TEST_F(ObjectTest, RemoveObjectsEmptyList) {

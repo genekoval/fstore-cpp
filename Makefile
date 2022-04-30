@@ -21,6 +21,8 @@ define core.libs
  netcore
  pqxx
  pq
+ pthread
+ threadpool
  timber
  uuid++
  yaml-cpp

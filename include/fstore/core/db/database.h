@@ -4,25 +4,25 @@
 
 #include <fstore/test.h>
 
+#include <entix/entix>
 #include <pqxx/pqxx>
 #include <string>
 #include <string_view>
 
 namespace fstore::core::db {
     class database {
-        std::optional<pqxx::connection> connection;
-
-        auto ntx() -> pqxx::nontransaction;
+        entix::connection_pool connections;
     public:
         database() = default;
 
-        database(std::string_view connection_string);
-
-        database(const database&) = delete;
-
-        database(database&& other)  = default;
+        database(std::string_view connection_string, int connection_count);
 
         VIRTUAL_DESTRUCTOR(database);
+
+        VIRTUAL auto add_error(
+            const UUID::uuid& object_id,
+            std::string_view message
+        ) -> void;
 
         VIRTUAL auto add_object(
             const UUID::uuid& bucket_id,
@@ -32,6 +32,8 @@ namespace fstore::core::db {
             std::string_view type,
             std::string_view subtype
         ) -> object;
+
+        VIRTUAL auto clear_error(const UUID::uuid& object_id) -> void;
 
         VIRTUAL auto create_bucket(
             const UUID::uuid& bucket_id,
@@ -48,10 +50,17 @@ namespace fstore::core::db {
 
         VIRTUAL auto fetch_store_totals() -> store_totals;
 
+        VIRTUAL auto get_errors() -> std::vector<object_error>;
+
         VIRTUAL auto get_object(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
         ) -> std::optional<object>;
+
+        VIRTUAL auto get_objects(
+            int batch_size,
+            std::function<void(std::span<const object>)>&& action
+        ) -> void;
 
         VIRTUAL auto remove_bucket(std::string_view id) -> void;
 
