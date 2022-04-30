@@ -12,6 +12,7 @@ namespace fstore::core::db {
     ) :
         connections(
             connection_string,
+            connection_count,
             [](auto& connection) {
                 entix::prepare(connection, "add_error", {"uuid", "text"});
                 entix::prepare(
@@ -36,8 +37,7 @@ namespace fstore::core::db {
                 );
                 entix::prepare(connection, "remove_orphan_objects", {});
                 entix::prepare(connection, "rename_bucket", {"uuid", "text"});
-            },
-            connection_count
+            }
         )
     {}
 
