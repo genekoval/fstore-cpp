@@ -10,49 +10,55 @@ client := lib$(project)
 install := $(project) $(client)
 targets := $(install) $(internal.libs)
 
-install.directories := include/fstore share/fstore
+install.directories := \
+ include/fstore \
+ share/fstore
 
-define core.libs
- $(internal)
- conftools
- cryptopp
- entix
- ext++
- fmt
- magix
- netcore
- pqxx
- pq
- pthread
- threadpool
- timber
- uuid++
+core.libs := \
+ $(internal) \
+ conftools \
+ cryptopp \
+ entix \
+ ext++ \
+ fmt \
+ magix \
+ netcore \
+ pqxx \
+ pq \
+ pthread \
+ threadpool \
+ timber \
+ uuid++ \
  yaml-cpp
-endef
 
 test.deps = $(internal.libs)
-define test.libs
- $(core.libs)
- $(project)
- gtest
- gmock
+test.libs := \
+ $(core.libs) \
+ $(project) \
+ gtest \
+ gmock \
  pthread
-endef
 
 $(project).type = executable
 $(project).deps = $(internal.libs)
-define $(project).libs
- $(core.libs)
- commline
- dbtools
+$(project).libs := \
+ $(core.libs) \
+ commline \
+ dbtools \
  dmon
-endef
 
 $(client).type = shared
-define $(client).libs
- netcore
+$(client).libs := \
+ netcore \
  uuid++
-endef
+
+files = \
+ $(include) \
+ $(src) \
+ mk \
+ share \
+ Makefile \
+ VERSION
 
 include mkbuild/base.mk
 
