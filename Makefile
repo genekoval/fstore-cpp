@@ -60,7 +60,7 @@ ifeq ($(environment),$(environment.develop))
  CXXFLAGS += -DTEST
 endif
 
-confdir = $(prefix)/etc/$(project)
+confdir ?= $(prefix)/etc/$(project)
 
 $(obj)/$(project)/main.o: CXXFLAGS +=\
  -DNAME='"$(project)"'\
