@@ -14,7 +14,7 @@ namespace fstore::cli {
         if (config.dump) options.dump_program = *config.dump;
         if (config.restore) options.restore_program = *config.restore;
 
-        options.sql_directory = std::filesystem::path(SQLDIR);
+        options.sql_directory = settings.database.sqldir;
 
         return dbtools::postgresql(std::move(options));
     }

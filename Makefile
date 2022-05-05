@@ -10,6 +10,8 @@ client := lib$(project)
 install := $(project) $(client)
 targets := $(install) $(internal.libs)
 
+install.directories := include/fstore share/fstore
+
 define core.libs
  $(internal)
  conftools
@@ -60,16 +62,11 @@ endif
 
 confdir = $(prefix)/etc/$(project)
 
-$(obj)/$(core)/settings.o: CXXFLAGS += -DCONFDIR='"$(prefix)/etc"'
-
 $(obj)/$(project)/main.o: CXXFLAGS +=\
  -DNAME='"$(project)"'\
  -DVERSION='"$(version)"'\
  -DDESCRIPTION='"$(summary)"'\
  -DCONFDIR='"$(confdir)"'
-
-$(obj)/$(project)/db/db.o: CXXFLAGS +=\
- -DSQLDIR='"$(shell pwd)/db"'
 
 edit.config:
 	$(EDITOR) $(confdir)/fstore.yml

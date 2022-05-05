@@ -24,6 +24,7 @@ namespace fstore::conf {
             int connections = 1;
             std::optional<std::string> dump;
             std::optional<std::string> restore;
+            std::string sqldir;
         };
 
         static auto load(std::string_view text) -> settings;
