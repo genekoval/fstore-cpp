@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <fmt/ostream.h>
 #include <fstream>
-#include <magix.h>
+#include <magix/magix>
 #include <timber/timber>
 #include <vector>
 
