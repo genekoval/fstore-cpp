@@ -16,10 +16,12 @@ namespace {
         bool daemon,
         timber::level log_level
     ) -> void {
-        const auto settings = fstore::conf::settings::load_file(conf);
-        auto api = fstore::cli::api_container(settings);
-        auto& store = api.object_store();
+        auto startup_timer = timber::timer(
+            "Server started in",
+            timber::level::info
+        );
 
+        const auto settings = fstore::conf::settings::load_file(conf);
         timber::reporting_level = log_level;
 
         if (daemon && !dmon::daemonize({
@@ -29,12 +31,10 @@ namespace {
             .user = settings.daemon.user
         })) return;
 
-        auto startup_timer = timber::timer(
-            "Server started in",
-            timber::level::info
-        );
-
         TIMBER_NOTICE("{} version {} starting up", app.name, app.version);
+
+        auto api = fstore::cli::api_container(settings);
+        auto& store = api.object_store();
 
         const auto info = fstore::server::server_info {
             .version = std::string(app.version)
