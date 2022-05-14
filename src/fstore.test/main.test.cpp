@@ -1,6 +1,6 @@
-#include <fstore/conf/settings.test.env.h>
-#include <fstore/core/db/database.test.env.h>
-#include <fstore/core/fs/filesystem.test.env.h>
+#include <fstore/conf/settings.env.test.h>
+#include <fstore/core/db/database.env.test.h>
+#include <fstore/core/fs/filesystem.env.test.h>
 
 #include <filesystem>
 #include <fmt/chrono.h>

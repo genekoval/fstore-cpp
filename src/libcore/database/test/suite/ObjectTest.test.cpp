@@ -1,7 +1,7 @@
 #include "../table.h"
 #include "ObjectTest.test.h"
 
-#include <fstore/core/db/database.test.env.h>
+#include <fstore/core/db/database.env.test.h>
 
 const UUID::uuid ObjectTest::bucket_id = "69595d19-8381-4c1f-ac52-52680df83675";
 
