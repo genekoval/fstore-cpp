@@ -1,5 +1,5 @@
-#include <fstore/conf/settings.test.env.h>
-#include <fstore/core/db/database.test.env.h>
+#include <fstore/conf/settings.env.test.h>
+#include <fstore/core/db/database.env.test.h>
 
 namespace {
     constexpr auto connection_count = 1;
