@@ -12,7 +12,7 @@ namespace {
         const auto settings = fstore::conf::settings::load_file(confpath);
         const auto db = fstore::cli::database(settings);
 
-        db.init();
+        db.init(app.version);
     }
 }
 
