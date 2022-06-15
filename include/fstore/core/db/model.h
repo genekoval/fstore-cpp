@@ -1,11 +1,10 @@
 #pragma once
 
-#include <entix/entity>
 #include <string>
 #include <uuid++/uuid++>
 
 namespace fstore::core::db {
-    struct bucket : entix::entity<5> {
+    struct bucket {
         UUID::uuid id;
         std::string name;
         std::string date_created;
@@ -15,14 +14,14 @@ namespace fstore::core::db {
         auto operator<=>(const bucket&) const = default;
     };
 
-    struct object_error : entix::entity<2> {
+    struct object_error {
         UUID::uuid id;
         std::string message;
 
         auto operator<=>(const object_error&) const = default;
     };
 
-    struct object : entix::entity<6> {
+    struct object {
         UUID::uuid id;
         std::string hash;
         uintmax_t size;
@@ -44,14 +43,14 @@ namespace fstore::core::db {
         }
     };
 
-    struct remove_result : entix::entity<2> {
+    struct remove_result {
         std::size_t objects_removed;
         uintmax_t space_freed;
 
         auto operator<=>(const remove_result&) const = default;
     };
 
-    struct store_totals : entix::entity<3> {
+    struct store_totals {
         std::size_t buckets;
         std::size_t objects;
         uintmax_t space_used;
