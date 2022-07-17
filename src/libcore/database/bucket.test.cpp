@@ -14,11 +14,10 @@ TEST_F(BucketTest, Creation) {
 
     const auto bucket = database.create_bucket(id, name);
 
-    ASSERT_EQ(id, bucket.id);
-    ASSERT_EQ(name, bucket.name);
-    ASSERT_EQ(0, bucket.size);
-    ASSERT_EQ(0, bucket.space_used);
-    ASSERT_FALSE(bucket.date_created.empty());
+    EXPECT_EQ(id, bucket.id);
+    EXPECT_EQ(name, bucket.name);
+    EXPECT_EQ(0, bucket.size);
+    EXPECT_EQ(0, bucket.space_used);
 }
 
 TEST_F(BucketTest, Removal) {

@@ -66,12 +66,11 @@ TEST_F(ObjectTest, GetObject) {
 
     const auto result = opt.value();
 
-    ASSERT_EQ(object.id, result.id);
-    ASSERT_EQ(object.hash, result.hash);
-    ASSERT_EQ(object.size, result.size);
-    ASSERT_EQ(object.type, result.type);
-    ASSERT_EQ(object.subtype, result.subtype);
-    ASSERT_FALSE(result.date_added.empty());
+    EXPECT_EQ(object.id, result.id);
+    EXPECT_EQ(object.hash, result.hash);
+    EXPECT_EQ(object.size, result.size);
+    EXPECT_EQ(object.type, result.type);
+    EXPECT_EQ(object.subtype, result.subtype);
 }
 
 TEST_F(ObjectTest, GetObjects) {

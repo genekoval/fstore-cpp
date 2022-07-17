@@ -1,13 +1,19 @@
 #pragma once
 
+#include <chrono>
 #include <string>
 #include <uuid++/uuid++>
 
 namespace fstore::core::db {
+    using time_point = std::chrono::time_point<
+        std::chrono::system_clock,
+        std::chrono::milliseconds
+    >;
+
     struct bucket {
         UUID::uuid id;
         std::string name;
-        std::string date_created;
+        time_point date_created;
         std::size_t size;
         uintmax_t space_used;
 
@@ -27,7 +33,7 @@ namespace fstore::core::db {
         uintmax_t size;
         std::string type;
         std::string subtype;
-        std::string date_added;
+        time_point date_added;
 
         auto operator<=>(const object&) const = default;
 
