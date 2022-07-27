@@ -3,11 +3,19 @@ CREATE SCHEMA fstore;
 
 SET search_path TO fstore;
 
+CREATE FUNCTION epoch_sec(
+    a_timestamp     timestamptz
+) RETURNS numeric AS $$
+BEGIN
+    RETURN extract(epoch FROM a_timestamp);
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE VIEW bucket_view AS
 SELECT
     bucket_id,
     name,
-    date_created,
+    epoch_sec(date_created) AS date_created,
     count(object_id) AS object_count,
     coalesce(sum(size), 0) AS space_used
 FROM data.bucket
@@ -23,7 +31,7 @@ SELECT
     size,
     "type",
     subtype,
-    bucket_object.date_added
+    epoch_sec(bucket_object.date_added) AS date_added
 FROM data.bucket_object
 JOIN data.object USING (object_id);
 
@@ -34,7 +42,7 @@ SELECT
     size,
     "type",
     subtype,
-    date_added
+    epoch_sec(date_added) AS date_added
 FROM data.object;
 
 CREATE VIEW object_error AS
@@ -295,7 +303,7 @@ BEGIN
         size,
         "type",
         subtype,
-        deleted.date_added
+        epoch_sec(deleted.date_added) AS date_added
     FROM deleted
     JOIN data.object USING (object_id);
 END;
@@ -326,7 +334,13 @@ BEGIN
     RETURN QUERY
     DELETE FROM data.object obj USING object_ref ref
     WHERE obj.object_id = ref.object_id AND reference_count = 0
-    RETURNING obj.object_id, hash, size, "type", subtype, date_added;
+    RETURNING
+        obj.object_id,
+        hash,
+        size,
+        "type",
+        subtype,
+        epoch_sec(date_added) AS date_added;
 END;
 $$ LANGUAGE plpgsql;
 
