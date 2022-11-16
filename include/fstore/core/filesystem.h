@@ -5,7 +5,7 @@
 #include <functional>
 #include <filesystem>
 #include <fstream>
-#include <netcore/fd.h>
+#include <netcore/netcore>
 #include <span>
 
 namespace fstore::core::fs {

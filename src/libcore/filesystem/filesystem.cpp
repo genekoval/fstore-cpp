@@ -121,8 +121,8 @@ namespace fstore::core::fs {
     }
 
     auto filesystem::open(std::string_view id) const -> netcore::fd {
-        auto path = object_path(id);
-        return ::open(path.c_str(), O_RDONLY);
+        const auto path = object_path(id);
+        return netcore::open(path, O_RDONLY);
     }
 
     auto filesystem::part_path(

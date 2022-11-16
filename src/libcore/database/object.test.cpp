@@ -80,11 +80,17 @@ TEST_F(ObjectTest, GetObjects) {
     auto result_count = 0;
     auto objects_returned = std::unordered_set<db::object>();
 
-    database.get_objects(2, [&](auto results) {
+    auto objects = database.get_objects(2);
+    while (objects) {
+        const auto results = objects();
+
         ++calls;
         result_count += results.size();
-        for (const auto& result : results) objects_returned.insert(result);
-    });
+
+        for (const auto& result : results) {
+            objects_returned.insert(result);
+        }
+    }
 
     ASSERT_EQ(2, calls);
     ASSERT_EQ(3, result_count);

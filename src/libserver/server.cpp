@@ -1,6 +1,6 @@
 #include "context/context.h"
 
-#include <fstore/net/zipline/transfer.h>
+#include <fstore/net/zipline/coder.h>
 #include <fstore/server/server.h>
 
 #include <timber/timber>
@@ -9,19 +9,27 @@ using fstore::server::context;
 
 namespace {
     template <typename ...Routes>
-    using router = zipline::router<
-        fstore::net::socket,
-        fstore::net::event_t,
-        fstore::net::error_list,
-        context,
-        Routes...
-    >;
+    auto make_router(context&& ctx, Routes&&... routes) {
+        return zipline::router<
+            fstore::net::socket,
+            fstore::net::event_t,
+            fstore::net::error_list,
+            context,
+            Routes...
+        >(
+            std::move(ctx),
+            routes...
+        );
+    }
 
-    auto make_router(context& ctx) {
-        return router(
-            ctx,
+
+    auto make_router(
+        fstore::core::object_store& store,
+        const fstore::server::server_info& info
+    ) {
+        return make_router(
+            context(store, info),
             &context::add_object,
-            &context::create_object_from_file,
             &context::fetch_bucket,
             &context::get_object,
             &context::get_object_metadata,
@@ -33,20 +41,15 @@ namespace {
 }
 
 namespace fstore::server {
-    auto listen(
+    auto create(
         core::object_store& store,
-        const server_info& info,
-        const netcore::unix_socket& unix_socket,
-        const std::function<void()>& callback
-    ) -> void {
-        auto ctx = context(store, info);
-        auto routes = make_router(ctx);
-
-        auto server = netcore::server([&routes](netcore::socket&& sock) {
-            auto socket = net::socket(std::move(sock));
-            routes.route(socket);
+        const server_info& info
+    ) -> netcore::server {
+        return netcore::server([
+            routes = make_router(store, info)
+        ](netcore::socket&& socket) mutable -> ext::task<> {
+            auto client = net::socket(std::forward<netcore::socket>(socket));
+            co_await routes.route(client);
         });
-
-        server.listen(unix_socket, callback);
     }
 }

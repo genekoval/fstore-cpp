@@ -6,10 +6,8 @@
 #include <string_view>
 
 namespace fstore::server {
-    auto listen(
+    auto create(
         core::object_store& store,
-        const server_info& info,
-        const netcore::unix_socket& unix_socket,
-        const std::function<void()>& callback
-    ) -> void;
+        const server_info& info
+    ) -> netcore::server;
 }

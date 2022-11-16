@@ -1,5 +1,7 @@
 #include <fstore/core/part.h>
 
+#include <timber/timber>
+
 namespace fstore::core {
     part::part(const UUID::uuid& id, std::ofstream&& out) :
         out(std::move(out)),
@@ -7,6 +9,8 @@ namespace fstore::core {
     {}
 
     auto part::write(std::span<const std::byte> data) -> void {
+        TIMBER_TRACE("part ({}) write {:L} bytes", id, data.size());
+
         out.write(
             reinterpret_cast<const char*>(data.data()),
             data.size()

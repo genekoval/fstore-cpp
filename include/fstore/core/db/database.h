@@ -58,9 +58,8 @@ namespace fstore::core::db {
         ) -> std::optional<object>;
 
         VIRTUAL auto get_objects(
-            int batch_size,
-            std::function<void(std::span<const object>)>&& action
-        ) -> void;
+            int batch_size
+        ) -> ext::generator<std::span<object>>;
 
         VIRTUAL auto remove_bucket(std::string_view id) -> void;
 

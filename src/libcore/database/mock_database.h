@@ -37,9 +37,8 @@ namespace fstore::test {
             const UUID::uuid& object_id
         ), (override));
 
-        MOCK_METHOD(void, get_objects, (
-            int batch_size,
-            std::function<void(std::span<const core::db::object>)>&& action
+        MOCK_METHOD(ext::generator<std::span<core::db::object>>, get_objects, (
+            int batch_size
         ), (override));
 
         MOCK_METHOD(void, remove_bucket, (std::string_view id), (override));

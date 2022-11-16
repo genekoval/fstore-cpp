@@ -34,18 +34,18 @@ namespace fstore::core {
         progress.total = database->fetch_store_totals().objects;
         std::atomic_ulong errors = 0;
 
-        {
-            auto workers = threadpool::pool(jobs);
+        auto workers = threadpool::pool(jobs);
 
-            database->get_objects(100, [&](auto objects) {
-                for (const auto& obj : objects) {
-                    workers.run([this, obj, &errors, &progress]() {
-                        const auto success = this->check_object(obj);
-                        if (!success) errors += 1;
-                        progress.completed += 1;
-                    });
-                }
-            });
+        auto objects = database->get_objects(100);
+
+        while (objects) {
+            for (auto&& obj : objects()) {
+                workers.run([this, obj, &errors, &progress]() {
+                    const auto success = check_object(obj);
+                    if (!success) errors += 1;
+                    progress.completed += 1;
+                });
+            }
         }
 
         return errors;

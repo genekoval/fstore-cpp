@@ -15,35 +15,30 @@ namespace fstore::server {
             UUID::uuid bucket_id,
             std::optional<UUID::uuid> request,
             net::data_stream stream
-        ) -> core::object;
+        ) -> ext::task<core::object>;
 
-        auto create_object_from_file(
-            UUID::uuid bucket_id,
-            std::string path
-        ) -> core::object;
-
-        auto fetch_bucket(std::string bucket_name) -> core::bucket;
+        auto fetch_bucket(std::string bucket_name) -> ext::task<core::bucket>;
 
         auto get_object(
             UUID::uuid bucket_id,
             UUID::uuid object_id
-        ) -> core::file;
+        ) -> ext::task<core::file>;
 
         auto get_object_metadata(
             UUID::uuid bucket_id,
             UUID::uuid object_id
-        ) -> core::object;
+        ) -> ext::task<core::object>;
 
-        auto get_server_info() -> server_info;
+        auto get_server_info() -> ext::task<server_info>;
 
         auto remove_object(
             UUID::uuid bucket_id,
             UUID::uuid object_id
-        ) -> core::object;
+        ) -> ext::task<core::object>;
 
         auto remove_objects(
             UUID::uuid bucket_id,
             std::vector<UUID::uuid> objects
-        ) -> core::remove_result;
+        ) -> ext::task<core::remove_result>;
     };
 }

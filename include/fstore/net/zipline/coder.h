@@ -1,26 +1,32 @@
 #pragma once
 
-#include <fstore/client.h>
 #include <fstore/core/model.h>
 
+#include <ext/dynarray.h>
 #include <uuid++/zipline>
 #include <zipline/zipline>
 
+namespace fstore {
+    using blob = ext::dynarray<std::byte>;
+}
+
 namespace zipline {
     template <typename Socket>
-    struct transfer<Socket, fstore::blob> {
-        static auto read(Socket& sock) -> fstore::blob {
-            auto stream = transfer<Socket, data_stream<Socket>>::read(sock);
+    struct coder<Socket, fstore::blob> {
+        static auto decode(Socket& sock) -> ext::task<fstore::blob> {
+            auto stream =
+                co_await coder<Socket, data_stream<Socket>>::decode(sock);
 
-            auto blob = fstore::blob(stream.size());
+            auto blob = fstore::blob(co_await stream.size());
             auto index = 0;
 
-            stream.read([&blob, &index](auto&& chunk) {
+            co_await stream.read([&blob, &index](auto&& chunk) -> ext::task<> {
                 blob.copy(chunk.data(), chunk.size(), index);
                 index += chunk.size();
+                co_return;
             });
 
-            return blob;
+            co_return blob;
         }
     };
 
@@ -34,18 +40,18 @@ namespace zipline {
     );
 
     template <typename Socket>
-    struct transfer<Socket, fstore::core::file> {
-        static auto write(
+    struct coder<Socket, fstore::core::file> {
+        static auto encode(
             Socket& sock,
             const fstore::core::file& file
-        ) -> void {
-            transfer<Socket, decltype(fstore::core::file::size)>::write(
+        ) -> ext::task<> {
+            co_await coder<Socket, decltype(fstore::core::file::size)>::encode(
                 sock,
                 file.size
             );
 
-            sock.flush();
-            sock.socket().sendfile(file.fd, file.size);
+            co_await sock.flush();
+            co_await sock.inner().sendfile(file.fd, file.size);
         }
     };
 

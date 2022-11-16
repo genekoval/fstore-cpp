@@ -179,12 +179,14 @@ namespace fstore::core::db {
     }
 
     auto database::get_objects(
-        int batch_size,
-        std::function<void(std::span<const object>)>&& action
-    ) -> void {
+        int batch_size
+    ) -> ext::generator<std::span<object>> {
         auto c = connections.connection();
         auto tx = pqxx::work(c);
-        entix::stream(tx, __FUNCTION__, batch_size, action);
+
+        auto stream = entix::stream<object>(tx, __FUNCTION__, batch_size);
+        while (stream) co_yield stream();
+
         tx.commit();
     }
 

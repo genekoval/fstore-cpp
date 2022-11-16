@@ -8,11 +8,6 @@
 namespace {
     const auto default_config = std::filesystem::path(CONFDIR) / "fstore.yml";
 
-    auto initialize_logger() -> void {
-        timber::reporting_level = timber::level::warning;
-        timber::log_handler = &timber::console_logger;
-    }
-
     auto $main(
         const commline::app& app,
         bool version
@@ -27,7 +22,10 @@ namespace {
 auto main(int argc, const char** argv) -> int {
     using namespace commline;
 
-    initialize_logger();
+    std::locale::global(std::locale(""));
+
+    timber::reporting_level = timber::level::warning;
+    timber::log_handler = &timber::console_logger;
 
     const auto confpath = default_config.string();
 
@@ -60,7 +58,6 @@ auto main(int argc, const char** argv) -> int {
     app.subcommand(fstore::cli::restore(confpath));
     app.subcommand(fstore::cli::start(confpath));
     app.subcommand(fstore::cli::status(confpath));
-    app.subcommand(fstore::cli::stop(confpath));
 
     return app.run(argc, argv);
 }

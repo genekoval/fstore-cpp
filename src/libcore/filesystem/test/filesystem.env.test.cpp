@@ -9,12 +9,14 @@ namespace {
         const auto path =
             std::filesystem::temp_directory_path() / directory_template;
         const auto string = path.string();
-        const auto size = string.size();
+        const auto size = string.size() + 1;
 
-        auto directory = std::make_unique<char[]>(size);
-        string.copy(directory.get(), size);
+        const auto directory = std::make_unique<char[]>(size);
+        auto* const dir = directory.get();
 
-        return std::filesystem::path(mkdtemp(directory.get()));
+        string.copy(dir, size);
+
+        return std::filesystem::path(mkdtemp(dir));
     }
 
     struct temp_directory {

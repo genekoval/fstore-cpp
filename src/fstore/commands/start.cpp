@@ -10,52 +10,63 @@
 #include <timber/timber>
 
 namespace {
-    auto $start(
-        const commline::app& app,
-        std::string_view conf,
-        bool daemon,
-        timber::level log_level
-    ) -> void {
-        auto startup_timer = timber::timer(
-            "Server started in",
-            timber::level::info
-        );
+    namespace internal {
+        auto start(
+            const commline::app& app,
+            std::string_view conf,
+            bool daemon,
+            timber::level log_level
+        ) -> void {
+            auto startup_timer = timber::timer(
+                "Server started in",
+                timber::level::info
+            );
 
-        const auto settings = fstore::conf::settings::load_file(conf);
-        timber::reporting_level = log_level;
+            auto uptime_timer = timber::timer(
+                "Server shutting down. Up",
+                timber::level::notice
+            );
 
-        if (daemon && !dmon::daemonize({
-            .group = settings.daemon.group,
-            .identifier = app.name,
-            .pidfile = settings.daemon.pidfile,
-            .user = settings.daemon.user
-        })) return;
+            const auto settings = fstore::conf::settings::load_file(conf);
+            timber::reporting_level = log_level;
 
-        TIMBER_NOTICE("{} version {} starting up", app.name, app.version);
+            if (daemon && !dmon::daemonize({
+                .group = settings.daemon.group,
+                .identifier = app.name,
+                .pidfile = settings.daemon.pidfile,
+                .user = settings.daemon.user
+            })) return;
 
-        auto api = fstore::cli::api_container(settings);
-        auto& store = api.object_store();
+            TIMBER_NOTICE("{} version {} starting up", app.name, app.version);
 
-        const auto info = fstore::server::server_info {
-            .version = std::string(app.version)
-        };
+            const auto task = [
+                &app,
+                &settings,
+                &startup_timer,
+                &uptime_timer
+            ]() -> ext::task<> {
+                auto api = fstore::cli::api_container(settings);
+                auto& store = api.object_store();
 
-        auto uptime_timer = timber::timer(
-            "Server shutting down. Up",
-            timber::level::notice
-        );
+                const auto info = fstore::server::server_info {
+                    .version = std::string(app.version)
+                };
 
-        fstore::server::listen(
-            store,
-            info,
-            settings.server,
-            [&startup_timer, &uptime_timer]() {
-                startup_timer.stop();
-                uptime_timer.reset();
-            }
-        );
+                auto server = fstore::server::create(store, info);
 
-        uptime_timer.stop();
+                co_await server.listen(
+                    settings.server,
+                    [&startup_timer, &uptime_timer]() {
+                        startup_timer.stop();
+                        uptime_timer.reset();
+                    }
+                );
+            };
+
+            netcore::async(task());
+
+            uptime_timer.stop();
+        }
     }
 }
 
@@ -77,7 +88,7 @@ namespace fstore::cli {
                 opts::log_level()
             ),
             arguments(),
-            $start
+            internal::start
         );
     }
 }

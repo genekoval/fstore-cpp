@@ -1,9 +1,10 @@
 #include <fstore/client.h>
 
 namespace fstore {
-    part::part(client& out) : out(&out) {}
+    part::part(client_type& out) : out(out) {}
 
-    auto part::write(std::span<const std::byte> data) -> void {
-        out->write_bytes(data);
+    auto part::write(std::span<const std::byte> data) -> ext::task<> {
+        co_await out.write_bytes(data);
+        co_return;
     }
 }
