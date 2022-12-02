@@ -5,7 +5,7 @@
 #include <fstore/net/zipline/protocol.h>
 #include <fstore/server/server_info.h>
 
-#include <ext/async_pool>
+#include <ext/pool>
 
 namespace fstore {
     using object_meta = core::object;
@@ -141,7 +141,6 @@ namespace fstore {
     };
 
     class client {
-    public:
         class provider {
             const std::string path;
             const net::error_list errors;
@@ -153,15 +152,12 @@ namespace fstore {
             auto provide() -> ext::task<object_store>;
         };
 
-        using connection_pool = ext::async_pool<object_store, provider>;
-        using connection = connection_pool::item;
-    private:
-        connection_pool pool;
+        ext::async_pool<object_store, provider> pool;
     public:
         client() = default;
 
         client(std::string_view path);
 
-        auto connect() -> ext::task<connection>;
+        auto connect() -> ext::task<ext::pool_item<object_store>>;
     };
 }

@@ -1,13 +1,9 @@
 #include <fstore/client.h>
 
 namespace fstore {
-    client::client(std::string_view path) :
-        pool(connection_pool::options {
-            .provider = provider(path)
-        })
-    {}
+    client::client(std::string_view path) : pool(provider(path)) {}
 
-    auto client::connect() -> ext::task<connection> {
+    auto client::connect() -> ext::task<ext::pool_item<object_store>> {
         co_return co_await pool.checkout();
     }
 
