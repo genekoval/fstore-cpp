@@ -5,11 +5,11 @@
 #include <fstore/server/server_info.h>
 
 namespace fstore::server {
-    class context {
+    class router_context {
         const server_info* const info;
         core::object_store* store;
     public:
-        context(core::object_store& store, const server_info& info);
+        router_context(core::object_store& store, const server_info& info);
 
         auto add_object(
             UUID::uuid bucket_id,

@@ -1,55 +1,43 @@
-#include "context/context.h"
-
 #include <fstore/net/zipline/coder.h>
 #include <fstore/server/server.h>
 
 #include <timber/timber>
 
-using fstore::server::context;
-
-namespace {
-    template <typename ...Routes>
-    auto make_router(context&& ctx, Routes&&... routes) {
-        return zipline::router<
-            fstore::net::socket,
-            fstore::net::event_t,
-            fstore::net::error_list,
-            context,
-            Routes...
-        >(
-            std::move(ctx),
-            routes...
-        );
-    }
-
-
-    auto make_router(
-        fstore::core::object_store& store,
-        const fstore::server::server_info& info
-    ) {
-        return make_router(
-            context(store, info),
-            &context::add_object,
-            &context::fetch_bucket,
-            &context::get_object,
-            &context::get_object_metadata,
-            &context::get_server_info,
-            &context::remove_object,
-            &context::remove_objects
-        );
-    }
-}
-
 namespace fstore::server {
+    server_context::server_context(
+        router_type&& router,
+        timber::timer& startup_timer,
+        timber::timer& uptime_timer
+    ) :
+        router(std::forward<router_type>(router)),
+        startup_timer(startup_timer),
+        uptime_timer(uptime_timer)
+    {}
+
+    auto server_context::close() -> void {
+        uptime_timer.stop();
+    }
+
+    auto server_context::connection(netcore::socket&& client) -> ext::task<> {
+        auto socket = net::socket(std::forward<netcore::socket>(client));
+        co_await router.route(socket);
+    }
+
+    auto server_context::listen() -> void {
+        startup_timer.stop();
+        uptime_timer.reset();
+    }
+
     auto create(
         core::object_store& store,
-        const server_info& info
-    ) -> netcore::server {
-        return netcore::server([
-            routes = make_router(store, info)
-        ](netcore::socket&& socket) mutable -> ext::task<> {
-            auto client = net::socket(std::forward<netcore::socket>(socket));
-            co_await routes.route(client);
-        });
+        const server_info& info,
+        timber::timer& startup_timer,
+        timber::timer& uptime_timer
+    ) -> server_type {
+        return server_type(
+            make_router(store, info),
+            startup_timer,
+            uptime_timer
+        );
     }
 }

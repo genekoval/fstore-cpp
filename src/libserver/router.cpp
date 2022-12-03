@@ -1,17 +1,19 @@
-#include "context.h"
-
 #include <fstore/error.h>
 #include <fstore/net/zipline/protocol.h>
+#include <fstore/server/router.hpp>
 
 #include <span>
 
 namespace fstore::server {
-    context::context(core::object_store& store, const server_info& info) :
+    router_context::router_context(
+        core::object_store& store,
+        const server_info& info
+    ) :
         info(&info),
         store(&store)
     {}
 
-    auto context::add_object(
+    auto router_context::add_object(
         UUID::uuid bucket_id,
         std::optional<UUID::uuid> request,
         net::data_stream stream
@@ -30,13 +32,13 @@ namespace fstore::server {
         co_return store->commit_part(bucket_id, part_id);
     }
 
-    auto context::fetch_bucket(
+    auto router_context::fetch_bucket(
         std::string bucket_name
     ) -> ext::task<core::bucket> {
         co_return store->fetch_bucket(bucket_name);
     }
 
-    auto context::get_object(
+    auto router_context::get_object(
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<core::file> {
@@ -46,7 +48,7 @@ namespace fstore::server {
         co_return std::move(*file);
     }
 
-    auto context::get_object_metadata(
+    auto router_context::get_object_metadata(
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<core::object> {
@@ -56,18 +58,18 @@ namespace fstore::server {
         co_return std::move(*object);
     }
 
-    auto context::get_server_info() -> ext::task<server_info> {
+    auto router_context::get_server_info() -> ext::task<server_info> {
         co_return *info;
     }
 
-    auto context::remove_object(
+    auto router_context::remove_object(
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<core::object> {
         co_return store->remove_object(bucket_id, object_id);
     }
 
-    auto context::remove_objects(
+    auto router_context::remove_objects(
         UUID::uuid bucket_id,
         std::vector<UUID::uuid> objects
     ) -> ext::task<core::remove_result> {
