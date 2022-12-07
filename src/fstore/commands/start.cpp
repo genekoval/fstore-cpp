@@ -4,6 +4,7 @@
 
 #include <fstore/cli.h>
 #include <fstore/core/object_store.h>
+#include <fstore/net/zipline/coder.h>
 #include <fstore/server/server.h>
 
 #include <dmon/dmon>
