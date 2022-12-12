@@ -43,15 +43,15 @@ namespace zipline {
         &fstore::core::bucket::space_used
     );
 
-    template <>
-    struct encoder<fstore::core::file, fstore::net::socket> {
+    template <fstore::net::writer Writer>
+    struct encoder<fstore::core::file, Writer> {
         static auto encode(
             const fstore::core::file& file,
-            fstore::net::socket& socket
+            Writer& writer
         ) -> ext::task<> {
-            co_await zipline::encode(file.size, socket);
-            co_await socket.flush();
-            co_await socket.inner().sendfile(file.fd, file.size);
+            co_await zipline::encode(file.size, writer);
+            co_await writer.flush();
+            co_await writer.sendfile(file.fd, file.size);
         }
     };
 

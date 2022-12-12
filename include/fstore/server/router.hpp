@@ -14,7 +14,7 @@ namespace fstore::server {
         auto add_object(
             UUID::uuid bucket_id,
             std::optional<UUID::uuid> request,
-            net::data_stream stream
+            zipline::stream<net::socket> stream
         ) -> ext::task<core::object>;
 
         auto fetch_bucket(std::string bucket_name) -> ext::task<core::bucket>;

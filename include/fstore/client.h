@@ -21,7 +21,7 @@ namespace fstore {
         remove_objects
     };
 
-    using client_type = zipline::client<net::socket, event, net::error_list>;
+    using client_type = zipline::client<net::socket, event>;
 
     class part {
         client_type& out;
@@ -38,12 +38,11 @@ namespace fstore {
         };
 
     class object_store {
-        std::unique_ptr<net::socket> socket;
-        client_type client;
+        std::unique_ptr<client_type> client;
     public:
         object_store() = default;
 
-        object_store(netcore::socket&& socket, const net::error_list& errors);
+        object_store(netcore::socket&& socket);
 
         auto add_object(
             const UUID::uuid& bucket_id,
@@ -51,17 +50,17 @@ namespace fstore {
             std::size_t stream_size,
             const add_object_fn auto& pipe
         ) -> ext::task<object_meta> {
-            co_await client.start(
+            co_await client->start(
                 event::add_object,
                 bucket_id,
                 part_id,
                 stream_size
             );
 
-            auto part = fstore::part(client);
+            auto part = fstore::part(*client);
             co_await pipe(part);
 
-            co_return co_await client.response<object_meta>();
+            co_return co_await client->read_response<object_meta>();
         }
 
         auto deregister() -> void;
@@ -142,8 +141,7 @@ namespace fstore {
 
     class client {
         class provider {
-            const std::string path;
-            const net::error_list errors;
+            std::string path;
         public:
             provider() = default;
 

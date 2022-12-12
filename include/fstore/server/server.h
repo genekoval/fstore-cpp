@@ -14,11 +14,11 @@ namespace fstore::server {
             return zipline::router<
                 net::socket,
                 net::event_t,
-                net::error_list,
                 router_context,
                 Routes...
             >(
                 std::forward<router_context>(context),
+                net::error_list::codes(),
                 std::forward<Routes>(routes)...
             );
         }

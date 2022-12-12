@@ -11,6 +11,6 @@ namespace fstore {
 
     auto client::provider::provide() -> ext::task<object_store> {
         auto socket = co_await netcore::connect(path);
-        co_return object_store(std::move(socket), errors);
+        co_return object_store(std::move(socket));
     }
 }

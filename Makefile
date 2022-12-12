@@ -16,6 +16,7 @@ install.directories := \
 
 core.libs := \
  $(internal) \
+ $(project) \
  conftools \
  cryptopp \
  entix \
@@ -29,7 +30,8 @@ core.libs := \
  threadpool \
  timber \
  uuid++ \
- yaml-cpp
+ yaml-cpp \
+ zipline
 
 test.deps = $(internal.libs)
 test.libs := \
