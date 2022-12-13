@@ -93,9 +93,7 @@ namespace fstore::core::db {
             );
         }
         catch (const pqxx::unique_violation& ex) {
-            throw fstore_error(
-                "cannot create bucket " QUOTE_VIEW(name) ": bucket exists"
-            );
+            throw unique_bucket_violation(name);
         }
     }
 
@@ -246,10 +244,7 @@ namespace fstore::core::db {
             tx.exec_prepared(__FUNCTION__, id, name);
         }
         catch (const pqxx::unique_violation& ex) {
-            throw fstore_error(
-                "cannot rename bucket: bucket named "
-                QUOTE_VIEW(name) " already exists"
-            );
+            throw unique_bucket_violation(name);
         }
     }
 }

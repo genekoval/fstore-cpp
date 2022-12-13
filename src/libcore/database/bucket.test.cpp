@@ -31,16 +31,7 @@ TEST_F(BucketTest, CreationRequiresUniqueName) {
     const auto name = "unique"s;
     database.create_bucket(name);
 
-    try {
-        database.create_bucket(name);
-        FAIL();
-    }
-    catch (const fstore::fstore_error& ex) {
-        ASSERT_EQ(
-            "cannot create bucket " QUOTE(name) ": bucket exists"s,
-            ex.what()
-        );
-    }
+    EXPECT_THROW(database.create_bucket(name), fstore::unique_bucket_violation);
 }
 
 TEST_F(BucketTest, FetchWorks) {
@@ -101,14 +92,8 @@ TEST_F(BucketTest, RenameWithNonUniqueNameFails) {
     const auto two = "two"s;
     auto second = database.create_bucket(two);
 
-    try {
-        database.rename_bucket(second.id, one);
-        FAIL() << "Renaming with another bucket's name should have failed";
-    }
-    catch (const fstore::fstore_error& ex) {
-        ASSERT_EQ(
-            "cannot rename bucket: bucket named " QUOTE(one) " already exists"s,
-            ex.what()
-        );
-    }
+    EXPECT_THROW(
+        database.rename_bucket(second.id, one),
+        fstore::unique_bucket_violation
+    );
 }

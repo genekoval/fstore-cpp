@@ -1,9 +1,10 @@
 #include <fstore/client.h>
+#include <fstore/error.h>
 
 namespace fstore {
     object_store::object_store(netcore::socket&& socket) :
         client(new client_type(
-            net::error_list::thrower(),
+            error_list::thrower(),
             net::socket(std::forward<netcore::socket>(socket))
         ))
     {}

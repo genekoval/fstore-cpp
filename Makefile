@@ -36,7 +36,6 @@ core.libs := \
 test.deps = $(internal.libs)
 test.libs := \
  $(core.libs) \
- $(project) \
  gtest \
  gmock \
  pthread

@@ -3,6 +3,7 @@
 #include "router.hpp"
 
 #include <fstore/core/object_store.h>
+#include <fstore/error.h>
 #include <fstore/server/server_info.h>
 
 #include <string_view>
@@ -18,7 +19,7 @@ namespace fstore::server {
                 Routes...
             >(
                 std::forward<router_context>(context),
-                net::error_list::codes(),
+                error_list::codes(),
                 std::forward<Routes>(routes)...
             );
         }
