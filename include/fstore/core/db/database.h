@@ -35,10 +35,7 @@ namespace fstore::core::db {
 
         VIRTUAL auto clear_error(const UUID::uuid& object_id) -> void;
 
-        VIRTUAL auto create_bucket(
-            const UUID::uuid& bucket_id,
-            std::string_view name
-        ) -> bucket;
+        VIRTUAL auto create_bucket(std::string_view name) -> bucket;
 
         VIRTUAL auto fetch_bucket(std::string_view name) -> bucket;
 

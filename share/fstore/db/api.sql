@@ -166,17 +166,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION create_bucket(
-    a_bucket_id     uuid,
     a_name          text
 ) RETURNS SETOF bucket_view AS $$
 BEGIN
-    INSERT INTO data.bucket (
-        bucket_id,
-        name
-    ) VALUES (
-        a_bucket_id,
-        a_name
-    );
+    INSERT INTO data.bucket (name) VALUES (a_name);
 
     RETURN QUERY
     SELECT * FROM fetch_bucket(a_name);

@@ -9,19 +9,18 @@
 using namespace std::literals;
 
 TEST_F(BucketTest, Creation) {
-    const auto id = UUID::generate();
     const auto name = "creation"s;
 
-    const auto bucket = database.create_bucket(id, name);
+    const auto bucket = database.create_bucket(name);
 
-    EXPECT_EQ(id, bucket.id);
+    EXPECT_FALSE(bucket.id.is_null());
     EXPECT_EQ(name, bucket.name);
     EXPECT_EQ(0, bucket.size);
     EXPECT_EQ(0, bucket.space_used);
 }
 
 TEST_F(BucketTest, Removal) {
-    const auto bucket = create_bucket("removal");
+    const auto bucket = database.create_bucket("removal");
     ASSERT_EQ(1, count("bucket"));
 
     database.remove_bucket(bucket.id);
@@ -30,10 +29,10 @@ TEST_F(BucketTest, Removal) {
 
 TEST_F(BucketTest, CreationRequiresUniqueName) {
     const auto name = "unique"s;
-    create_bucket(name);
+    database.create_bucket(name);
 
     try {
-        create_bucket(name);
+        database.create_bucket(name);
         FAIL();
     }
     catch (const fstore::fstore_error& ex) {
@@ -45,7 +44,7 @@ TEST_F(BucketTest, CreationRequiresUniqueName) {
 }
 
 TEST_F(BucketTest, FetchWorks) {
-    const auto bucket = create_bucket("fetch");
+    const auto bucket = database.create_bucket("fetch");
     const auto fetched = database.fetch_bucket(bucket.name);
 
     ASSERT_EQ(bucket, fetched);
@@ -70,7 +69,7 @@ TEST_F(BucketTest, FetchMultipleWorks) {
         }
     };
 
-    for (const auto& name: names) create_bucket(name);
+    for (const auto& name: names) database.create_bucket(name);
 
     test(database.fetch_buckets(names));
     test(database.fetch_buckets());
@@ -80,7 +79,7 @@ TEST_F(BucketTest, RenameWorks) {
     const auto first = "first"s;
     const auto second = "second"s;
 
-    const auto id = create_bucket(first).id;
+    const auto id = database.create_bucket(first).id;
     database.rename_bucket(id, second);
 
     const auto bucket = database.fetch_bucket(second);
@@ -91,7 +90,7 @@ TEST_F(BucketTest, RenameWorks) {
 TEST_F(BucketTest, RenameWithNonUniqueNameFails) {
     const auto one = "one"s;
 
-    auto first = create_bucket(one);
+    auto first = database.create_bucket(one);
     auto fid = first.id;
 
     // Passing in the same name should do nothing.
@@ -100,7 +99,7 @@ TEST_F(BucketTest, RenameWithNonUniqueNameFails) {
     ASSERT_EQ(fid, first.id);
 
     const auto two = "two"s;
-    auto second = create_bucket(two);
+    auto second = database.create_bucket(two);
 
     try {
         database.rename_bucket(second.id, one);

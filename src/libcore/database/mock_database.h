@@ -16,7 +16,6 @@ namespace fstore::test {
         ), (override));
 
         MOCK_METHOD(core::db::bucket, create_bucket, (
-            const UUID::uuid& bucket_id,
             std::string_view name
         ), (override));
 

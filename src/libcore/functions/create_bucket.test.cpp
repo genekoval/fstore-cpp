@@ -15,7 +15,6 @@ TEST_F(ObjectStoreTest, CreateBucket) {
     const auto name = "foo";
 
     EXPECT_CALL(database, create_bucket(
-        fstore::test::test_id,
         std::string_view(name)
     )).WillOnce(Return(fstore::core::db::bucket {
         .id = fstore::test::test_id,
@@ -23,7 +22,7 @@ TEST_F(ObjectStoreTest, CreateBucket) {
     }));
 
     const auto expected = fstore::core::bucket {
-        .id =fstore::test::test_id,
+        .id = fstore::test::test_id,
         .name = name
     };
     const auto result = store.create_bucket(name);
@@ -36,7 +35,6 @@ TEST_F(ObjectStoreTest, CreateBucketNameTrimmed) {
     constexpr auto trimmed = "whitespace"sv;
 
     EXPECT_CALL(database, create_bucket(
-        fstore::test::test_id,
         trimmed
     )).WillOnce(Return(fstore::core::db::bucket {
         .id = fstore::test::test_id,

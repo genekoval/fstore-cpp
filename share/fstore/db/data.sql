@@ -5,7 +5,7 @@ SET search_path TO data;
 
 CREATE TABLE bucket (
     -- The bucket's unique internal identifier.
-    bucket_id       uuid PRIMARY KEY,
+    bucket_id       uuid DEFAULT gen_random_uuid() PRIMARY KEY,
 
     -- The bucket's user-assigned name.
     name            text UNIQUE NOT NULL,

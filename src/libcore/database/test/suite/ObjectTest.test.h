@@ -6,7 +6,7 @@ class ObjectTest : public DatabaseTest {
 protected:
     static constexpr auto bucket_name = "object-test";
 
-    static const UUID::uuid bucket_id;
+    static UUID::uuid bucket_id;
 
     static auto SetUpTestSuite() -> void;
 

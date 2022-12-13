@@ -21,7 +21,7 @@ namespace fstore::core::db {
                     {"uuid", "uuid", "text", "bigint", "text", "text"}
                 );
                 entix::prepare(connection, "clear_error", {"uuid"});
-                entix::prepare(connection, "create_bucket", {"uuid", "text"});
+                entix::prepare(connection, "create_bucket", {"text"});
                 entix::prepare(connection, "fetch_bucket", {"text"});
                 entix::prepare(connection, "fetch_buckets", {"text[]"});
                 entix::prepare(connection, "fetch_buckets_all", {});
@@ -81,10 +81,7 @@ namespace fstore::core::db {
         tx.exec_prepared(__FUNCTION__, object_id);
     }
 
-    auto database::create_bucket(
-            const UUID::uuid& bucket_id,
-            std::string_view name
-    ) -> bucket {
+    auto database::create_bucket(std::string_view name) -> bucket {
         auto c = connections.connection();
         auto tx = pqxx::nontransaction(c);
 
@@ -92,7 +89,6 @@ namespace fstore::core::db {
             return entix::make_entity<bucket>(
                 tx,
                 __FUNCTION__,
-                bucket_id,
                 name
             );
         }
