@@ -5,16 +5,21 @@
 #include <commline/commline>
 #include <timber/timber>
 
-namespace {
-    const auto default_config = std::filesystem::path(CONFDIR) / "fstore.yml";
+namespace fs = std::filesystem;
 
-    auto $main(
-        const commline::app& app,
-        bool version
-    ) -> void {
-        if (version) {
-            commline::print_version(std::cout, app);
-            return;
+namespace {
+    namespace internal {
+        constexpr auto crash_log_level = timber::level::critical;
+        const auto default_config = fs::path(CONFDIR) / "fstore.yml";
+
+        auto main(
+            const commline::app& app,
+            bool version
+        ) -> void {
+            if (version) {
+                commline::print_version(std::cout, app);
+                return;
+            }
         }
     }
 }
@@ -26,8 +31,9 @@ auto main(int argc, const char** argv) -> int {
 
     timber::reporting_level = timber::level::warning;
     timber::log_handler = &timber::console_logger;
+    timber::set_terminate(internal::crash_log_level);
 
-    const auto confpath = default_config.string();
+    const auto confpath = internal::default_config.string();
 
     auto app = application(
         NAME,
@@ -40,11 +46,11 @@ auto main(int argc, const char** argv) -> int {
             )
         ),
         arguments(),
-        $main
+        internal::main
     );
 
     app.on_error([](const auto& e) -> void {
-        TIMBER_CRITICAL(e.what());
+        TIMBER_LOG(internal::crash_log_level, e.what());
     });
 
     app.subcommand(fstore::cli::archive(confpath));
