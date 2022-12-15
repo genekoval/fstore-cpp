@@ -42,20 +42,14 @@ namespace fstore::server {
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<core::file> {
-        auto file = store->get_object(bucket_id, object_id);
-        if (!file) throw fstore_error("bucket does not contain object");
-
-        co_return std::move(*file);
+        co_return store->get_object(bucket_id, object_id);
     }
 
     auto router_context::get_object_metadata(
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<core::object> {
-        auto object = store->get_object_metadata(bucket_id, object_id);
-        if (!object) throw fstore_error("bucket does not contain object");
-
-        co_return std::move(*object);
+        co_return store->get_object_metadata(bucket_id, object_id);
     }
 
     auto router_context::get_server_info() -> ext::task<server_info> {

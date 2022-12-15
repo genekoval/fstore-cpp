@@ -3,11 +3,19 @@
 #include <zipline/zipline>
 
 namespace fstore {
-    struct fstore_error : std::runtime_error {
-        using runtime_error::runtime_error;
+    struct fstore_error : zipline::zipline_error {
+        using zipline_error::zipline_error;
     };
 
-    class unique_bucket_violation : public zipline::zipline_error {
+    struct invalid_data : fstore_error {
+        using fstore_error::fstore_error;
+    };
+
+    struct not_found : fstore_error {
+        using fstore_error::fstore_error;
+    };
+
+    class unique_bucket_violation : fstore_error {
         std::string _name;
     public:
         unique_bucket_violation(std::string_view name);
@@ -20,6 +28,8 @@ namespace fstore {
     };
 
     using error_list = zipline::error_list<
+        invalid_data,
+        not_found,
         unique_bucket_violation
     >;
 }

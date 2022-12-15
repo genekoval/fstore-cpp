@@ -2,7 +2,7 @@
 
 namespace fstore {
     unique_bucket_violation::unique_bucket_violation(std::string_view name) :
-        zipline::zipline_error("bucket with name '{}' already exists", name),
+        fstore_error("bucket with name '{}' already exists", name),
         _name(name)
     {}
 

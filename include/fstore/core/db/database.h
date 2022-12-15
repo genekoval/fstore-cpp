@@ -52,7 +52,7 @@ namespace fstore::core::db {
         VIRTUAL auto get_object(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
-        ) -> std::optional<object>;
+        ) -> object;
 
         VIRTUAL auto get_objects(
             int batch_size

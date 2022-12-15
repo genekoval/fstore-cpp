@@ -61,12 +61,12 @@ namespace fstore::core {
         auto get_object(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
-        ) -> std::optional<file>;
+        ) -> file;
 
         auto get_object_metadata(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
-        ) -> std::optional<object>;
+        ) -> object;
 
         auto get_part(std::optional<UUID::uuid> part_id) -> part;
 

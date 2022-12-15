@@ -7,6 +7,8 @@
 
 namespace db = fstore::core::db;
 
+using fstore::not_found;
+
 namespace std {
     template <>
     struct hash<db::object> {
@@ -43,28 +45,18 @@ TEST_F(ObjectTest, BucketAdditionRemoval) {
     ASSERT_EQ(0, bucket_size());
 
     // Removing an object that does not exist results in an error.
-    try {
-        database.remove_object(bucket_id, object.id);
-        FAIL() << "Removing a nonexistent object should have failed";
-    }
-    catch (const fstore::fstore_error& ex) {
-        ASSERT_EQ("bucket does not contain object"s, ex.what());
-    }
+    EXPECT_THROW(database.remove_object(bucket_id, object.id), not_found);
 }
 
 TEST_F(ObjectTest, GetObjectNoObject) {
-    auto opt = database.get_object(bucket_id, objects.front().id);
-    ASSERT_FALSE(opt);
+    EXPECT_THROW(database.get_object(bucket_id, objects.front().id), not_found);
 }
 
 TEST_F(ObjectTest, GetObject) {
     const auto& object = objects.front();
     add_object(object);
 
-    auto opt = database.get_object(bucket_id, object.id);
-    ASSERT_TRUE(opt);
-
-    const auto result = opt.value();
+    const auto result = database.get_object(bucket_id, object.id);
 
     EXPECT_EQ(object.id, result.id);
     EXPECT_EQ(object.hash, result.hash);
@@ -154,7 +146,7 @@ TEST_F(ObjectTest, RemoveObjectsSubset) {
     database.remove_objects(bucket_id, {objects[0].id, objects[1].id});
 
     ASSERT_EQ(1, bucket_size());
-    ASSERT_TRUE(database.get_object(bucket_id, objects[2].id));
+    ASSERT_NO_THROW(database.get_object(bucket_id, objects[2].id));
 }
 
 TEST_F(ObjectTest, RemoveObjectsNonexistent) {
@@ -170,6 +162,6 @@ TEST_F(ObjectTest, RemoveObjectsNonexistent) {
 
     ASSERT_EQ(2, bucket_size());
     for (auto i = 0; i <= 1; ++i) {
-        ASSERT_TRUE(database.get_object(bucket_id, objects[i].id));
+        ASSERT_NO_THROW(database.get_object(bucket_id, objects[i].id));
     }
 }

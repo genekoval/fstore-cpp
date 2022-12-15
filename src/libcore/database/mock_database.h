@@ -31,7 +31,7 @@ namespace fstore::test {
 
         MOCK_METHOD(core::db::store_totals, fetch_store_totals, (), (override));
 
-        MOCK_METHOD(std::optional<core::db::object>, get_object, (
+        MOCK_METHOD(core::db::object, get_object, (
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
         ), (override));

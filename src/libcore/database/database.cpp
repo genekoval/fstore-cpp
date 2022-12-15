@@ -105,10 +105,7 @@ namespace fstore::core::db {
             return entix::make_entity<bucket>(tx, __FUNCTION__, name);
         }
         catch (const pqxx::unexpected_rows& ex) {
-            throw fstore_error(
-                "failed to fetch bucket " QUOTE_VIEW(name) ": "
-                "bucket does not exist"
-            );
+            throw not_found("bucket '{}' not found", name);
         }
     }
 
@@ -155,7 +152,7 @@ namespace fstore::core::db {
     auto database::get_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
-    ) -> std::optional<object> {
+    ) -> object {
         auto c = connections.connection();
         auto tx = pqxx::nontransaction(c);
 
@@ -168,7 +165,11 @@ namespace fstore::core::db {
             );
         }
         catch (const pqxx::unexpected_rows& ex) {
-            return {};
+            throw not_found(
+                "bucket ({}) does not contain object ({})",
+                bucket_id,
+                object_id
+            );
         }
     }
 
@@ -207,7 +208,11 @@ namespace fstore::core::db {
             );
         }
         catch (const pqxx::unexpected_rows& ex) {
-            throw fstore_error("bucket does not contain object");
+            throw not_found(
+                "bucket ({}) does not contain object ({})",
+                bucket_id,
+                object_id
+            );
         }
     }
 

@@ -1,15 +1,9 @@
-#include "messages.h"
 #include "object_store.test.h"
 
 #include <fstore/error.h>
 
+using fstore::invalid_data;
 using testing::Return;
-
-namespace {
-    constexpr auto empty_bucket_name = std::string_view(
-        fstore::core::messages::empty_bucket_name
-    );
-}
 
 TEST_F(ObjectStoreTest, RenameBucket) {
     constexpr auto name = "foo"sv;
@@ -35,21 +29,12 @@ TEST_F(ObjectStoreTest, RenameBucketNameTrimmed) {
 }
 
 TEST_F(ObjectStoreTest, RenameBucketEmptyName) {
-    try {
-        store.rename_bucket(fstore::test::test_id, "");
-        FAIL() << "Bucket renamed with empty name";
-    }
-    catch (const fstore::fstore_error& error) {
-        ASSERT_EQ(empty_bucket_name, error.what());
-    }
+    EXPECT_THROW(store.rename_bucket(fstore::test::test_id, ""), invalid_data);
 }
 
 TEST_F(ObjectStoreTest, RenameBucketWhitespaceName) {
-    try {
-        store.rename_bucket(fstore::test::test_id, " \t   \n ");
-        FAIL() << "Bucket renamed with whiltespace name";
-    }
-    catch (const fstore::fstore_error& error) {
-        ASSERT_EQ(empty_bucket_name, error.what());
-    }
+    EXPECT_THROW(
+        store.rename_bucket(fstore::test::test_id, " \t   \n "),
+        invalid_data
+    );
 }
