@@ -1,7 +1,7 @@
-#include "commands.h"
+#include "commands.hpp"
 
-#include "../api/api.h"
-#include "../options/opts.h"
+#include "../api/api.hpp"
+#include "../options/opts.hpp"
 
 using namespace commline;
 

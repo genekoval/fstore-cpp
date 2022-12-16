@@ -1,8 +1,5 @@
-#include <fstore/error.h>
-#include <fstore/net/zipline/protocol.h>
-#include <fstore/server/router.hpp>
-
-#include <span>
+#include <internal/core/object_store.hpp>
+#include <internal/server/router.hpp>
 
 namespace fstore::server {
     router_context::router_context(
@@ -17,7 +14,7 @@ namespace fstore::server {
         UUID::uuid bucket_id,
         std::optional<UUID::uuid> request,
         zipline::stream<net::socket> stream
-    ) -> ext::task<core::object> {
+    ) -> ext::task<object> {
         auto part_id = UUID::uuid();
 
         {
@@ -34,21 +31,21 @@ namespace fstore::server {
 
     auto router_context::fetch_bucket(
         std::string bucket_name
-    ) -> ext::task<core::bucket> {
+    ) -> ext::task<bucket> {
         co_return store->fetch_bucket(bucket_name);
     }
 
     auto router_context::get_object(
         UUID::uuid bucket_id,
         UUID::uuid object_id
-    ) -> ext::task<core::file> {
+    ) -> ext::task<file> {
         co_return store->get_object(bucket_id, object_id);
     }
 
     auto router_context::get_object_metadata(
         UUID::uuid bucket_id,
         UUID::uuid object_id
-    ) -> ext::task<core::object> {
+    ) -> ext::task<object> {
         co_return store->get_object_metadata(bucket_id, object_id);
     }
 
@@ -59,14 +56,14 @@ namespace fstore::server {
     auto router_context::remove_object(
         UUID::uuid bucket_id,
         UUID::uuid object_id
-    ) -> ext::task<core::object> {
+    ) -> ext::task<object> {
         co_return store->remove_object(bucket_id, object_id);
     }
 
     auto router_context::remove_objects(
         UUID::uuid bucket_id,
         std::vector<UUID::uuid> objects
-    ) -> ext::task<core::remove_result> {
+    ) -> ext::task<remove_result> {
         co_return store->remove_objects(bucket_id, objects);
     }
 }

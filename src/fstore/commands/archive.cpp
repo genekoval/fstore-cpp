@@ -1,9 +1,9 @@
-#include "commands.h"
-#include "../db/db.h"
-#include "../options/opts.h"
+#include "commands.hpp"
+#include "../api/api.hpp"
+#include "../db/db.hpp"
+#include "../options/opts.hpp"
 
-#include <fstore/cli.h>
-#include <fstore/core/filesystem.h>
+#include <internal/cli.hpp>
 
 #include <fmt/format.h>
 

@@ -1,5 +1,5 @@
-#include <fstore/client.h>
-#include <fstore/error.h>
+#include <fstore/except.hpp>
+#include <fstore/object_store.hpp>
 
 namespace fstore {
     object_store::object_store(netcore::socket&& socket) :
@@ -15,8 +15,8 @@ namespace fstore {
 
     auto object_store::fetch_bucket(
         std::string_view name
-    ) -> ext::task<core::bucket> {
-        co_return co_await client->send<core::bucket>(
+    ) -> ext::task<bucket> {
+        co_return co_await client->send<bucket>(
             event::fetch_bucket,
             name
         );
@@ -77,16 +77,16 @@ namespace fstore {
     auto object_store::get_object_metadata(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
-    ) -> ext::task<object_meta> {
-        co_return co_await client->send<object_meta>(
+    ) -> ext::task<object> {
+        co_return co_await client->send<object>(
             event::get_object_metadata,
             bucket_id,
             object_id
         );
     }
 
-    auto object_store::get_server_info() -> ext::task<server::server_info> {
-        co_return co_await client->send<server::server_info>(
+    auto object_store::get_server_info() -> ext::task<server_info> {
+        co_return co_await client->send<server_info>(
             event::get_server_info
         );
     }
@@ -94,8 +94,8 @@ namespace fstore {
     auto object_store::remove_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
-    ) -> ext::task<object_meta> {
-        co_return co_await client->send<object_meta>(
+    ) -> ext::task<object> {
+        co_return co_await client->send<object>(
             event::remove_object,
             bucket_id,
             object_id
@@ -105,7 +105,7 @@ namespace fstore {
     auto object_store::remove_objects(
         const UUID::uuid& bucket_id,
         std::span<const UUID::uuid> objects
-    ) -> ext::task<core::remove_result> {
+    ) -> ext::task<remove_result> {
         co_return co_await client->send<remove_result>(
             event::remove_objects,
             bucket_id,

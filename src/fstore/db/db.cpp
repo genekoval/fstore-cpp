@@ -1,4 +1,4 @@
-#include "db.h"
+#include "db.hpp"
 
 namespace {
     constexpr auto dump_filename = "fstore.dump";

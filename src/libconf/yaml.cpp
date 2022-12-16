@@ -1,4 +1,4 @@
-#include "yaml.h"
+#include "yaml.hpp"
 
 namespace c = conftools;
 

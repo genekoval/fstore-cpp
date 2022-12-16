@@ -1,4 +1,4 @@
-#include "yaml.h"
+#include "yaml.hpp"
 
 namespace fstore::conf {
     auto settings::load(std::string_view text) -> settings {

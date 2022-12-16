@@ -1,4 +1,4 @@
-#include "object_store.test.h"
+#include "object_store.test.hpp"
 
 namespace {
     auto generate_uuid() -> UUID::uuid {

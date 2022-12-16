@@ -1,4 +1,4 @@
-#include <fstore/client.h>
+#include <fstore/client.hpp>
 
 namespace fstore {
     client::client(std::string_view path) : pool(provider(path)) {}

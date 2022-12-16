@@ -1,4 +1,4 @@
-#include "opts.h"
+#include "opts.hpp"
 
 using namespace commline;
 

@@ -1,11 +1,11 @@
-#include <fstore/core/db/database.h>
-#include <fstore/core/filesystem.h>
-#include <fstore/core/object_store.h>
-#include <fstore/error.h>
+#include <internal/core/db/database.hpp>
+#include <internal/core/fs/filesystem.hpp>
+#include <internal/core/object_store.hpp>
+
+#include <fstore/except.hpp>
 
 #include <ext/string.h>
 #include <threadpool/threadpool>
-#include <uuid++/uuid.h>
 
 namespace {
     auto generate_random_uuid() -> UUID::uuid {
@@ -180,9 +180,9 @@ namespace fstore::core {
 
     auto object_store::get_part(
         std::optional<UUID::uuid> part_id
-    ) -> part {
+    ) -> fs::part {
         const auto id = part_id.value_or(generate_uuid());
-        return part(id, filesystem->get_part(id));
+        return fs::part(id, filesystem->get_part(id));
     }
 
     auto object_store::prune() -> std::vector<object> {

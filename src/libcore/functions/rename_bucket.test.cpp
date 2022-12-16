@@ -1,6 +1,6 @@
-#include "object_store.test.h"
+#include "object_store.test.hpp"
 
-#include <fstore/error.h>
+#include <fstore/except.hpp>
 
 using fstore::invalid_data;
 using testing::Return;

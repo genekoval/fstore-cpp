@@ -1,8 +1,6 @@
-#include "commands.h"
-#include "../api/api.h"
-#include "../options/opts.h"
-
-#include <fstore/core/object_store.h>
+#include "commands.hpp"
+#include "../api/api.hpp"
+#include "../options/opts.hpp"
 
 #include <ext/string.h>
 #include <iostream>

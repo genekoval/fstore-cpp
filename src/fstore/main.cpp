@@ -1,6 +1,6 @@
-#include "commands/commands.h"
+#include "commands/commands.hpp"
 
-#include <fstore/conf/settings.h>
+#include <internal/conf/settings.hpp>
 
 #include <commline/commline>
 #include <timber/timber>

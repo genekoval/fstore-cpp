@@ -1,4 +1,4 @@
-#include <fstore/client.h>
+#include <fstore/object_store.hpp>
 
 namespace fstore {
     part::part(client_type& out) : out(out) {}

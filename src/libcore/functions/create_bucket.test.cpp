@@ -1,6 +1,6 @@
-#include "object_store.test.h"
+#include "object_store.test.hpp"
 
-#include <fstore/error.h>
+#include <fstore/except.hpp>
 
 using fstore::invalid_data;
 using testing::Return;
@@ -10,12 +10,12 @@ TEST_F(ObjectStoreTest, CreateBucket) {
 
     EXPECT_CALL(database, create_bucket(
         std::string_view(name)
-    )).WillOnce(Return(fstore::core::db::bucket {
+    )).WillOnce(Return(fstore::bucket {
         .id = fstore::test::test_id,
         .name = name
     }));
 
-    const auto expected = fstore::core::bucket {
+    const auto expected = fstore::bucket {
         .id = fstore::test::test_id,
         .name = name
     };
@@ -30,12 +30,12 @@ TEST_F(ObjectStoreTest, CreateBucketNameTrimmed) {
 
     EXPECT_CALL(database, create_bucket(
         trimmed
-    )).WillOnce(Return(fstore::core::db::bucket {
+    )).WillOnce(Return(fstore::bucket {
         .id = fstore::test::test_id,
         .name = std::string(trimmed)
     }));
 
-    const auto expected = fstore::core::bucket {
+    const auto expected = fstore::bucket {
         .id = fstore::test::test_id,
         .name = std::string(trimmed)
     };

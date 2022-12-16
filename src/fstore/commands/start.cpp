@@ -1,11 +1,9 @@
-#include "commands.h"
-#include "../api/api.h"
-#include "../options/opts.h"
+#include "commands.hpp"
+#include "../api/api.hpp"
+#include "../options/opts.hpp"
 
-#include <fstore/cli.h>
-#include <fstore/core/object_store.h>
-#include <fstore/net/zipline/coder.h>
-#include <fstore/server/server.h>
+#include <internal/cli.hpp>
+#include <internal/server/server.hpp>
 
 #include <dmon/dmon>
 #include <timber/timber>
@@ -44,7 +42,7 @@ namespace {
                 auto api = fstore::cli::api_container(settings);
                 auto& store = api.object_store();
 
-                const auto info = fstore::server::server_info {
+                const auto info = fstore::server_info {
                     .version = std::string(app.version)
                 };
 
