@@ -1,7 +1,10 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
+#include <functional>
 #include <ostream>
+#include <vector>
 
 namespace fstore::cli {
     template <class Derived, class T, int ColumnCount>
