@@ -1,6 +1,7 @@
 #pragma once
 
-#include <internal/core/db/mock_database.hpp>
+#include <internal/core/db/database.test.hpp>
+#include <internal/core/db/mock_connection.test.hpp>
 #include <internal/core/fs/mock_filesystem.hpp>
 #include <internal/core/object_store.hpp>
 
@@ -14,7 +15,8 @@ namespace fstore::test {
 
 class ObjectStoreTest : public testing::Test {
 protected:
-    fstore::test::database database;
+    std::shared_ptr<fstore::test::db::mock_connection> db;
+    fstore::test::db::database database;
     fstore::test::filesystem filesystem;
     fstore::core::object_store store;
 

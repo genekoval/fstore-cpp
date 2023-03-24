@@ -12,20 +12,21 @@ namespace {
             std::string_view confpath
         ) -> void {
             const auto settings = fstore::conf::settings::load_file(confpath);
-            auto api = fstore::cli::api_container(settings);
-            auto& store = api.object_store();
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
+                const auto errors = co_await store.get_errors();
 
-            const auto errors = store.get_errors();
+                for (const auto& error : errors) {
+                    fmt::print("{}  {}\n", error.id, error.message);
+                }
 
-            for (const auto& error : errors) {
-                fmt::print("{}  {}\n", error.id, error.message);
-            }
-
-            fmt::print(
-                "{} error{}\n",
-                errors.size(),
-                errors.size() == 1 ? "" : "s"
-            );
+                fmt::print(
+                    "{} error{}\n",
+                    errors.size(),
+                    errors.size() == 1 ? "" : "s"
+                );
+            });
         }
     }
 }

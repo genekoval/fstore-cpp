@@ -21,16 +21,25 @@ namespace {
                 return;
             }
         }
+
+        auto handle_error(std::exception_ptr eptr) -> void {
+            try {
+                if (eptr) std::rethrow_exception(eptr);
+            }
+            catch (const std::exception& ex) {
+                TIMBER_LOG(internal::crash_log_level, ex.what());
+            }
+        }
     }
 }
 
-auto main(int argc, const char** argv) -> int {
+auto main(int argc, char** argv) -> int {
     using namespace commline;
 
     std::locale::global(std::locale(""));
 
     timber::reporting_level = timber::level::warning;
-    timber::log_handler = &timber::console_logger;
+    timber::log_handler = &timber::console::logger;
     timber::set_terminate(internal::crash_log_level);
 
     const auto confpath = internal::default_config.string();
@@ -49,14 +58,11 @@ auto main(int argc, const char** argv) -> int {
         internal::main
     );
 
-    app.on_error([](const auto& e) -> void {
-        TIMBER_LOG(internal::crash_log_level, e.what());
-    });
+    app.on_error(internal::handle_error);
 
     app.subcommand(fstore::cli::archive(confpath));
     app.subcommand(fstore::cli::bucket(confpath));
     app.subcommand(fstore::cli::check(confpath));
-    app.subcommand(fstore::cli::db(confpath));
     app.subcommand(fstore::cli::errors(confpath));
     app.subcommand(fstore::cli::init(confpath));
     app.subcommand(fstore::cli::migrate(confpath));

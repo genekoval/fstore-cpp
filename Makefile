@@ -19,13 +19,11 @@ core.libs := \
  $(project) \
  conftools \
  cryptopp \
- entix \
  ext++ \
  fmt \
  magix \
  netcore \
- pqxx \
- pq \
+ pg++ \
  pthread \
  threadpool \
  timber \

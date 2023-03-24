@@ -10,41 +10,46 @@
 using namespace commline;
 
 namespace {
-    auto $archive(
-        const app& app,
-        std::string_view confpath,
-        std::optional<std::string_view> output,
-        timber::level log_level
-    ) -> void {
-        timber::reporting_level = log_level;
+    namespace internal {
+        auto archive(
+            const app& app,
+            std::string_view confpath,
+            std::optional<std::string_view> output,
+            timber::level log_level
+        ) -> void {
+            timber::reporting_level = log_level;
 
-        const auto settings = fstore::conf::settings::load_file(confpath);
-        const auto db = fstore::cli::database(settings);
+            const auto settings = fstore::conf::settings::load_file(confpath);
 
-        const auto archive = output.value_or(settings.archive.path);
-        if (archive.empty()) throw std::runtime_error(
-            "archive location not specified"
-        );
+            const auto archive = output.value_or(settings.archive.path);
+            if (archive.empty()) throw std::runtime_error(
+                "archive location not specified"
+            );
 
-        const auto dump_file = fstore::cli::dump_file(settings);
-        db.dump(dump_file);
+            const auto dump_file = fstore::cli::dump_file(settings);
 
-        const auto fs = fstore::core::fs::filesystem(settings.home);
+            netcore::async([&dump_file, &settings]() -> ext::task<> {
+                auto db = fstore::cli::database(settings);
+                co_await db.dump(dump_file);
+            }());
 
-        auto options = std::vector<std::string_view>();
-        for (const auto& option : settings.archive.options) {
-            options.emplace_back(option);
+            const auto fs = fstore::core::fs::filesystem(settings.home);
+
+            auto options = std::vector<std::string_view>();
+            for (const auto& option : settings.archive.options) {
+                options.emplace_back(option);
+            }
+
+            options.push_back(dump_file);
+
+            fs.sync(
+                settings.archive.sync,
+                options,
+                archive
+            );
+
+            std::filesystem::remove(dump_file);
         }
-
-        options.push_back(dump_file);
-
-        fs.sync(
-            settings.archive.sync,
-            options,
-            archive
-        );
-
-        std::filesystem::remove(dump_file);
     }
 }
 
@@ -65,7 +70,7 @@ namespace fstore::cli {
                 opts::log_level()
             ),
             arguments(),
-            $archive
+            internal::archive
         );
     }
 }

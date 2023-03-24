@@ -3,21 +3,13 @@ CREATE SCHEMA fstore;
 
 SET search_path TO fstore;
 
-CREATE FUNCTION epoch_sec(
-    a_timestamp     timestamptz
-) RETURNS numeric AS $$
-BEGIN
-    RETURN extract(epoch FROM a_timestamp);
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE VIEW bucket_view AS
+CREATE VIEW bucket AS
 SELECT
     bucket_id,
     name,
-    epoch_sec(date_created) AS date_created,
+    date_created,
     count(object_id) AS object_count,
-    coalesce(sum(size), 0) AS space_used
+    coalesce(sum(size), 0)::int8 AS space_used
 FROM data.bucket
 LEFT JOIN data.bucket_object USING (bucket_id)
 LEFT JOIN data.object USING (object_id)
@@ -31,7 +23,7 @@ SELECT
     size,
     "type",
     subtype,
-    epoch_sec(bucket_object.date_added) AS date_added
+    bucket_object.date_added
 FROM data.bucket_object
 JOIN data.object USING (object_id);
 
@@ -42,7 +34,7 @@ SELECT
     size,
     "type",
     subtype,
-    epoch_sec(date_added) AS date_added
+    date_added AS date_added
 FROM data.object;
 
 CREATE VIEW object_error AS
@@ -167,7 +159,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION create_bucket(
     a_name          text
-) RETURNS SETOF bucket_view AS $$
+) RETURNS SETOF bucket AS $$
 BEGIN
     INSERT INTO data.bucket (name) VALUES (a_name);
 
@@ -178,18 +170,18 @@ $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION fetch_bucket(
     a_name          text
-) RETURNS SETOF bucket_view AS $$
+) RETURNS SETOF bucket AS $$
 BEGIN
     RETURN QUERY
     SELECT *
-    FROM bucket_view
+    FROM bucket
     WHERE name = a_name;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION fetch_buckets(
     a_names         text[]
-) RETURNS SETOF bucket_view AS $$
+) RETURNS SETOF bucket AS $$
 BEGIN
     RETURN QUERY
     WITH names AS (
@@ -205,17 +197,17 @@ BEGIN
         object_count,
         space_used
     FROM names
-    JOIN bucket_view USING (name)
+    JOIN bucket USING (name)
     ORDER BY ordinality;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION fetch_buckets_all()
-RETURNS SETOF bucket_view AS $$
+RETURNS SETOF bucket AS $$
 BEGIN
     RETURN QUERY
     SELECT *
-    FROM bucket_view;
+    FROM bucket;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -257,16 +249,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION get_objects() RETURNS refcursor AS $$
-DECLARE
-    ref refcursor;
+CREATE FUNCTION get_objects() RETURNS SETOF object AS $$
 BEGIN
-    OPEN ref FOR
+    RETURN QUERY
     SELECT *
     FROM object
     ORDER BY object_id;
-
-    RETURN ref;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -296,7 +284,7 @@ BEGIN
         size,
         "type",
         subtype,
-        epoch_sec(deleted.date_added) AS date_added
+        deleted.date_added
     FROM deleted
     JOIN data.object USING (object_id);
 END;
@@ -333,7 +321,7 @@ BEGIN
         size,
         "type",
         subtype,
-        epoch_sec(date_added) AS date_added;
+        date_added;
 END;
 $$ LANGUAGE plpgsql;
 

@@ -26,27 +26,27 @@ namespace fstore::server {
             });
         }
 
-        co_return store->commit_part(bucket_id, part_id);
+        co_return co_await store->commit_part(bucket_id, part_id);
     }
 
     auto router_context::fetch_bucket(
         std::string bucket_name
     ) -> ext::task<bucket> {
-        co_return store->fetch_bucket(bucket_name);
+        co_return co_await store->fetch_bucket(bucket_name);
     }
 
     auto router_context::get_object(
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<file> {
-        co_return store->get_object(bucket_id, object_id);
+        co_return co_await store->get_object(bucket_id, object_id);
     }
 
     auto router_context::get_object_metadata(
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<object> {
-        co_return store->get_object_metadata(bucket_id, object_id);
+        co_return co_await store->get_object_metadata(bucket_id, object_id);
     }
 
     auto router_context::get_server_info() -> ext::task<server_info> {
@@ -57,13 +57,13 @@ namespace fstore::server {
         UUID::uuid bucket_id,
         UUID::uuid object_id
     ) -> ext::task<object> {
-        co_return store->remove_object(bucket_id, object_id);
+        co_return co_await store->remove_object(bucket_id, object_id);
     }
 
     auto router_context::remove_objects(
         UUID::uuid bucket_id,
         std::vector<UUID::uuid> objects
     ) -> ext::task<remove_result> {
-        co_return store->remove_objects(bucket_id, objects);
+        co_return co_await store->remove_objects(bucket_id, objects);
     }
 }

@@ -40,11 +40,11 @@ protected:
         }
     };
 
-    auto add_object(const fstore::object& object) -> void;
+    auto add_object(const fstore::object& object) -> ext::task<>;
 
-    auto bucket() -> fstore::bucket;
+    auto bucket() -> ext::task<fstore::bucket>;
 
-    auto bucket_size() -> std::size_t;
+    auto bucket_size() -> ext::task<std::size_t>;
 
-    virtual auto tables() -> std::vector<std::string> override;
+    virtual auto tables() -> std::vector<std::string_view> override;
 };

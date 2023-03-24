@@ -9,34 +9,38 @@
 using namespace commline;
 
 namespace {
-    auto $prune(
-        const app& app,
-        std::string_view confpath
-    ) -> void {
-        auto api = fstore::cli::api_container(confpath);
-        auto& store = api.object_store();
+    namespace internal {
+        auto prune(
+            const app& app,
+            std::string_view confpath
+        ) -> void {
+            const auto settings = fstore::conf::settings::load_file(confpath);
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
+                const auto objects = co_await store.prune();
 
-        const auto objects = store.prune();
+                if (objects.empty()) {
+                    std::cout << "No objects to prune." << std::endl;
+                    co_return;
+                }
 
-        if (objects.empty()) {
-            std::cout << "No objects to prune." << std::endl;
-            return;
+                const auto space_freed = std::accumulate(
+                    objects.begin(),
+                    objects.end(),
+                    uintmax_t(0),
+                    [](uintmax_t sum, const auto& object) -> uintmax_t {
+                        return sum + object.size;
+                    }
+                );
+
+                std::cout
+                    << "removed " << objects.size()
+                    << " object" << (objects.size() == 1 ? "" : "s") << '\n'
+                    << "freeing " << ext::data_size::format(space_freed).str(2)
+                    << std::endl;
+            });
         }
-
-        const auto space_freed = std::accumulate(
-            objects.begin(),
-            objects.end(),
-            uintmax_t(0),
-            [](uintmax_t sum, const auto& object) -> uintmax_t {
-                return sum + object.size;
-            }
-        );
-
-        std::cout
-            << "removed " << objects.size()
-            << " object" << (objects.size() == 1 ? "" : "s") << '\n'
-            << "freeing " << ext::data_size::format(space_freed).str(2)
-            << std::endl;
     }
 }
 
@@ -51,7 +55,7 @@ namespace fstore::cli {
                 opts::config(confpath)
             ),
             arguments(),
-            $prune
+            internal::prune
         );
     }
 }

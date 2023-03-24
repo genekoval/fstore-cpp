@@ -6,62 +6,74 @@
 #include <iostream>
 
 namespace {
-    auto $bucket(
-        const commline::app& app,
-        std::string_view confpath
-    ) {
-        auto api = fstore::cli::api_container(confpath);
-        auto& store = api.object_store();
+    namespace internal {
+        auto bucket(
+            const commline::app& app,
+            std::string_view confpath
+        ) {
+            const auto settings = fstore::conf::settings::load_file(confpath);
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
+                const auto buckets = co_await store.fetch_buckets();
+                for (const auto& bucket : buckets) {
+                    std::cout << bucket.name << '\n';
+                }
+            });
+        }
 
-        const auto buckets = store.fetch_buckets();
-        for (const auto& bucket : buckets) std::cout << bucket.name << '\n';
-    }
+        auto add(
+            const commline::app& app,
+            std::string_view confpath,
+            std::string_view name
+        ) -> void {
+            const auto settings = fstore::conf::settings::load_file(confpath);
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
+                const auto bucket = co_await store.create_bucket(name);
+                std::cout << "bucket created: " << bucket.name << std::endl;
+            });
+        }
 
-    auto $add(
-        const commline::app& app,
-        std::string_view confpath,
-        std::string_view name
-    ) -> void {
-        auto api = fstore::cli::api_container(confpath);
-        auto& store = api.object_store();
+        auto remove(
+            const commline::app& app,
+            std::string_view confpath,
+            std::string_view name
+        ) -> void {
+            const auto settings = fstore::conf::settings::load_file(confpath);
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
+                const auto bucket = co_await store.fetch_bucket(name);
 
-        const auto bucket = store.create_bucket(name);
-        std::cout << "bucket created: " << bucket.name << std::endl;
-    }
+                co_await store.remove_bucket(bucket.id);
 
-    auto $remove(
-        const commline::app& app,
-        std::string_view confpath,
-        std::string_view name
-    ) -> void {
-        auto api = fstore::cli::api_container(confpath);
-        auto& store = api.object_store();
+                std::cout << "bucket removed: " << bucket.name << std::endl;
+            });
+        }
 
-        const auto bucket = store.fetch_bucket(name);
+        auto rename(
+            const commline::app& app,
+            std::string_view confpath,
+            std::string_view old_name,
+            std::string_view new_name
+        ) -> void {
+            const auto settings = fstore::conf::settings::load_file(confpath);
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
+                const auto old = co_await store.fetch_bucket(old_name);
+                co_await store.rename_bucket(old.id, new_name);
 
-        store.remove_bucket(bucket.id);
+                const auto bucket = co_await store.fetch_bucket(new_name);
 
-        std::cout << "bucket removed: " << bucket.name << std::endl;
-    }
-
-    auto $rename(
-        const commline::app& app,
-        std::string_view confpath,
-        std::string_view old_name,
-        std::string_view new_name
-    ) -> void {
-        auto api = fstore::cli::api_container(confpath);
-        auto& store = api.object_store();
-
-        const auto old = store.fetch_bucket(old_name);
-        store.rename_bucket(old.id, new_name);
-
-        const auto bucket = store.fetch_bucket(new_name);
-
-        std::cout
-            << "bucket " QUOTE(old.name)
-            << " renamed to: " << bucket.name
-            << std::endl;
+                std::cout
+                    << "bucket " QUOTE(old.name)
+                    << " renamed to: " << bucket.name
+                    << std::endl;
+            });
+        }
     }
 }
 
@@ -80,7 +92,7 @@ namespace fstore::cli {
             arguments(
                 required<std::string_view>("name")
             ),
-            $add
+            internal::add
         );
     }
 
@@ -96,7 +108,7 @@ namespace fstore::cli {
             arguments(
                 required<std::string_view>("name")
             ),
-            $remove
+            internal::remove
         );
     }
 
@@ -113,7 +125,7 @@ namespace fstore::cli {
                 required<std::string_view>("old_name"),
                 required<std::string_view>("new_name")
             ),
-            $rename
+            internal::rename
         );
     }
 
@@ -127,7 +139,7 @@ namespace fstore::cli {
                 opts::config(confpath)
             ),
             arguments(),
-            $bucket
+            internal::bucket
         );
 
         cmd->subcommand(add(confpath));

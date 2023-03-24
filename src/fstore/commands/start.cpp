@@ -38,10 +38,9 @@ namespace {
 
             TIMBER_NOTICE("{} version {} starting up", app.name, app.version);
 
-            netcore::async([&]() -> ext::task<> {
-                auto api = fstore::cli::api_container(settings);
-                auto& store = api.object_store();
-
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
                 const auto info = fstore::server_info {
                     .version = std::string(app.version)
                 };
@@ -54,7 +53,7 @@ namespace {
                 );
 
                 co_await server.listen(settings.server);
-            }());
+            });
         }
     }
 }

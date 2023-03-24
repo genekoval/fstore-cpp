@@ -7,5 +7,7 @@ namespace {
 }
 
 ObjectStoreTest::ObjectStoreTest() :
+    db(new fstore::test::db::mock_connection()),
+    database(std::shared_ptr<fstore::test::db::mock_connection>(db)),
     store(database, filesystem, generate_uuid)
 {}

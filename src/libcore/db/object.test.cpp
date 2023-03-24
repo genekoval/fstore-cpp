@@ -9,82 +9,101 @@ using fstore::not_found;
 
 namespace std {
     template <>
-    struct hash<fstore::object> {
-        auto operator()(const fstore::object& object) const noexcept -> size_t {
-            return hash<decltype(fstore::object::id)>{}(object.id);
+    struct hash<fstore::core::db::object> {
+        auto operator()(
+            const fstore::core::db::object& object
+        ) const noexcept -> size_t {
+            return hash<decltype(fstore::core::db::object::id)>{}(object.id);
         }
     };
 }
 
 TEST_F(ObjectTest, BucketAdditionRemoval) {
-    const auto& object = objects.front();
+    run([&]() -> ext::task<> {
+        const auto& object = objects.front();
 
-    // The bucket should be initially empty.
-    ASSERT_EQ(0, bucket_size());
+        // The bucket should be initially empty.
+        EXPECT_EQ(0, co_await bucket_size());
 
-    // Add the object to the bucket.
-    add_object(object);
-    ASSERT_EQ(1, bucket_size());
+        // Add the object to the bucket.
+        co_await add_object(object);
+        EXPECT_EQ(1, co_await bucket_size());
 
-    // Adding the same object does nothing.
-    for (auto i = 0u; i < 5u; i++) add_object(object);
-    ASSERT_EQ(1, bucket_size());
+        // Adding the same object does nothing.
+        for (auto i = 0u; i < 5u; i++) co_await add_object(object);
+        EXPECT_EQ(1, co_await bucket_size());
 
-    // Remove the object.
-    database.remove_object(bucket_id, object.id);
-    ASSERT_EQ(0, bucket_size());
+        // Remove the object.
+        co_await connection->remove_object(bucket_id, object.id);
+        EXPECT_EQ(0, co_await bucket_size());
 
-    // The object we removed can be added again...
-    add_object(object);
-    ASSERT_EQ(1, bucket_size());
+        // The object we removed can be added again...
+        co_await add_object(object);
+        EXPECT_EQ(1, co_await bucket_size());
 
-    // ...and removed again.
-    database.remove_object(bucket_id, object.id);
-    ASSERT_EQ(0, bucket_size());
+        // ...and removed again.
+        co_await connection->remove_object(bucket_id, object.id);
+        EXPECT_EQ(0, co_await bucket_size());
 
-    // Removing an object that does not exist results in an error.
-    EXPECT_THROW(database.remove_object(bucket_id, object.id), not_found);
+        // Removing an object that does not exist results in an error.
+        EXPECT_THROW(
+            co_await connection->remove_object(bucket_id, object.id),
+            not_found
+        );
+    }());
 }
 
 TEST_F(ObjectTest, GetObjectNoObject) {
-    EXPECT_THROW(database.get_object(bucket_id, objects.front().id), not_found);
+    run([&]() -> ext::task<> {
+        EXPECT_THROW(
+            co_await connection->get_object(bucket_id, objects.front().id),
+            not_found
+        );
+    }());
 }
 
 TEST_F(ObjectTest, GetObject) {
-    const auto& object = objects.front();
-    add_object(object);
+    run([&]() -> ext::task<> {
+        const auto& object = objects.front();
+        co_await add_object(object);
 
-    const auto result = database.get_object(bucket_id, object.id);
+        const auto result = co_await connection->get_object(
+            bucket_id,
+            object.id
+        );
 
-    EXPECT_EQ(object.id, result.id);
-    EXPECT_EQ(object.hash, result.hash);
-    EXPECT_EQ(object.size, result.size);
-    EXPECT_EQ(object.type, result.type);
-    EXPECT_EQ(object.subtype, result.subtype);
+        EXPECT_EQ(object.id, result.id);
+        EXPECT_EQ(object.hash, result.hash);
+        EXPECT_EQ(object.size, result.size);
+        EXPECT_EQ(object.type, result.type);
+        EXPECT_EQ(object.subtype, result.subtype);
+    }());
 }
 
 TEST_F(ObjectTest, GetObjects) {
-    for (const auto& object : objects) add_object(object);
+    run([&]() -> ext::task<> {
+        for (const auto& object : objects) co_await add_object(object);
 
-    auto calls = 0;
-    auto result_count = 0;
-    auto objects_returned = std::unordered_set<fstore::object>();
+        auto calls = 0;
+        auto result_count = 0;
+        auto objects_returned = std::unordered_set<fstore::core::db::object>();
 
-    auto objects = database.get_objects(2);
-    while (objects) {
-        const auto results = objects();
+        auto objects = co_await connection->get_objects(2);
+        while (objects) {
+            const auto results = co_await objects.next();
 
-        ++calls;
-        result_count += results.size();
+            ++calls;
+            result_count += results.size();
 
-        for (const auto& result : results) {
-            objects_returned.insert(result);
+            for (const auto& result : results) {
+                objects_returned.insert(result);
+            }
         }
-    }
 
-    ASSERT_EQ(2, calls);
-    ASSERT_EQ(3, result_count);
-    ASSERT_EQ(3, objects_returned.size());
+        EXPECT_EQ(2, calls);
+        EXPECT_EQ(3, result_count);
+        EXPECT_EQ(3, objects_returned.size());
+    }());
 }
 
 TEST_F(ObjectTest, RemoveObjectsEmptyList) {
@@ -93,58 +112,74 @@ TEST_F(ObjectTest, RemoveObjectsEmptyList) {
         .space_freed = 0
     };
 
-    const auto result = database.remove_objects(bucket_id, {});
-
-    ASSERT_EQ(expected, result);
+    run([&]() -> ext::task<> {
+        const auto result = co_await connection->remove_objects(bucket_id, {});
+        EXPECT_EQ(expected, result);
+    }());
 }
 
 TEST_F(ObjectTest, RemoveObjectsSingle) {
-    const auto& object = objects.front();
-    const auto expected = fstore::remove_result {
-        .objects_removed = 1,
-        .space_freed = object.size
-    };
+    run([&]() -> ext::task<> {
+        const auto& object = objects.front();
+        const auto expected = fstore::remove_result {
+            .objects_removed = 1,
+            .space_freed = object.size
+        };
 
-    add_object(object);
+        co_await add_object(object);
 
-    const auto result = database.remove_objects(bucket_id, {object.id});
-    ASSERT_EQ(expected, result);
-    ASSERT_EQ(0, bucket_size());
-    ASSERT_EQ(1, count(fstore::test::table::object));
+        const auto result = co_await connection->remove_objects(
+            bucket_id,
+            {object.id}
+        );
+
+        EXPECT_EQ(expected, result);
+        EXPECT_EQ(0, co_await bucket_size());
+        EXPECT_EQ(1, co_await count(fstore::test::table::object));
+    }());
 }
 
 TEST_F(ObjectTest, RemoveObjectsMultiple) {
-    auto size = 0ul;
-    for (const auto& object : objects) {
-        size += object.size;
-        add_object(object);
-    }
-
-    const auto expected = fstore::remove_result {
-        .objects_removed = objects.size(),
-        .space_freed = size
-    };
-
-    auto ids = std::vector<UUID::uuid>();
-    std::transform(
-        objects.begin(),
-        objects.end(),
-        std::back_inserter(ids),
-        [](const auto& object) -> UUID::uuid {
-            return object.id;
+    run([&]() -> ext::task<> {
+        auto size = 0ul;
+        for (const auto& object : objects) {
+            size += object.size;
+            co_await add_object(object);
         }
-    );
 
-    const auto result = database.remove_objects(bucket_id, ids);
-    ASSERT_EQ(expected, result);
+        const auto expected = fstore::remove_result {
+            .objects_removed = objects.size(),
+            .space_freed = size
+        };
+
+        auto ids = std::vector<UUID::uuid>();
+        std::transform(
+            objects.begin(),
+            objects.end(),
+            std::back_inserter(ids),
+            [](const auto& object) -> UUID::uuid {
+                return object.id;
+            }
+        );
+
+        const auto result = co_await connection->remove_objects(bucket_id, ids);
+        EXPECT_EQ(expected, result);
+    }());
 }
 
 TEST_F(ObjectTest, RemoveObjectsSubset) {
-    for (const auto& object : objects) add_object(object);
-    database.remove_objects(bucket_id, {objects[0].id, objects[1].id});
+    run([&]() -> ext::task<> {
+        for (const auto& object : objects) co_await add_object(object);
+        co_await connection->remove_objects(
+            bucket_id,
+            {objects.at(0).id, objects.at(1).id}
+        );
 
-    ASSERT_EQ(1, bucket_size());
-    ASSERT_NO_THROW(database.get_object(bucket_id, objects[2].id));
+        EXPECT_EQ(1, co_await bucket_size());
+        EXPECT_NO_THROW(
+            co_await connection->get_object(bucket_id, objects[2].id)
+        );
+    }());
 }
 
 TEST_F(ObjectTest, RemoveObjectsNonexistent) {
@@ -153,13 +188,23 @@ TEST_F(ObjectTest, RemoveObjectsNonexistent) {
         .space_freed = 0
     };
 
-    for (const auto& object : {objects[0], objects[1]}) add_object(object);
+    run([&]() -> ext::task<> {
+        for (const auto& object : {objects.at(0), objects.at(1)}) {
+            co_await add_object(object);
+        }
 
-    const auto result = database.remove_objects(bucket_id, {objects[2].id});
-    ASSERT_EQ(expected, result);
+        const auto result = co_await connection->remove_objects(
+            bucket_id,
+            {objects.at(2).id}
+        );
+        EXPECT_EQ(expected, result);
 
-    ASSERT_EQ(2, bucket_size());
-    for (auto i = 0; i <= 1; ++i) {
-        ASSERT_NO_THROW(database.get_object(bucket_id, objects[i].id));
-    }
+        EXPECT_EQ(2, co_await bucket_size());
+
+        for (auto i = 0; i <= 1; ++i) {
+            EXPECT_NO_THROW(
+                co_await connection->get_object(bucket_id, objects.at(i).id)
+            );
+        }
+    }());
 }

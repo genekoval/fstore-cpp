@@ -13,10 +13,6 @@ using fstore::core::check_progress;
 
 namespace {
     namespace internal {
-        /**
-         * One connection for streaming objects and one for logging errors.
-         */
-        constexpr auto minimum_connections = 2;
         constexpr auto refresh_rate = 500ms;
 
         bool running = true;
@@ -56,12 +52,6 @@ namespace {
             jobs = std::max(jobs, 0);
 
             auto settings = fstore::conf::settings::load_file(confpath);
-            settings.database.connections = jobs + minimum_connections;
-
-            auto api = fstore::cli::api_container(settings);
-            auto& store = api.object_store();
-
-            auto progress = check_progress();
 
             fmt::print(
                 "Scanning object files using up to {} additional threads...\n",
@@ -70,11 +60,19 @@ namespace {
 
             if (!quiet) fmt::print("\n");
 
+            auto progress = check_progress();
+
             auto ui_thread = quiet ?
                 std::thread() :
                 std::thread(run_progress_printer, std::ref(progress));
 
-            const auto errors = store.check(jobs, progress);
+            std::size_t errors = 0;
+
+            fstore::cli::object_store(settings, [&](
+                fstore::core::object_store& store
+            ) -> ext::task<> {
+                errors = co_await store.check(jobs, progress);
+            });
 
             running = false;
             if (ui_thread.joinable()) ui_thread.join();

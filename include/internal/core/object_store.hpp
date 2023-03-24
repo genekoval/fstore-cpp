@@ -1,5 +1,6 @@
 #pragma once
 
+#include <internal/core/db/model/object.hpp>
 #include <internal/core/fs/part.hpp>
 
 #include <fstore/model/bucket.hpp>
@@ -34,7 +35,15 @@ namespace fstore::core {
         fs::filesystem* filesystem;
         uuid_generator generate_uuid;
 
-        auto check_object(const object& obj) -> bool;
+        auto check_object(const db::object& obj) noexcept -> std::string;
+
+        auto check_object_task(
+            const db::object obj,
+            netcore::thread_pool& workers,
+            std::size_t& errors,
+            check_progress& progress,
+            netcore::event<>& finished
+        ) -> ext::detached_task;
     public:
         object_store(db::database& database, fs::filesystem& filesystem);
 
@@ -47,58 +56,61 @@ namespace fstore::core {
         auto add_object(
             const UUID::uuid& bucket_id,
             std::string_view path
-        ) -> object;
+        ) -> ext::task<object>;
 
-        auto check(int jobs, check_progress& progress) -> std::size_t;
+        auto check(
+            int jobs,
+            check_progress& progress
+        ) -> ext::task<std::size_t>;
 
         auto commit_part(
             const UUID::uuid& bucket_id,
             const UUID::uuid& part_id
-        ) -> object;
+        ) -> ext::task<object>;
 
-        auto create_bucket(std::string_view name) -> bucket;
+        auto create_bucket(std::string_view name) -> ext::task<bucket>;
 
-        auto fetch_bucket(std::string_view name) -> bucket;
+        auto fetch_bucket(std::string_view name) -> ext::task<bucket>;
 
-        auto fetch_buckets() -> std::vector<bucket>;
+        auto fetch_buckets() -> ext::task<std::vector<bucket>>;
 
         auto fetch_buckets(
-            const std::vector<std::string>& names
-        ) -> std::vector<bucket>;
+            std::span<const std::string> names
+        ) -> ext::task<std::vector<bucket>>;
 
-        auto fetch_store_totals() -> store_totals;
+        auto fetch_store_totals() -> ext::task<store_totals>;
 
-        auto get_errors() -> std::vector<object_error>;
+        auto get_errors() -> ext::task<std::vector<object_error>>;
 
         auto get_object(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
-        ) -> file;
+        ) -> ext::task<file>;
 
         auto get_object_metadata(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
-        ) -> object;
+        ) -> ext::task<object>;
 
         auto get_part(std::optional<UUID::uuid> part_id) -> fs::part;
 
-        auto prune() -> std::vector<object>;
+        auto prune() -> ext::task<std::vector<object>>;
 
-        auto remove_bucket(const UUID::uuid& bucket_id) -> void;
+        auto remove_bucket(const UUID::uuid& bucket_id) -> ext::task<>;
 
         auto remove_object(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id
-        ) -> object;
+        ) -> ext::task<object>;
 
         auto remove_objects(
             const UUID::uuid& bucket_id,
             const std::vector<UUID::uuid>& objects
-        ) -> remove_result;
+        ) -> ext::task<remove_result>;
 
         auto rename_bucket(
             const UUID::uuid& bucket_id,
             std::string_view bucket_name
-        ) -> void;
+        ) -> ext::task<>;
     };
 }

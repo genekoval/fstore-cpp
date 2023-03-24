@@ -4,19 +4,26 @@
 UUID::uuid ObjectTest::bucket_id;
 
 auto ObjectTest::SetUpTestSuite() -> void {
-    const auto bucket = fstore::test::DatabaseEnvironment::database()
-        .create_bucket(bucket_name);
+    netcore::run([]() -> ext::task<> {
+        auto db = database();
+        auto connection = co_await db.connect();
 
-    bucket_id = bucket.id;
+        const auto bucket = co_await connection.create_bucket(bucket_name);
+        bucket_id = bucket.id;
+    }());
 }
 
 auto ObjectTest::TearDownTestSuite() -> void {
-    fstore::test::DatabaseEnvironment::database()
-        .remove_bucket(bucket_id);
+    netcore::run([]() -> ext::task<> {
+        auto db = database();
+        auto connection = co_await db.connect();
+
+        co_await connection.remove_bucket(bucket_id);
+    }());
 }
 
-auto ObjectTest::add_object(const fstore::object& object) -> void {
-    database.add_object(
+auto ObjectTest::add_object(const fstore::object& object) -> ext::task<> {
+    co_await connection->add_object(
         bucket_id,
         object.id,
         object.hash,
@@ -26,15 +33,15 @@ auto ObjectTest::add_object(const fstore::object& object) -> void {
     );
 }
 
-auto ObjectTest::bucket() -> fstore::bucket {
-    return database.fetch_bucket(bucket_name);
+auto ObjectTest::bucket() -> ext::task<fstore::bucket> {
+    co_return co_await connection->fetch_bucket(bucket_name);
 }
 
-auto ObjectTest::bucket_size() -> std::size_t {
-    return bucket().size;
+auto ObjectTest::bucket_size() -> ext::task<std::size_t> {
+    co_return (co_await bucket()).size;
 }
 
-auto ObjectTest::tables() -> std::vector<std::string> {
+auto ObjectTest::tables() -> std::vector<std::string_view> {
     return {
         fstore::test::table::object
     };

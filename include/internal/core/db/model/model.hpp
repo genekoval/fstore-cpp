@@ -1,0 +1,5 @@
+#include "bucket.hpp"
+#include "object.hpp"
+#include "object_error.hpp"
+#include "remove_result.hpp"
+#include "store_totals.hpp"

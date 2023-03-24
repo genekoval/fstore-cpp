@@ -4,7 +4,7 @@
 
 #include <ext/unix.h>
 #include <fcntl.h>
-#include <fmt/ostream.h>
+#include <fmt/std.h>
 #include <fstream>
 #include <magix/magix>
 #include <timber/timber>

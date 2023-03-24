@@ -12,8 +12,8 @@ namespace {
         return UUID::generate();
     }
 
-    auto process_bucket_name(std::string_view name) -> std::string {
-        const auto trimmed = ext::trim(std::string(name));
+    auto process_bucket_name(std::string_view name) -> std::string_view {
+        const auto trimmed = ext::trim(name);
 
         if (trimmed.empty()) {
             throw fstore::invalid_data("bucket name cannot be empty");
@@ -46,10 +46,12 @@ namespace fstore::core {
     auto object_store::add_object(
         const UUID::uuid& bucket_id,
         std::string_view path
-    ) -> object {
+    ) -> ext::task<object> {
+        auto db = co_await database->connect();
+
         const auto mime = filesystem->mime_type(path);
 
-        const auto obj = database->add_object(
+        auto obj = co_await db.add_object(
             bucket_id,
             generate_uuid(),
             filesystem->hash(path),
@@ -59,66 +61,90 @@ namespace fstore::core {
         );
 
         filesystem->copy(path, obj.id);
-        return obj;
-    }
-
-    auto object_store::check_object(const object& obj) -> bool {
-        try {
-            const auto path = filesystem->object_path(obj.id);
-            if (!std::filesystem::exists(path)) {
-                database->add_error(obj.id, "file missing");
-                return false;
-            }
-
-            const auto hash = filesystem->hash(path);
-            if (hash != obj.hash) {
-                database->add_error(obj.id, "hash mismatch");
-                return false;
-            }
-
-            database->clear_error(obj.id);
-            return true;
-        }
-        catch (const std::exception& ex) {
-            database->add_error(obj.id, ex.what());
-        }
-
-        return false;
+        co_return obj;
     }
 
     auto object_store::check(
         int jobs,
         check_progress& progress
-    ) -> std::size_t {
-        progress.total = database->fetch_store_totals().objects;
-        std::atomic_ulong errors = 0;
+    ) -> ext::task<std::size_t> {
+        auto db = co_await database->connect();
 
-        auto workers = threadpool::pool(jobs);
+        progress.total = (co_await db.fetch_store_totals()).objects;
+        std::size_t errors = 0;
 
-        auto objects = database->get_objects(100);
+        auto workers = netcore::thread_pool(jobs, 32, "worker");
+        auto finished = netcore::event<>();
+        auto objects = co_await db.get_objects(100);
 
         while (objects) {
-            for (auto&& obj : objects()) {
-                workers.run([this, obj, &errors, &progress]() {
-                    const auto success = check_object(obj);
-                    if (!success) errors += 1;
-                    progress.completed += 1;
-                });
+            for (const auto& obj : co_await objects.next()) {
+                check_object_task(obj, workers, errors, progress, finished);
             }
+
+            co_await netcore::yield();
         }
 
-        return errors;
+        co_await finished.listen();
+        co_return errors;
+    }
+
+    auto object_store::check_object(
+        const db::object& obj
+    ) noexcept -> std::string {
+        try {
+            const auto path = filesystem->object_path(obj.id);
+            if (!std::filesystem::exists(path)) return "file missing";
+
+            const auto hash = filesystem->hash(path);
+            if (hash != obj.hash) return "hash mismatch";
+
+            return std::string();
+        }
+        catch (const std::exception& ex) {
+            return ex.what();
+        }
+        catch (...) {
+            return "unknown error";
+        }
+    }
+
+    auto object_store::check_object_task(
+        const db::object obj,
+        netcore::thread_pool& workers,
+        std::size_t& errors,
+        check_progress& progress,
+        netcore::event<>& finished
+    ) -> ext::detached_task {
+        auto db = co_await database->connect();
+
+        const auto message = co_await workers.wait([
+            this,
+            &obj
+        ]() -> ext::task<std::string> {
+            co_return check_object(obj);
+        }());
+
+        if (message.empty()) co_await db.clear_error(obj.id);
+        else {
+            ++errors;
+            co_await db.add_error(obj.id, message);
+        }
+
+        ++progress.completed;
+        if (progress.completed == progress.total) finished.emit();
     }
 
     auto object_store::commit_part(
         const UUID::uuid& bucket_id,
         const UUID::uuid& part_id
-    ) -> object {
-        auto part = filesystem->part_path(part_id);
+    ) -> ext::task<object> {
+        auto db = co_await database->connect();
 
+        auto part = filesystem->part_path(part_id);
         const auto mime = filesystem->mime_type(part);
 
-        const auto obj = database->add_object(
+        auto obj = co_await db.add_object(
             bucket_id,
             part_id,
             filesystem->hash(part),
@@ -131,51 +157,69 @@ namespace fstore::core {
         if (obj.id != part_id) filesystem->remove_part(part_id);
         else filesystem->make_object(part_id);
 
-        return obj;
+        co_return obj;
     }
 
-    auto object_store::create_bucket(std::string_view name) -> bucket {
+    auto object_store::create_bucket(
+        std::string_view name
+    ) -> ext::task<bucket> {
+        auto db = co_await database->connect();
+
         const auto processed_name = process_bucket_name(name);
-
-        return database->create_bucket(processed_name);
+        co_return co_await db.create_bucket(processed_name);
     }
 
-    auto object_store::fetch_bucket(std::string_view name) -> bucket {
-        return database->fetch_bucket(name);
+    auto object_store::fetch_bucket(
+        std::string_view name
+    ) -> ext::task<bucket> {
+        auto db = co_await database->connect();
+        co_return co_await db.fetch_bucket(name);
     }
 
-    auto object_store::fetch_buckets() -> std::vector<bucket> {
-        return database->fetch_buckets();
+    auto object_store::fetch_buckets() -> ext::task<std::vector<bucket>> {
+        auto db = co_await database->connect();
+        auto buckets = co_await db.fetch_buckets();
+
+        auto result = std::vector<bucket>();
+        for (auto&& bucket : buckets) result.emplace_back(std::move(bucket));
+        co_return result;
     }
 
     auto object_store::fetch_buckets(
-        const std::vector<std::string>& names
-    ) -> std::vector<bucket> {
-        return database->fetch_buckets(names);
+        std::span<const std::string> names
+    ) -> ext::task<std::vector<bucket>> {
+        auto db = co_await database->connect();
+        auto buckets = co_await db.fetch_buckets(names);
+
+        auto result = std::vector<bucket>();
+        for (auto&& bucket : buckets) result.emplace_back(std::move(bucket));
+        co_return result;
     }
 
-    auto object_store::fetch_store_totals() -> store_totals {
-        return database->fetch_store_totals();
+    auto object_store::fetch_store_totals() -> ext::task<store_totals> {
+        auto db = co_await database->connect();
+        co_return co_await db.fetch_store_totals();
     }
 
-    auto object_store::get_errors() -> std::vector<object_error> {
-        return database->get_errors();
+    auto object_store::get_errors() -> ext::task<std::vector<object_error>> {
+        auto db = co_await database->connect();
+        co_return co_await db.get_errors();
     }
 
     auto object_store::get_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
-    ) -> file {
-        auto meta = get_object_metadata(bucket_id, object_id);
-
-        return file { filesystem->open(object_id), meta.size };
+    ) -> ext::task<file> {
+        auto meta = co_await get_object_metadata(bucket_id, object_id);
+        co_return file { filesystem->open(object_id), meta.size };
     }
 
     auto object_store::get_object_metadata(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
-    ) -> object {
-        return database->get_object(bucket_id, object_id);
+    ) -> ext::task<object> {
+        auto db = co_await database->connect();
+        co_return co_await db.get_object(bucket_id, object_id);
     }
 
     auto object_store::get_part(
@@ -185,38 +229,49 @@ namespace fstore::core {
         return fs::part(id, filesystem->get_part(id));
     }
 
-    auto object_store::prune() -> std::vector<object> {
-        auto orphans = database->remove_orphan_objects();
+    auto object_store::prune() -> ext::task<std::vector<object>> {
+        auto db = co_await database->connect();
+
+        auto orphans = co_await db.remove_orphan_objects();
         for (const auto& obj : orphans) filesystem->remove(obj.id);
 
         TIMBER_INFO("Pruned {} objects", orphans.size());
 
-        return orphans;
+        auto result = std::vector<object>();
+        for (auto&& obj : orphans) result.emplace_back(std::move(obj));
+        co_return result;
     }
 
-    auto object_store::remove_bucket(const UUID::uuid& bucket_id) -> void {
-        database->remove_bucket(bucket_id);
+    auto object_store::remove_bucket(
+        const UUID::uuid& bucket_id
+    ) -> ext::task<> {
+        auto db = co_await database->connect();
+        co_await db.remove_bucket(bucket_id);
     }
 
     auto object_store::remove_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
-    ) -> object {
-        return database->remove_object(bucket_id, object_id);
+    ) -> ext::task<object> {
+        auto db = co_await database->connect();
+        co_return co_await db.remove_object(bucket_id, object_id);
     }
 
     auto object_store::remove_objects(
         const UUID::uuid& bucket_id,
         const std::vector<UUID::uuid>& objects
-    ) -> remove_result {
-        return database->remove_objects(bucket_id, objects);
+    ) -> ext::task<remove_result> {
+        auto db = co_await database->connect();
+        co_return co_await db.remove_objects(bucket_id, objects);
     }
 
     auto object_store::rename_bucket(
         const UUID::uuid& bucket_id,
         std::string_view bucket_name
-    ) -> void {
+    ) -> ext::task<> {
+        auto db = co_await database->connect();
+
         const auto name = process_bucket_name(bucket_name);
-        database->rename_bucket(bucket_id, name);
+        co_await db.rename_bucket(bucket_id, name);
     }
 }

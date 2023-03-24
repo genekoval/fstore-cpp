@@ -1,46 +1,25 @@
 #pragma once
 
-#include <internal/core/db/database.env.test.hpp>
+#include <internal/core/db/database.hpp>
 
-#include <entix/entix>
+#include <gtest/gtest.h>
 
 class DatabaseTest : public testing::Test {
-    pqxx::connection& connection =
-        fstore::test::DatabaseEnvironment::connection();
+    auto truncate(std::string_view table) -> ext::task<>;
 
-    auto truncate(std::string_view table) -> void;
-
-    auto truncate_tables() -> void;
+    auto truncate_tables() -> ext::task<>;
 protected:
-    fstore::core::db::database& database =
-        fstore::test::DatabaseEnvironment::database();
+    static auto connect() -> ext::task<pg::client>;
 
-    virtual auto SetUp() -> void;
+    static auto database() -> fstore::core::db::database;
 
-    auto count(std::string_view table) -> int;
+    pg::client* client = nullptr;
+    fstore::core::db::connection_wrapper* connection = nullptr;
+    fstore::core::db::database* db = nullptr;
 
-    template <typename ...Args>
-    auto exec0(std::string_view query, Args&&... args) -> void {
-        const auto q = pqxx::zview(query);
-        auto tx = pqxx::nontransaction(connection);
+    auto count(std::string_view table) -> ext::task<std::int64_t>;
 
-        if constexpr (sizeof...(args) > 0) tx.exec_params0(q, args...);
-        else tx.exec0(q);
-    }
+    auto run(ext::task<>&& task) -> void;
 
-    template <typename Result, typename ...Args>
-    auto exec1(std::string_view query, Args&&... args) -> Result {
-        const auto q = pqxx::zview(query);
-        auto tx = pqxx::nontransaction(connection);
-
-        auto row = pqxx::row();
-
-        if constexpr (sizeof...(args) > 0) row = tx.exec_params1(q, args...);
-        else row = tx.exec1(q);
-
-        auto it = row.begin();
-        return entix::field_parser<Result>::read(it);
-    }
-
-    virtual auto tables() -> std::vector<std::string> = 0;
+    virtual auto tables() -> std::vector<std::string_view> = 0;
 };

@@ -5,14 +5,18 @@
 using namespace commline;
 
 namespace {
-    auto $init(
-        const app& app,
-        std::string_view confpath
-    ) -> void {
-        const auto settings = fstore::conf::settings::load_file(confpath);
-        const auto db = fstore::cli::database(settings);
+    namespace internal {
+        auto init(
+            const app& app,
+            std::string_view confpath
+        ) -> void {
+            const auto settings = fstore::conf::settings::load_file(confpath);
 
-        db.init(app.version);
+            netcore::async([&app, &settings]() -> ext::task<> {
+                auto db = fstore::cli::database(settings);
+                co_await db.init(app.version);
+            }());
+        }
     }
 }
 
@@ -27,7 +31,7 @@ namespace fstore::cli {
                 opts::config(confpath)
             ),
             arguments(),
-            $init
+            internal::init
         );
     }
 }

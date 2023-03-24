@@ -4,5 +4,5 @@
 
 class BucketTest : public DatabaseTest {
 protected:
-    virtual auto tables() -> std::vector<std::string> override;
+    virtual auto tables() -> std::vector<std::string_view> override;
 };

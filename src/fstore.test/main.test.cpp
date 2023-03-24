@@ -1,5 +1,4 @@
 #include <internal/conf/settings.env.test.hpp>
-#include <internal/core/db/database.env.test.hpp>
 #include <internal/core/fs/filesystem.env.test.hpp>
 
 #include <filesystem>
@@ -15,18 +14,21 @@ namespace {
     auto log_file = fmt::output_file(log_path.native());
 
     auto file_logger(const timber::log& log) noexcept -> void {
-        log_file.print("{:%b %m %r}", log.timestamp);
+        log_file.print("{:%b %d %r}", log.timestamp);
         log_file.print(" {:>9}  ", log.log_level);
         log_file.print("{}\n", log.message);
+
+        log_file.flush();
     }
 }
 
 auto main(int argc, char** argv) -> int {
     timber::log_handler = &file_logger;
 
+    auto runtime = netcore::runtime();
+
     testing::InitGoogleTest(&argc, argv);
     testing::AddGlobalTestEnvironment(new fstore::test::SettingsEnvironment);
-    testing::AddGlobalTestEnvironment(new fstore::test::DatabaseEnvironment);
     testing::AddGlobalTestEnvironment(new fstore::test::FilesystemEnvironment);
 
     return RUN_ALL_TESTS();
