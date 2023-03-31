@@ -53,11 +53,6 @@ namespace fstore::core {
             uuid_generator generate_uuid
         );
 
-        auto add_object(
-            const UUID::uuid& bucket_id,
-            std::string_view path
-        ) -> ext::task<object>;
-
         auto check(
             int jobs,
             check_progress& progress

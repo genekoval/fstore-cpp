@@ -43,27 +43,6 @@ namespace fstore::core {
         generate_uuid(generate_uuid)
     {}
 
-    auto object_store::add_object(
-        const UUID::uuid& bucket_id,
-        std::string_view path
-    ) -> ext::task<object> {
-        auto db = co_await database->connect();
-
-        const auto mime = filesystem->mime_type(path);
-
-        auto obj = co_await db.add_object(
-            bucket_id,
-            generate_uuid(),
-            filesystem->hash(path),
-            filesystem->size(path),
-            mime.type,
-            mime.subtype
-        );
-
-        filesystem->copy(path, obj.id);
-        co_return obj;
-    }
-
     auto object_store::check(
         int jobs,
         check_progress& progress
