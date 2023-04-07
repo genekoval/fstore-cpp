@@ -39,7 +39,7 @@ test.libs := \
  pthread
 
 $(project).type = executable
-$(project).deps = $(internal.libs)
+$(project).deps = $(internal.libs) $(client)
 $(project).libs := \
  $(core.libs) \
  commline \
