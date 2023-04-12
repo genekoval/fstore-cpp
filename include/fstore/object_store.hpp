@@ -91,4 +91,6 @@ namespace fstore {
 
         auto register_scoped() -> netcore::register_guard;
     };
+
+    using client = netcore::client<object_store>;
 }
