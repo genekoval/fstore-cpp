@@ -21,11 +21,6 @@ namespace {
                 timber::level::info
             );
 
-            auto uptime_timer = timber::timer(
-                "Server shutting down. Up",
-                timber::level::notice
-            );
-
             const auto settings = fstore::conf::settings::load_file(conf);
             timber::reporting_level = log_level;
 
@@ -45,14 +40,18 @@ namespace {
                     .version = std::string(app.version)
                 };
 
-                auto server = fstore::server::create(
-                    store,
-                    info,
-                    startup_timer,
-                    uptime_timer
+                auto server = fstore::server::create(store, info);
+                auto task = server.listen(settings.server);
+
+                startup_timer.stop();
+                auto uptime_timer = timber::timer(
+                    "Server shutting down. Up",
+                    timber::level::notice
                 );
 
-                co_await server.listen(settings.server);
+                co_await task;
+
+                uptime_timer.stop();
             });
         }
     }

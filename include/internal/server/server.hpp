@@ -46,28 +46,20 @@ namespace fstore::server {
 
     class server_context {
         router_type router;
-        timber::timer& startup_timer;
-        timber::timer& uptime_timer;
     public:
-        server_context(
-            router_type&& router,
-            timber::timer& startup_timer,
-            timber::timer& uptime_timer
-        );
+        server_context(router_type&& router);
 
         auto close() -> void;
 
         auto connection(netcore::socket&& client) -> ext::task<>;
 
-        auto listen() -> void;
+        auto listen(const netcore::address_type& address) -> void;
     };
 
     using server_type = netcore::server<server_context>;
 
     auto create(
         core::object_store& store,
-        const server_info& info,
-        timber::timer& startup_timer,
-        timber::timer& uptime_timer
+        const server_info& info
     ) -> server_type;
 }
