@@ -40,12 +40,21 @@ namespace {
                     .version = std::string(app.version)
                 };
 
-                co_await fstore::server::listen(
-                    startup_timer,
-                    settings.server,
-                    store,
-                    info
+                auto router = fstore::server::make_router(store, info);
+                auto servers = co_await fstore::server::listen(
+                    router,
+                    settings.server
                 );
+
+                startup_timer.stop();
+                auto uptime_timer = timber::timer(
+                    "Server shutting down. Up",
+                    timber::level::notice
+                );
+
+                co_await servers.join();
+
+                uptime_timer.stop();
             });
         }
     }

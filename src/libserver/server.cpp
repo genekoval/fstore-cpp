@@ -32,13 +32,9 @@ namespace fstore::server {
 
 
     auto listen(
-        timber::timer& startup_timer,
-        std::span<const netcore::endpoint> endpoints,
-        core::object_store& store,
-        const server_info& info
-    ) -> ext::task<> {
-        auto router = make_router(store, info);
-
+        router_type& router,
+        std::span<const netcore::endpoint> endpoints
+    ) -> ext::task<server_list> {
         auto servers = co_await server_list::listen(
             endpoints,
             [&router]() { return server(router); },
@@ -49,14 +45,6 @@ namespace fstore::server {
             "Failed to listen for connections"
         );
 
-        startup_timer.stop();
-        auto uptime_timer = timber::timer(
-            "Server shutting down. Up",
-            timber::level::notice
-        );
-
-        co_await servers.join();
-
-        uptime_timer.stop();
+        co_return servers;
     }
 }

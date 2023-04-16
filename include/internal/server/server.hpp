@@ -60,9 +60,7 @@ namespace fstore::server {
     using server_list = netcore::server_list<server_context>;
 
     auto listen(
-        timber::timer& startup_timer,
-        std::span<const netcore::endpoint> endpoints,
-        core::object_store& store,
-        const server_info& info
-    ) -> ext::task<>;
+        router_type& router,
+        std::span<const netcore::endpoint> endpoints
+    ) -> ext::task<server_list>;
 }
