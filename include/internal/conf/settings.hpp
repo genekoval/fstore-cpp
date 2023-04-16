@@ -35,6 +35,6 @@ namespace fstore::conf {
         s_daemon daemon;
         s_database database;
         std::string home;
-        netcore::endpoint server;
+        std::vector<netcore::endpoint> server;
     };
 }

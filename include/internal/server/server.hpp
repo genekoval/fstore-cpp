@@ -45,9 +45,9 @@ namespace fstore::server {
     >;
 
     class server_context {
-        router_type router;
+        router_type* router;
     public:
-        server_context(router_type&& router);
+        server_context(router_type& router);
 
         auto close() -> void;
 
@@ -56,10 +56,13 @@ namespace fstore::server {
         auto listen(const netcore::address_type& address) -> void;
     };
 
-    using server_type = netcore::server<server_context>;
+    using server = netcore::server<server_context>;
+    using server_list = netcore::server_list<server_context>;
 
-    auto create(
+    auto listen(
+        timber::timer& startup_timer,
+        std::span<const netcore::endpoint> endpoints,
         core::object_store& store,
         const server_info& info
-    ) -> server_type;
+    ) -> ext::task<>;
 }

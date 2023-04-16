@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ext/dynarray.h>
+#include <ext/dynarray>
 #include <zipline/zipline>
 
 namespace fstore {
@@ -15,13 +15,11 @@ namespace zipline {
                 co_await zipline::decode<zipline::stream<Reader>>(reader);
 
             auto blob = fstore::blob(co_await stream.size());
-            auto index = 0;
 
-            co_await stream.read([&blob, &index](
+            co_await stream.read([&blob](
                 std::span<const std::byte> chunk
             ) -> ext::task<> {
-                blob.copy(chunk.data(), chunk.size(), index);
-                index += chunk.size();
+                blob.copy(chunk);
                 co_return;
             });
 
