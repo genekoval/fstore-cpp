@@ -9,10 +9,6 @@ namespace fstore {
         ))
     {}
 
-    auto object_store::deregister() -> void {
-        client->inner.deregister();
-    }
-
     auto object_store::fetch_bucket(
         std::string_view name
     ) -> ext::task<bucket> {
@@ -111,9 +107,5 @@ namespace fstore {
             bucket_id,
             objects
         );
-    }
-
-    auto object_store::register_scoped() -> netcore::register_guard {
-        return client->inner.register_scoped();
     }
 }

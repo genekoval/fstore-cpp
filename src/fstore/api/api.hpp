@@ -27,7 +27,7 @@ namespace fstore::cli {
         const conf::settings& settings,
         const F& action
     ) -> void {
-        netcore::async([&]() -> ext::task<> {
+        netcore::run([&]() -> ext::task<> {
             auto container = api_container(settings);
             co_await action(container.object_store());
         }());

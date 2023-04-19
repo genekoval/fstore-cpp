@@ -25,7 +25,7 @@ namespace {
 auto main(int argc, char** argv) -> int {
     timber::log_handler = &file_logger;
 
-    auto runtime = netcore::runtime();
+    const auto runtime = netcore::runtime();
 
     testing::InitGoogleTest(&argc, argv);
     testing::AddGlobalTestEnvironment(new fstore::test::SettingsEnvironment);

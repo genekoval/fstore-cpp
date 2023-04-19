@@ -8,8 +8,28 @@
 #include <dmon/dmon>
 #include <timber/timber>
 
+using fstore::server::server_list;
+
 namespace {
     namespace internal {
+        constexpr auto signals = std::array { SIGINT, SIGTERM };
+
+        auto handle_signals(server_list& servers) -> ext::jtask<> {
+            auto signalfd = netcore::signalfd::create(signals);
+
+            while (true) {
+                const auto signal = co_await signalfd.wait_for_signal();
+
+                TIMBER_INFO(
+                    "Received signal ({}): {}",
+                    signal,
+                    strsignal(signal)
+                );
+
+                servers.close();
+            }
+        }
+
         auto start(
             const commline::app& app,
             std::string_view conf,
@@ -52,6 +72,7 @@ namespace {
                     timber::level::notice
                 );
 
+                const auto sigtask = handle_signals(servers);
                 co_await servers.join();
 
                 uptime_timer.stop();

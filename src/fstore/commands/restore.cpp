@@ -60,7 +60,7 @@ namespace {
 
             if (user) settings.database.connection.parameters["user"] = *user;
 
-            netcore::async([&settings]() -> ext::task<> {
+            netcore::run([&settings]() -> ext::task<> {
                 auto db = fstore::cli::database(settings);
                 const auto dump_file = fstore::cli::dump_file(settings);
 

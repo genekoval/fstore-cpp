@@ -51,8 +51,6 @@ namespace fstore {
             co_return co_await client->read_response<object>();
         }
 
-        auto deregister() -> void;
-
         auto fetch_bucket(std::string_view name) -> ext::task<bucket>;
 
         auto get_object(
@@ -88,8 +86,6 @@ namespace fstore {
             const UUID::uuid& bucket_id,
             std::span<const UUID::uuid> objects
         ) -> ext::task<remove_result>;
-
-        auto register_scoped() -> netcore::register_guard;
     };
 
     using client = netcore::client<object_store>;

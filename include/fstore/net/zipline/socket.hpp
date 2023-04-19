@@ -13,15 +13,11 @@ namespace fstore::net {
         template <typename... Args>
         socket(Args&&... args) : inner(std::forward<Args>(args)...) {}
 
-        auto deregister() -> void;
-
         auto flush() -> ext::task<>;
 
         auto read(std::size_t len) -> ext::task<std::span<const std::byte>>;
 
         auto read(void* dest, std::size_t len) -> ext::task<>;
-
-        auto register_scoped() -> netcore::register_guard;
 
         auto sendfile(
             const netcore::fd& fd,

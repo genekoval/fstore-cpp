@@ -12,7 +12,7 @@ namespace {
         ) -> void {
             const auto settings = fstore::conf::settings::load_file(confpath);
 
-            netcore::async([&app, &settings]() -> ext::task<> {
+            netcore::run([&app, &settings]() -> ext::task<> {
                 auto db = fstore::cli::database(settings);
                 co_await db.init(app.version);
             }());

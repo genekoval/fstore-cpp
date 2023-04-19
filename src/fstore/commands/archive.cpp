@@ -28,7 +28,7 @@ namespace {
 
             const auto dump_file = fstore::cli::dump_file(settings);
 
-            netcore::async([&dump_file, &settings]() -> ext::task<> {
+            netcore::run([&dump_file, &settings]() -> ext::task<> {
                 auto db = fstore::cli::database(settings);
                 co_await db.dump(dump_file);
             }());

@@ -1,10 +1,6 @@
 #include <fstore/net/zipline/socket.hpp>
 
 namespace fstore::net {
-    auto socket::deregister() -> void {
-        inner.inner.deregister();
-    }
-
     auto socket::flush() -> ext::task<> {
         return inner.flush();
     }
@@ -17,10 +13,6 @@ namespace fstore::net {
 
     auto socket::read(void* dest, std::size_t len) -> ext::task<> {
         return inner.read(dest, len);
-    }
-
-    auto socket::register_scoped() -> netcore::register_guard {
-        return inner.inner.register_scoped();
     }
 
     auto socket::sendfile(

@@ -16,7 +16,7 @@ namespace {
             const auto settings = fstore::conf::settings::load_file(confpath);
             timber::reporting_level = log_level;
 
-            netcore::async([&app, &settings]() -> ext::task<> {
+            netcore::run([&app, &settings]() -> ext::task<> {
                 auto db = fstore::cli::database(settings);
                 co_await db.migrate(app.version);
             }());
