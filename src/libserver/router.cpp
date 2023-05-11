@@ -66,4 +66,8 @@ namespace fstore::server {
     ) -> ext::task<remove_result> {
         co_return co_await store->remove_objects(bucket_id, objects);
     }
+
+    auto router_context::set_timer(seconds duration) -> ext::task<> {
+        co_await netcore::sleep_for(duration);
+    }
 }

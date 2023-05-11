@@ -2,6 +2,7 @@
 
 #include "router.hpp"
 
+#include <conftools/endpoint.hpp>
 #include <fstore/event.hpp>
 #include <fstore/except.hpp>
 
@@ -46,8 +47,9 @@ namespace fstore::server {
 
     class server_context {
         router_type* router;
+        seconds timeout;
     public:
-        server_context(router_type& router);
+        server_context(router_type& router, seconds timeout);
 
         auto close() -> void;
 
@@ -61,6 +63,6 @@ namespace fstore::server {
 
     auto listen(
         router_type& router,
-        std::span<const netcore::endpoint> endpoints
+        std::span<const conftools::endpoint> endpoints
     ) -> ext::task<server_list>;
 }

@@ -12,9 +12,11 @@ namespace fstore::core {
 }
 
 namespace fstore::server {
+    using std::chrono::seconds;
+
     class router_context {
         const server_info* const info;
-        core::object_store* store;
+        core::object_store* const store;
     public:
         router_context(core::object_store& store, const server_info& info);
 
@@ -47,5 +49,9 @@ namespace fstore::server {
             UUID::uuid bucket_id,
             std::vector<UUID::uuid> objects
         ) -> ext::task<remove_result>;
+
+        auto set_timer(seconds duration) -> ext::task<>;
     };
+
+    static_assert(zipline::router_context<router_context>);
 }

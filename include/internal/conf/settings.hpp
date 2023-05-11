@@ -1,8 +1,6 @@
 #pragma once
 
-#include <conftools/database.h>
-#include <ext/unix.h>
-#include <netcore/netcore>
+#include <conftools/yaml.h>
 
 namespace fstore::conf {
     struct settings {
@@ -35,6 +33,6 @@ namespace fstore::conf {
         s_daemon daemon;
         s_database database;
         std::string home;
-        std::vector<netcore::endpoint> server;
+        std::vector<conftools::endpoint> server;
     };
 }
