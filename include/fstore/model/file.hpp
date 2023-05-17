@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fstore/net/zipline/writer.hpp>
+#include <fstore/net/zipline.hpp>
 
 namespace fstore {
     struct file {

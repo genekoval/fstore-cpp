@@ -6,7 +6,7 @@
 #include "model/object.hpp"
 #include "model/remove_result.hpp"
 #include "model/server_info.hpp"
-#include "net/zipline/socket.hpp"
+#include "net/zipline.hpp"
 
 namespace fstore {
     using client_type = zipline::client<net::socket, event>;
@@ -30,7 +30,7 @@ namespace fstore {
     public:
         object_store() = default;
 
-        object_store(netcore::socket&& socket);
+        object_store(net::socket&& socket);
 
         auto add_object(
             const UUID::uuid& bucket_id,
@@ -50,6 +50,10 @@ namespace fstore {
 
             co_return co_await client->read_response<object>();
         }
+
+        auto connected() -> bool;
+
+        auto failed() const noexcept -> bool;
 
         auto fetch_bucket(std::string_view name) -> ext::task<bucket>;
 

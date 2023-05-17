@@ -12,4 +12,9 @@ namespace fstore::net {
     ) {
         { t.sendfile(fd, count) } -> std::same_as<ext::task<>>;
     };
+
+    using socket = netcore::buffered_socket;
+
+    static_assert(zipline::io::reader<socket>);
+    static_assert(writer<socket>);
 }

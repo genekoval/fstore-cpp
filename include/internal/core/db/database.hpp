@@ -7,18 +7,15 @@
 #endif
 
 namespace fstore::core::db {
+    using connection_type =
+#ifdef TEST
+        connection_wrapper;
+#else
+        connection;
+#endif
+
     class database {
-        class provider {
-            pg::parameters params;
-        public:
-            provider() = default;
-
-            provider(const pg::parameters& params);
-
-            auto provide() -> ext::task<pg::client>;
-        };
-
-        ext::async_pool<pg::client, provider> pool;
+        pool pool;
     public:
         database() = default;
 
@@ -26,12 +23,6 @@ namespace fstore::core::db {
 
         VIRTUAL_DESTRUCTOR(database)
 
-        VIRTUAL auto connect() -> ext::task<
-#ifdef TEST
-            connection_wrapper
-#else
-            connection
-#endif
-        >;
+        VIRTUAL auto connect() -> ext::task<connection_type>;
     };
 }

@@ -2,12 +2,20 @@
 #include <fstore/object_store.hpp>
 
 namespace fstore {
-    object_store::object_store(netcore::socket&& socket) :
+    object_store::object_store(net::socket&& socket) :
         client(new client_type(
             error_list::thrower(),
-            net::socket(std::forward<netcore::socket>(socket))
+            std::forward<net::socket>(socket)
         ))
     {}
+
+    auto object_store::connected() -> bool {
+        return client->inner.connected();
+    }
+
+    auto object_store::failed() const noexcept -> bool {
+        return client->inner.failed();
+    }
 
     auto object_store::fetch_bucket(
         std::string_view name

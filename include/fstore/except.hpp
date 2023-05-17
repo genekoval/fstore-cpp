@@ -15,7 +15,7 @@ namespace fstore {
         using fstore_error::fstore_error;
     };
 
-    class unique_bucket_violation : fstore_error {
+    class unique_bucket_violation : public fstore_error {
         std::string _name;
     public:
         unique_bucket_violation(std::string_view name);

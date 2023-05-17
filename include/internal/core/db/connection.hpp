@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model/model.hpp"
+#include "pool.hpp"
 
 #include <internal/test.hpp>
 
@@ -10,16 +11,13 @@
 #include <fstore/model/remove_result.hpp>
 #include <fstore/model/store_totals.hpp>
 
-#include <ext/pool>
-#include <pg++/pg++>
-
 namespace fstore::core::db {
     class connection {
-        ext::pool_item<pg::client> client;
+        pool::item client;
     public:
         connection() = default;
 
-        connection(ext::pool_item<pg::client>&& client);
+        connection(pool::item&& client);
 
         connection(const connection&) = delete;
 

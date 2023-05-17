@@ -3,8 +3,8 @@
 #include <fstore/except.hpp>
 
 namespace fstore::core::db {
-    connection::connection(ext::pool_item<pg::client>&& client) :
-        client(std::forward<ext::pool_item<pg::client>>(client))
+    connection::connection(pool::item&& client) :
+        client(std::forward<pool::item>(client))
     {}
 
     auto connection::add_error(

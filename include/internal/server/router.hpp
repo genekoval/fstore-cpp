@@ -5,7 +5,7 @@
 #include <fstore/model/object.hpp>
 #include <fstore/model/remove_result.hpp>
 #include <fstore/model/server_info.hpp>
-#include <fstore/net/zipline/socket.hpp>
+#include <fstore/net/zipline.hpp>
 
 namespace fstore::core {
     class object_store;
