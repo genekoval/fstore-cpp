@@ -18,6 +18,7 @@ core.libs := \
  $(internal) \
  $(project) \
  conftools \
+ crypto \
  cryptopp \
  ext++ \
  fmt \
@@ -25,6 +26,7 @@ core.libs := \
  netcore \
  pg++ \
  pthread \
+ ssl \
  threadpool \
  timber \
  uuid++ \
