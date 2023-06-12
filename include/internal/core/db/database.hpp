@@ -15,7 +15,7 @@ namespace fstore::core::db {
 #endif
 
     class database {
-        pool pool;
+        db::pool pool;
     public:
         database() = default;
 
