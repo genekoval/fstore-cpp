@@ -24,7 +24,6 @@ namespace YAML {
     DECODE(
         settings::s_daemon,
         c::required("group", &settings::s_daemon::group),
-        c::required("pidfile", &settings::s_daemon::pidfile),
         c::required("user", &settings::s_daemon::user)
     );
 

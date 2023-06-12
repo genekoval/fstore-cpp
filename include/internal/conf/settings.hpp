@@ -12,7 +12,6 @@ namespace fstore::conf {
 
         struct s_daemon {
             ext::group group;
-            std::string pidfile;
             ext::user user;
         };
 

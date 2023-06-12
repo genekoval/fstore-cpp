@@ -8,11 +8,19 @@
 #include <dmon/dmon>
 #include <timber/timber>
 
+namespace fs = std::filesystem;
+
 using fstore::server::server_list;
 
 namespace {
     namespace internal {
         constexpr auto signals = std::array { SIGINT, SIGTERM };
+
+        auto default_pidfile(std::string_view name) -> fs::path {
+            auto path = fs::temp_directory_path() / name;
+            path += ".pid";
+            return path;
+        }
 
         auto handle_signals(server_list& servers) -> ext::jtask<> {
             auto signalfd = netcore::signalfd::create(signals);
@@ -34,6 +42,7 @@ namespace {
             const commline::app& app,
             std::string_view conf,
             bool daemon,
+            std::optional<fs::path> pidfile,
             timber::level log_level
         ) -> void {
             auto startup_timer = timber::timer(
@@ -47,7 +56,7 @@ namespace {
             if (daemon && !dmon::daemonize({
                 .group = settings.daemon.group,
                 .identifier = app.name,
-                .pidfile = settings.daemon.pidfile,
+                .pidfile = pidfile.value_or(default_pidfile(app.name)),
                 .user = settings.daemon.user
             })) return;
 
@@ -95,6 +104,11 @@ namespace fstore::cli {
                 flag(
                     {"d", "daemon"},
                     "Run the program as a daemon"
+                ),
+                option<std::optional<fs::path>>(
+                    {"p", "pidfile"},
+                    "Path to the pidfile",
+                    "path"
                 ),
                 opts::log_level()
             ),
