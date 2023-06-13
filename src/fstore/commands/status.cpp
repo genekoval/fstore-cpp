@@ -23,12 +23,14 @@ namespace {
             ) -> ext::task<> {
                 auto table = fstore::cli::bucket_table();
 
-                auto buckets = verbose ?
-                    co_await store.fetch_buckets() :
-                    co_await store.fetch_buckets(names);
+                auto task = verbose ?
+                    store.fetch_buckets() :
+                    store.fetch_buckets(names);
+
+                auto buckets = co_await std::move(task);
 
                 for (auto&& bucket : buckets) {
-                    table.push_back(std::forward<fstore::bucket>(bucket));
+                    table.push_back(std::move(bucket));
                 }
 
                 if (!table.empty()) std::cout << '\n' << table << '\n';
