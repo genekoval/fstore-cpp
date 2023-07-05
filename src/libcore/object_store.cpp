@@ -59,7 +59,9 @@ namespace fstore::core {
 
         auto counter = ext::counter();
         auto workers = netcore::thread_pool("worker", jobs);
-        auto objects = co_await db.get_objects(batch_size);
+
+        auto portal = co_await database->connect();
+        auto objects = co_await portal.get_objects(batch_size);
 
         while (objects) {
             for (const auto& obj : co_await objects.next()) {
