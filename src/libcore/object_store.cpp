@@ -46,25 +46,36 @@ namespace fstore::core {
         int batch_size,
         int jobs,
         check_progress& progress
-    ) -> ext::task<std::size_t> {
+    ) -> ext::task<> {
         auto db = co_await database->connect();
 
         progress.total = (co_await db.fetch_store_totals()).objects;
-        std::size_t errors = 0;
 
-        auto workers = netcore::thread_pool("worker", jobs);
+        auto records = std::vector<object_error>();
+        records.reserve(std::min(
+            static_cast<std::size_t>(batch_size),
+            progress.total
+        ));
+
         auto counter = ext::counter();
+        auto workers = netcore::thread_pool("worker", jobs);
         auto objects = co_await db.get_objects(batch_size);
 
         while (objects) {
             for (const auto& obj : co_await objects.next()) {
-                check_object_task(obj, workers, errors, progress, counter);
+                check_object_task(
+                    obj,
+                    workers,
+                    std::back_inserter(records),
+                    progress,
+                    counter
+                );
             }
 
             co_await counter;
+            co_await db.update_object_errors(records);
+            records.clear();
         }
-
-        co_return errors;
     }
 
     auto object_store::check_object(
@@ -90,25 +101,23 @@ namespace fstore::core {
     auto object_store::check_object_task(
         const db::object obj,
         netcore::thread_pool& workers,
-        std::size_t& errors,
+        std::back_insert_iterator<std::vector<object_error>> records,
         check_progress& progress,
         ext::counter& counter
     ) -> ext::detached_task {
         const auto counter_item = counter.increment();
 
-        const auto message = co_await workers.wait([this, &obj]() {
+        auto message = co_await workers.wait([this, &obj]() {
             return check_object(obj);
         });
 
-        auto db = co_await database->connect();
+        if (message.empty()) ++progress.success;
+        else ++progress.errors;
 
-        if (message.empty()) co_await db.clear_error(obj.id);
-        else {
-            ++errors;
-            co_await db.add_error(obj.id, message);
-        }
-
-        ++progress.completed;
+        records = object_error {
+            .id = obj.id,
+            .message = std::move(message)
+        };
     }
 
     auto object_store::commit_part(

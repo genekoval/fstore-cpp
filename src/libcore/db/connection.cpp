@@ -7,13 +7,6 @@ namespace fstore::core::db {
         client(std::forward<pool::item>(client))
     {}
 
-    auto connection::add_error(
-        const UUID::uuid& object_id,
-        std::string_view message
-    ) -> ext::task<> {
-        co_await client->query_prepared(__FUNCTION__, object_id, message);
-    }
-
     auto connection::add_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id,
@@ -31,10 +24,6 @@ namespace fstore::core::db {
             type,
             subtype
         );
-    }
-
-    auto connection::clear_error(const UUID::uuid& object_id) -> ext::task<> {
-        co_await client->query_prepared(__FUNCTION__, object_id);
     }
 
     auto connection::create_bucket(std::string_view name) -> ext::task<bucket> {
@@ -170,5 +159,11 @@ namespace fstore::core::db {
             }
             else throw;
         }
+    }
+
+    auto connection::update_object_errors(
+        std::span<const object_error> records
+    ) -> ext::task<> {
+        co_await client->query_prepared(__FUNCTION__, records);
     }
 }

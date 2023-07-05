@@ -4,4 +4,4 @@
 
 #include <pg++/pg++>
 
-PGCPP_COMPOSITE_DECL(fstore::object_error, "object_error");
+PGCPP_COMPOSITE_DECL(fstore::object_error, "fstore.object_error");

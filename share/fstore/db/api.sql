@@ -62,15 +62,6 @@ CREATE TYPE store_totals AS (
     space_used      bigint
 );
 
-CREATE FUNCTION clear_error(
-    a_object_id     uuid
-) RETURNS void AS $$
-BEGIN
-    DELETE FROM data.object_error
-    WHERE object_id = a_object_id;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE FUNCTION create_object(
     a_object_id     uuid,
     a_hash          text,
@@ -100,22 +91,6 @@ BEGIN
     WHERE hash = a_hash;
 
     RETURN id_for_hash;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE FUNCTION add_error(
-    a_object_id     uuid,
-    a_message       text
-) RETURNS void AS $$
-BEGIN
-    INSERT INTO data.object_error (
-        object_id,
-        message
-    ) VALUES (
-        a_object_id,
-        a_message
-    ) ON CONFLICT (object_id)
-    DO UPDATE SET message = a_message;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -333,5 +308,27 @@ BEGIN
     UPDATE data.bucket
     SET name = a_bucket_name
     WHERE bucket_id = a_bucket_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION update_object_errors(records object_error[])
+RETURNS void AS $$
+BEGIN
+    WITH cleared AS (
+        SELECT object_id
+        FROM unnest(records)
+        WHERE length(message) = 0
+    )
+    DELETE FROM data.object_error errors USING cleared
+    WHERE errors.object_id = cleared.object_id;
+
+    WITH entries AS (
+        SELECT object_id, message
+        FROM unnest(records)
+        WHERE length(message) > 0
+    )
+    INSERT INTO data.object_error (object_id, message)
+    SELECT * FROM entries
+    ON CONFLICT (object_id) DO UPDATE SET message = excluded.message;
 END;
 $$ LANGUAGE plpgsql;

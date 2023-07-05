@@ -7,9 +7,7 @@ namespace fstore::core::db {
     auto provider::provide() -> ext::task<pg::client> {
         auto client = co_await pg::connect(params);
 
-        co_await client.prepare_fn("add_error", &connection::add_error);
         co_await client.prepare_fn("add_object", &connection::add_object);
-        co_await client.prepare_fn("clear_error", &connection::clear_error);
         co_await client.prepare_fn("create_bucket", &connection::create_bucket);
         co_await client.prepare_fn("fetch_bucket", &connection::fetch_bucket);
         co_await client.prepare_fn(
@@ -44,6 +42,9 @@ namespace fstore::core::db {
             &connection::remove_orphan_objects
         );
         co_await client.prepare_fn("rename_bucket", &connection::rename_bucket);
+        co_await client.prepare_fn("update_object_errors",
+            &connection::update_object_errors
+        );
 
         co_return client;
     }

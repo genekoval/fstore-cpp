@@ -10,7 +10,6 @@
 #include <fstore/model/remove_result.hpp>
 #include <fstore/model/store_totals.hpp>
 
-#include <atomic>
 #include <optional>
 #include <span>
 
@@ -24,7 +23,8 @@ namespace fstore::core {
     }
 
     struct check_progress {
-        std::atomic_ulong completed;
+        std::size_t success;
+        std::size_t errors;
         std::size_t total;
     };
 
@@ -40,7 +40,7 @@ namespace fstore::core {
         auto check_object_task(
             const db::object obj,
             netcore::thread_pool& workers,
-            std::size_t& errors,
+            std::back_insert_iterator<std::vector<object_error>> records,
             check_progress& progress,
             ext::counter& counter
         ) -> ext::detached_task;
@@ -57,7 +57,7 @@ namespace fstore::core {
             int batch_size,
             int jobs,
             check_progress& progress
-        ) -> ext::task<std::size_t>;
+        ) -> ext::task<>;
 
         auto commit_part(
             const UUID::uuid& bucket_id,

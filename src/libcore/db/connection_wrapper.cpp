@@ -7,13 +7,6 @@ namespace fstore::core::db {
         inner(std::forward<std::shared_ptr<connection>>(inner))
     {}
 
-    auto connection_wrapper::add_error(
-        const UUID::uuid& object_id,
-        std::string_view message
-    ) -> ext::task<> {
-        return inner->add_error(object_id, message);
-    }
-
     auto connection_wrapper::add_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id,
@@ -30,12 +23,6 @@ namespace fstore::core::db {
             type,
             subtype
         );
-    }
-
-    auto connection_wrapper::clear_error(
-        const UUID::uuid& object_id
-    ) -> ext::task<> {
-        return inner->clear_error(object_id);
     }
 
     auto connection_wrapper::create_bucket(
@@ -118,5 +105,11 @@ namespace fstore::core::db {
         std::string_view name
     ) -> ext::task<> {
         return inner->rename_bucket(id, name);
+    }
+
+    auto connection_wrapper::update_object_errors(
+        std::span<const object_error> records
+    ) -> ext::task<> {
+        return inner->update_object_errors(records);
     }
 }

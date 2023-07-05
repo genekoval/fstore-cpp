@@ -6,11 +6,6 @@
 
 namespace fstore::test::db {
     struct mock_connection : core::db::connection {
-        MOCK_METHOD(ext::task<>, add_error, (
-            const UUID::uuid& object_id,
-            std::string_view message
-        ), (override));
-
         MOCK_METHOD(ext::task<core::db::object>, add_object, (
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id,
@@ -18,10 +13,6 @@ namespace fstore::test::db {
             std::int64_t size,
             std::string_view type,
             std::string_view subtype
-        ), (override));
-
-        MOCK_METHOD(ext::task<>, clear_error, (
-            const UUID::uuid& object_id
         ), (override));
 
         MOCK_METHOD(ext::task<core::db::bucket>, create_bucket, (
@@ -81,6 +72,10 @@ namespace fstore::test::db {
         MOCK_METHOD(ext::task<>, rename_bucket, (
             const UUID::uuid& id,
             std::string_view name
+        ), (override));
+
+        MOCK_METHOD(ext::task<>, update_object_errors, (
+            std::span<const object_error> records
         ), (override));
     };
 }

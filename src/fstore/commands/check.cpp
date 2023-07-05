@@ -20,15 +20,17 @@ namespace {
 
             if (progress.total == 0) return;
 
+            const auto completed = progress.success + progress.errors;
+
             const auto percent = static_cast<int>(std::round(
-                static_cast<long double>(progress.completed) /
+                static_cast<long double>(completed) /
                 static_cast<long double>(progress.total) * 100
             ));
 
             fmt::print(
                 stderr,
                 "[{:L}/{:L}] ({}%)\n",
-                progress.completed,
+                completed,
                 progress.total,
                 percent
             );
@@ -36,7 +38,7 @@ namespace {
 
         auto run_progress_printer(
             const check_progress& progress,
-            const ext::task<std::size_t>& task
+            const ext::task<>& task
         ) -> ext::jtask<> {
             while (!task.is_ready()) {
                 co_await netcore::sleep_for(refresh_rate);
@@ -63,7 +65,6 @@ namespace {
             if (!quiet) fmt::print("\n");
 
             auto progress = check_progress();
-            std::size_t errors = 0;
 
             fstore::cli::object_store(settings, [&](
                 fstore::core::object_store& store
@@ -72,26 +73,25 @@ namespace {
                 const auto printer = quiet ? ext::jtask<>() :
                     run_progress_printer(progress, task);
 
-                errors = co_await task;
+                co_await task;
                 if (printer.joinable()) co_await printer;
             });
 
-            const auto successful = progress.completed - errors;
+            const auto completed = progress.success + progress.errors;
 
             fmt::print(
                 "Checked {:L} object{}: {} valid",
-                progress.completed,
-                progress.completed == 1 ? "" : "s",
-                successful == progress.completed ?
-                    "all" :
-                    fmt::format("{:L}", successful)
+                completed,
+                completed == 1 ? "" : "s",
+                progress.errors == 0 ? "all" :
+                    fmt::format("{:L}", progress.success)
             );
 
-            if (errors > 0) {
+            if (progress.errors > 0) {
                 fmt::print(
                     ", {:L} error{}\n",
-                    errors,
-                    errors == 1 ? "" : "s"
+                    progress.errors,
+                    progress.errors == 1 ? "" : "s"
                 );
                 fmt::print(
                     "Run '{} errors' for further information\n",

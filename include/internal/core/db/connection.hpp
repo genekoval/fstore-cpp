@@ -29,11 +29,6 @@ namespace fstore::core::db {
 
         auto operator=(connection&&) -> connection& = default;
 
-        VIRTUAL auto add_error(
-            const UUID::uuid& object_id,
-            std::string_view message
-        ) -> ext::task<>;
-
         VIRTUAL auto add_object(
             const UUID::uuid& bucket_id,
             const UUID::uuid& object_id,
@@ -42,8 +37,6 @@ namespace fstore::core::db {
             std::string_view type,
             std::string_view subtype
         ) -> ext::task<object>;
-
-        VIRTUAL auto clear_error(const UUID::uuid& object_id) -> ext::task<>;
 
         VIRTUAL auto create_bucket(std::string_view name) -> ext::task<bucket>;
 
@@ -85,6 +78,10 @@ namespace fstore::core::db {
         VIRTUAL auto rename_bucket(
             const UUID::uuid& id,
             std::string_view name
+        ) -> ext::task<>;
+
+        VIRTUAL auto update_object_errors(
+            std::span<const object_error> records
         ) -> ext::task<>;
     };
 }
