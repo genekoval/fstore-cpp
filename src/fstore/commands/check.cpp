@@ -13,12 +13,10 @@ using fstore::core::check_progress;
 
 namespace {
     namespace internal {
-        constexpr auto refresh_rate = 500ms;
-
-        bool running = true;
+        constexpr auto refresh_rate = 200ms;
 
         auto print_progress(const check_progress& progress) -> void {
-            std::cerr << "\33[2K\033[A\33[2K\r";
+            fmt::print(stderr, "\33[2K\033[A\33[2K\r");
 
             if (progress.total == 0) return;
 
@@ -29,16 +27,19 @@ namespace {
 
             fmt::print(
                 stderr,
-                "[{}/{}] ({}%)\n",
+                "[{:L}/{:L}] ({}%)\n",
                 progress.completed,
                 progress.total,
                 percent
             );
         }
 
-        auto run_progress_printer(const check_progress& progress) -> void {
-            while (running) {
-                std::this_thread::sleep_for(refresh_rate);
+        auto run_progress_printer(
+            const check_progress& progress,
+            const ext::task<std::size_t>& task
+        ) -> ext::jtask<> {
+            while (!task.is_ready()) {
+                co_await netcore::sleep_for(refresh_rate);
                 print_progress(progress);
             }
         }
@@ -46,10 +47,11 @@ namespace {
         auto check(
             const app& app,
             std::string_view confpath,
+            int batch_size,
             int jobs,
             bool quiet
         ) -> void {
-            jobs = std::max(jobs, 0);
+            jobs = std::max(jobs, 1);
 
             auto settings = fstore::conf::settings::load_file(confpath);
 
@@ -61,34 +63,36 @@ namespace {
             if (!quiet) fmt::print("\n");
 
             auto progress = check_progress();
-
-            auto ui_thread = quiet ?
-                std::thread() :
-                std::thread(run_progress_printer, std::ref(progress));
-
             std::size_t errors = 0;
 
             fstore::cli::object_store(settings, [&](
                 fstore::core::object_store& store
             ) -> ext::task<> {
-                errors = co_await store.check(jobs, progress);
-            });
+                const auto task = store.check(batch_size, jobs, progress);
+                const auto printer = quiet ? ext::jtask<>() :
+                    run_progress_printer(progress, task);
 
-            running = false;
-            if (ui_thread.joinable()) ui_thread.join();
+                errors = co_await task;
+                if (printer.joinable()) co_await printer;
+            });
 
             const auto successful = progress.completed - errors;
 
             fmt::print(
-                "Checked {} objects: {} valid",
+                "Checked {:L} object{}: {} valid",
                 progress.completed,
+                progress.completed == 1 ? "" : "s",
                 successful == progress.completed ?
                     "all" :
-                    fmt::format("{}", successful)
+                    fmt::format("{:L}", successful)
             );
 
             if (errors > 0) {
-                fmt::print(", {} errors\n", errors);
+                fmt::print(
+                    ", {:L} error{}\n",
+                    errors,
+                    errors == 1 ? "" : "s"
+                );
                 fmt::print(
                     "Run '{} errors' for further information\n",
                     app.argv0
@@ -109,10 +113,16 @@ namespace fstore::cli {
             options(
                 opts::config(confpath),
                 option<int>(
+                    {"b", "batch-size"},
+                    "Number of objects to fetch from the database at a time",
+                    "objects",
+                    500
+                ),
+                option<int>(
                     {"j", "jobs"},
-                    "Number of additional jobs to run simultaneously",
+                    "Number of jobs to run simultaneously",
                     "jobs",
-                    0
+                    1
                 ),
                 flag({"q", "quiet"}, "Do not print progress")
             ),

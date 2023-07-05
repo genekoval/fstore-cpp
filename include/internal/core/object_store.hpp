@@ -42,7 +42,7 @@ namespace fstore::core {
             netcore::thread_pool& workers,
             std::size_t& errors,
             check_progress& progress,
-            netcore::event<>& finished
+            ext::counter& counter
         ) -> ext::detached_task;
     public:
         object_store(db::database& database, fs::filesystem& filesystem);
@@ -54,6 +54,7 @@ namespace fstore::core {
         );
 
         auto check(
+            int batch_size,
             int jobs,
             check_progress& progress
         ) -> ext::task<std::size_t>;

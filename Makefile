@@ -27,7 +27,6 @@ core.libs := \
  pg++ \
  pthread \
  ssl \
- threadpool \
  timber \
  uuid++ \
  yaml-cpp \

@@ -5,7 +5,6 @@
 #include <fstore/except.hpp>
 
 #include <ext/string.h>
-#include <threadpool/threadpool>
 
 namespace {
     auto generate_random_uuid() -> UUID::uuid {
@@ -44,6 +43,7 @@ namespace fstore::core {
     {}
 
     auto object_store::check(
+        int batch_size,
         int jobs,
         check_progress& progress
     ) -> ext::task<std::size_t> {
@@ -52,19 +52,18 @@ namespace fstore::core {
         progress.total = (co_await db.fetch_store_totals()).objects;
         std::size_t errors = 0;
 
-        auto workers = netcore::thread_pool(jobs, 32, "worker");
-        auto finished = netcore::event<>();
-        auto objects = co_await db.get_objects(100);
+        auto workers = netcore::thread_pool("worker", jobs);
+        auto counter = ext::counter();
+        auto objects = co_await db.get_objects(batch_size);
 
         while (objects) {
             for (const auto& obj : co_await objects.next()) {
-                check_object_task(obj, workers, errors, progress, finished);
+                check_object_task(obj, workers, errors, progress, counter);
             }
 
-            co_await netcore::yield();
+            co_await counter;
         }
 
-        co_await finished.listen();
         co_return errors;
     }
 
@@ -93,16 +92,15 @@ namespace fstore::core {
         netcore::thread_pool& workers,
         std::size_t& errors,
         check_progress& progress,
-        netcore::event<>& finished
+        ext::counter& counter
     ) -> ext::detached_task {
-        auto db = co_await database->connect();
+        const auto counter_item = counter.increment();
 
-        const auto message = co_await workers.wait([
-            this,
-            &obj
-        ]() -> ext::task<std::string> {
-            co_return check_object(obj);
-        }());
+        const auto message = co_await workers.wait([this, &obj]() {
+            return check_object(obj);
+        });
+
+        auto db = co_await database->connect();
 
         if (message.empty()) co_await db.clear_error(obj.id);
         else {
@@ -111,7 +109,6 @@ namespace fstore::core {
         }
 
         ++progress.completed;
-        if (progress.completed == progress.total) finished.emit();
     }
 
     auto object_store::commit_part(
