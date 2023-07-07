@@ -62,9 +62,7 @@ files = \
 
 include mkbuild/base.mk
 
-ifeq ($(environment),$(environment.develop))
- CXXFLAGS += -DTEST
-endif
+defines.develop = TEST TIMBER_TIMER_ACTIVE
 
 confdir ?= $(prefix)/etc/$(project)
 

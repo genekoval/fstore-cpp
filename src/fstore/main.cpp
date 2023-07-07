@@ -38,6 +38,7 @@ auto main(int argc, char** argv) -> int {
 
     std::locale::global(std::locale(""));
 
+    timber::thread_name = "main";
     timber::reporting_level = timber::level::warning;
     timber::log_handler = &timber::console::logger;
     timber::set_terminate(internal::crash_log_level);

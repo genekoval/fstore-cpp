@@ -20,7 +20,7 @@ namespace {
 
             if (progress.total == 0) return;
 
-            const auto completed = progress.success + progress.errors;
+            const auto completed = progress.completed();
 
             const auto percent = static_cast<int>(std::round(
                 static_cast<long double>(completed) /
@@ -40,8 +40,12 @@ namespace {
             const check_progress& progress,
             const ext::task<>& task
         ) -> ext::jtask<> {
+            auto timer = netcore::timer::monotonic();
+
             while (!task.is_ready()) {
-                co_await netcore::sleep_for(refresh_rate);
+                timer.set(refresh_rate);
+                co_await timer.wait();
+
                 print_progress(progress);
             }
         }
@@ -77,7 +81,7 @@ namespace {
                 if (printer.joinable()) co_await printer;
             });
 
-            const auto completed = progress.success + progress.errors;
+            const auto completed = progress.completed();
 
             fmt::print(
                 "Checked {:L} object{}: {} valid",

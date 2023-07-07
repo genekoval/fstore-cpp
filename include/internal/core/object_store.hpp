@@ -26,6 +26,10 @@ namespace fstore::core {
         std::size_t success;
         std::size_t errors;
         std::size_t total;
+
+        inline auto completed() const noexcept -> std::size_t {
+            return success + errors;
+        }
     };
 
     class object_store {
@@ -39,7 +43,7 @@ namespace fstore::core {
 
         auto check_object_task(
             const db::object obj,
-            netcore::thread_pool& workers,
+            netcore::awaitable_thread_pool& workers,
             std::back_insert_iterator<std::vector<object_error>> records,
             check_progress& progress,
             ext::counter& counter

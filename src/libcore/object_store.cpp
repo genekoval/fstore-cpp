@@ -58,7 +58,7 @@ namespace fstore::core {
         ));
 
         auto counter = ext::counter();
-        auto workers = netcore::thread_pool("worker", jobs);
+        auto workers = netcore::awaitable_thread_pool("worker", jobs);
 
         auto portal = co_await database->connect();
         auto objects = co_await portal.get_objects(batch_size);
@@ -102,14 +102,14 @@ namespace fstore::core {
 
     auto object_store::check_object_task(
         const db::object obj,
-        netcore::thread_pool& workers,
+        netcore::awaitable_thread_pool& workers,
         std::back_insert_iterator<std::vector<object_error>> records,
         check_progress& progress,
         ext::counter& counter
     ) -> ext::detached_task {
         const auto counter_item = counter.increment();
 
-        auto message = co_await workers.wait([this, &obj]() {
+        auto message = co_await workers.await([this, &obj]() {
             return check_object(obj);
         });
 
