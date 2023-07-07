@@ -2,6 +2,8 @@
 #include "../api/api.hpp"
 #include "../options/opts.hpp"
 
+#include <internal/cli.hpp>
+
 #include <chrono>
 #include <fmt/format.h>
 #include <thread>
@@ -55,11 +57,13 @@ namespace {
             std::string_view confpath,
             int batch_size,
             int jobs,
-            bool quiet
+            bool quiet,
+            timber::level log_level
         ) -> void {
             jobs = std::max(jobs, 1);
 
             auto settings = fstore::conf::settings::load_file(confpath);
+            timber::reporting_level = log_level;
 
             fmt::print(
                 "Scanning object files using up to {} additional threads...\n",
@@ -128,7 +132,8 @@ namespace fstore::cli {
                     "jobs",
                     1
                 ),
-                flag({"q", "quiet"}, "Do not print progress")
+                flag({"q", "quiet"}, "Do not print progress"),
+                opts::log_level()
             ),
             arguments(),
             internal::check
