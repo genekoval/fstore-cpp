@@ -44,7 +44,7 @@ namespace fstore::core {
         auto check_object_task(
             const db::object obj,
             netcore::awaitable_thread_pool& workers,
-            std::back_insert_iterator<std::vector<object_error>> records,
+            std::vector<object_error>& records,
             check_progress& progress,
             ext::counter& counter
         ) -> ext::detached_task;

@@ -51,11 +51,18 @@ namespace fstore::core {
 
         progress.total = (co_await db.fetch_store_totals()).objects;
 
-        auto records = std::vector<object_error>();
-        records.reserve(std::min(
+        const auto threshold = batch_size / 2;
+        const auto reserve = std::min(
             static_cast<std::size_t>(batch_size),
             progress.total
-        ));
+        );
+
+        auto in = std::vector<object_error>();
+        auto out = std::vector<object_error>();
+        auto tmp = std::vector<object_error>();
+
+        in.reserve(reserve);
+        out.reserve(reserve);
 
         auto counter = ext::counter();
         auto workers = netcore::awaitable_thread_pool("worker", jobs);
@@ -68,15 +75,20 @@ namespace fstore::core {
                 check_object_task(
                     obj,
                     workers,
-                    std::back_inserter(records),
+                    in,
                     progress,
                     counter
                 );
             }
 
-            co_await counter;
-            co_await db.update_object_errors(records);
-            records.clear();
+            co_await counter.await(objects ? threshold : 0);
+
+            tmp = std::move(in);
+            in = std::move(out);
+            out = std::move(tmp);
+
+            co_await db.update_object_errors(out);
+            out.clear();
         }
     }
 
@@ -103,11 +115,11 @@ namespace fstore::core {
     auto object_store::check_object_task(
         const db::object obj,
         netcore::awaitable_thread_pool& workers,
-        std::back_insert_iterator<std::vector<object_error>> records,
+        std::vector<object_error>& records,
         check_progress& progress,
         ext::counter& counter
     ) -> ext::detached_task {
-        const auto counter_item = counter.increment();
+        const auto guard = counter.increment();
 
         auto message = co_await workers.await([this, &obj]() {
             return check_object(obj);
@@ -116,10 +128,10 @@ namespace fstore::core {
         if (message.empty()) ++progress.success;
         else ++progress.errors;
 
-        records = object_error {
+        records.push_back(object_error {
             .id = obj.id,
             .message = std::move(message)
-        };
+        });
     }
 
     auto object_store::commit_part(
