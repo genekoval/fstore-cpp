@@ -26,6 +26,10 @@ namespace fstore::core::db {
         );
     }
 
+    auto connection::begin() -> ext::task<pg::transaction> {
+        co_return co_await client->begin();
+    }
+
     auto connection::create_bucket(std::string_view name) -> ext::task<bucket> {
         try {
             co_return co_await client->fetch_prepared<bucket>(
@@ -99,9 +103,11 @@ namespace fstore::core::db {
     }
 
     auto connection::get_objects(
+        std::string_view portal,
         int batch_size
     ) -> ext::task<pg::portal<object>> {
         co_return co_await client->stream_prepared<object>(
+            portal,
             __FUNCTION__,
             batch_size
         );

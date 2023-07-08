@@ -28,6 +28,10 @@ namespace fstore::core::db {
             );
         }
 
+        auto begin() -> ext::task<pg::transaction> override {
+            return inner->begin();
+        }
+
         auto create_bucket(
             std::string_view name
         ) -> ext::task<bucket> override {
@@ -72,9 +76,10 @@ namespace fstore::core::db {
         }
 
         auto get_objects(
+            std::string_view portal,
             int batch_size
         ) -> ext::task<pg::portal<object>> override {
-            return inner->get_objects(batch_size);
+            return inner->get_objects(portal, batch_size);
         }
 
         auto remove_bucket(

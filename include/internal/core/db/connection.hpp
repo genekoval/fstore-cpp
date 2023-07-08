@@ -38,6 +38,8 @@ namespace fstore::core::db {
             std::string_view subtype
         ) -> ext::task<object>;
 
+        VIRTUAL auto begin() -> ext::task<pg::transaction>;
+
         VIRTUAL auto create_bucket(std::string_view name) -> ext::task<bucket>;
 
         VIRTUAL auto fetch_bucket(std::string_view name) -> ext::task<bucket>;
@@ -58,6 +60,7 @@ namespace fstore::core::db {
         ) -> ext::task<object>;
 
         VIRTUAL auto get_objects(
+            std::string_view portal,
             int batch_size
         ) -> ext::task<pg::portal<object>>;
 

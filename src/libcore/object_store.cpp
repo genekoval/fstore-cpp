@@ -59,7 +59,6 @@ namespace fstore::core {
 
         auto in = std::vector<object_error>();
         auto out = std::vector<object_error>();
-        auto tmp = std::vector<object_error>();
 
         in.reserve(reserve);
         out.reserve(reserve);
@@ -67,8 +66,8 @@ namespace fstore::core {
         auto counter = ext::counter();
         auto workers = netcore::awaitable_thread_pool("worker", jobs);
 
-        auto portal = co_await database->connect();
-        auto objects = co_await portal.get_objects(batch_size);
+        auto tx = co_await db.begin();
+        auto objects = co_await db.get_objects("objects", batch_size);
 
         while (objects) {
             for (const auto& obj : co_await objects.next()) {
@@ -83,13 +82,12 @@ namespace fstore::core {
 
             co_await counter.await(objects ? threshold : 0);
 
-            tmp = std::move(in);
-            in = std::move(out);
-            out = std::move(tmp);
-
+            std::swap(in, out);
             co_await db.update_object_errors(out);
             out.clear();
         }
+
+        co_await tx.commit();
     }
 
     auto object_store::check_object(

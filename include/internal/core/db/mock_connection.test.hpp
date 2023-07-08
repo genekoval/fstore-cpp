@@ -15,6 +15,10 @@ namespace fstore::test::db {
             std::string_view subtype
         ), (override));
 
+        auto begin() -> ext::task<pg::transaction> override {
+            co_return pg::transaction();
+        }
+
         MOCK_METHOD(ext::task<core::db::bucket>, create_bucket, (
             std::string_view name
         ), (override));
@@ -47,6 +51,7 @@ namespace fstore::test::db {
         ), (override));
 
         MOCK_METHOD(ext::task<pg::portal<core::db::object>>, get_objects, (
+            std::string_view portal,
             int batch_size
         ), (override));
 

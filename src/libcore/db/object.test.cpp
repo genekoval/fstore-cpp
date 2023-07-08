@@ -88,7 +88,7 @@ TEST_F(ObjectTest, GetObjects) {
         auto result_count = 0;
         auto objects_returned = std::unordered_set<fstore::core::db::object>();
 
-        auto objects = co_await connection->get_objects(2);
+        auto objects = co_await connection->get_objects("GetObjects", 2);
         while (objects) {
             const auto results = co_await objects.next();
 
