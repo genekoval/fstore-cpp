@@ -1,22 +1,46 @@
 #pragma once
 
+#include <http/http>
 #include <zipline/zipline>
 
 namespace fstore {
     struct fstore_error : zipline::zipline_error {
-        using zipline_error::zipline_error;
+        fstore_error();
+
+        fstore_error(const std::string& what);
     };
 
     struct invalid_data : fstore_error {
-        using fstore_error::fstore_error;
+        invalid_data(const std::string& what);
+
+        template <typename... Args>
+        invalid_data(
+            fmt::format_string<Args...> format_string,
+            Args&&... args
+        ) :
+            runtime_error(fmt::format(
+                format_string,
+                std::forward<Args>(args)...
+            ))
+        {}
     };
 
-    struct not_found : fstore_error {
-        using fstore_error::fstore_error;
+    struct not_found : fstore_error, http::server::error {
+        not_found(const std::string& what);
+
+        template <typename... Args>
+        not_found(fmt::format_string<Args...> format_string, Args&&... args) :
+            runtime_error(fmt::format(
+                format_string,
+                std::forward<Args>(args)...
+            ))
+        {}
+
+        auto http_code() const noexcept -> int override;
     };
 
     class unique_bucket_violation : public fstore_error {
-        std::string _name;
+        std::string bucket_name;
     public:
         unique_bucket_violation(std::string_view name);
 

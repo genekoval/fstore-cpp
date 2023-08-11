@@ -11,6 +11,7 @@ namespace YAML {
         c::required("daemon", &settings::daemon),
         c::required("database", &settings::database),
         c::required("home", &settings::home),
+        c::required("http", &settings::http),
         c::required("server", &settings::server)
     );
 
@@ -35,5 +36,12 @@ namespace YAML {
         c::optional("dump", &settings::s_database::dump),
         c::optional("restore", &settings::s_database::restore),
         c::required("sqldir", &settings::s_database::sqldir)
+    );
+
+    DECODE(
+        settings::s_http,
+        c::required("listen", &settings::s_http::listen),
+        c::required("cert", &settings::s_http::cert),
+        c::required("key", &settings::s_http::key)
     );
 }

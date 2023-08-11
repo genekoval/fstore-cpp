@@ -2,6 +2,8 @@
 
 #include "time_point.hpp"
 
+#include <ext/json.hpp>
+#include <uuid++/json.hpp>
 #include <uuid++/zipline>
 
 namespace fstore {
@@ -14,6 +16,15 @@ namespace fstore {
 
         auto operator<=>(const bucket&) const = default;
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+        bucket,
+        id,
+        name,
+        date_created,
+        size,
+        space_used
+    );
 }
 
 namespace zipline {

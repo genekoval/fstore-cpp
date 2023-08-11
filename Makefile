@@ -22,6 +22,7 @@ core.libs := \
  cryptopp \
  ext++ \
  fmt \
+ http \
  magix \
  netcore \
  pg++ \

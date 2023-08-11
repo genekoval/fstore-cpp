@@ -208,7 +208,7 @@ namespace fstore::core {
         const UUID::uuid& object_id
     ) -> ext::task<file> {
         auto meta = co_await get_object_metadata(bucket_id, object_id);
-        co_return file { filesystem->open(object_id), meta.size };
+        co_return file { std::move(meta), filesystem->open(object_id) };
     }
 
     auto object_store::get_object_metadata(

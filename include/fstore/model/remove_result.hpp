@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
 #include <zipline/zipline>
 
 namespace fstore {
@@ -9,6 +10,12 @@ namespace fstore {
 
         auto operator<=>(const remove_result&) const = default;
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+        remove_result,
+        objects_removed,
+        space_freed
+    );
 }
 
 namespace zipline {

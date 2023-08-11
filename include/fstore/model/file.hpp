@@ -1,11 +1,13 @@
 #pragma once
 
+#include "object.hpp"
+
 #include <fstore/net/zipline.hpp>
 
 namespace fstore {
     struct file {
+        object metadata;
         netcore::fd fd;
-        std::size_t size;
     };
 }
 
@@ -16,9 +18,9 @@ namespace zipline {
             const fstore::file& file,
             Writer& writer
         ) -> ext::task<> {
-            co_await zipline::encode(file.size, writer);
+            co_await zipline::encode(file.metadata.size, writer);
             co_await writer.flush();
-            co_await writer.sendfile(file.fd, file.size);
+            co_await writer.sendfile(file.fd, file.metadata.size);
         }
     };
 }

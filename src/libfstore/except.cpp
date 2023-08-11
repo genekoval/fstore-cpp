@@ -1,9 +1,24 @@
 #include <fstore/except.hpp>
 
 namespace fstore {
+    fstore_error::fstore_error() : runtime_error("fstore error") {}
+
+    fstore_error::fstore_error(const std::string& what) : runtime_error(what) {}
+
+    invalid_data::invalid_data(const std::string& what) : runtime_error(what) {}
+
+    not_found::not_found(const std::string& what) : runtime_error(what) {}
+
+    auto not_found::http_code() const noexcept -> int {
+        return 404;
+    }
+
     unique_bucket_violation::unique_bucket_violation(std::string_view name) :
-        fstore_error("bucket with name '{}' already exists", name),
-        _name(name)
+        runtime_error(fmt::format(
+            "Bucket with name '{}' already exists",
+            name
+        )),
+        bucket_name(name)
     {}
 
     auto unique_bucket_violation::encode(
@@ -13,7 +28,7 @@ namespace fstore {
     }
 
     auto unique_bucket_violation::name() const -> std::string_view {
-        return _name;
+        return bucket_name;
     }
 }
 

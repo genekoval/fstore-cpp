@@ -2,6 +2,8 @@
 
 #include "time_point.hpp"
 
+#include <ext/json.hpp>
+#include <uuid++/json.hpp>
 #include <uuid++/zipline>
 
 namespace fstore {
@@ -17,6 +19,16 @@ namespace fstore {
 
         auto mime_type() const -> std::string;
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+        object,
+        id,
+        hash,
+        size,
+        type,
+        subtype,
+        date_added
+    );
 }
 
 namespace zipline {

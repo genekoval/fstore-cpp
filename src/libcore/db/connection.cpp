@@ -53,7 +53,7 @@ namespace fstore::core::db {
             );
         }
         catch (const pg::unexpected_data&) {
-            throw not_found("bucket '{}' not found", name);
+            throw not_found("Bucket '{}' not found", name);
         }
     }
 

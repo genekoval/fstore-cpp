@@ -24,6 +24,12 @@ namespace fstore::conf {
             std::string sqldir;
         };
 
+        struct s_http {
+            std::vector<conftools::endpoint> listen;
+            std::string cert;
+            std::string key;
+        };
+
         static auto load(std::string_view text) -> settings;
 
         static auto load_file(std::string_view path) -> settings;
@@ -32,6 +38,7 @@ namespace fstore::conf {
         s_daemon daemon;
         s_database database;
         std::string home;
+        s_http http;
         std::vector<conftools::endpoint> server;
     };
 }

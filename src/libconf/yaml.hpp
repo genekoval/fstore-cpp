@@ -9,4 +9,5 @@ namespace YAML {
     CONVERT(fstore::conf::settings::s_archive);
     CONVERT(fstore::conf::settings::s_daemon);
     CONVERT(fstore::conf::settings::s_database);
+    CONVERT(fstore::conf::settings::s_http);
 }

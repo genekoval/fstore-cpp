@@ -4,6 +4,7 @@
 
 #include <internal/cli.hpp>
 #include <internal/server/server.hpp>
+#include <internal/server/http/server.hpp>
 
 #include <dmon/dmon>
 #include <timber/timber>
@@ -22,7 +23,10 @@ namespace {
             return path;
         }
 
-        auto handle_signals(server_list& servers) -> ext::jtask<> {
+        auto handle_signals(
+            server_list& servers,
+            http::server::server_list& http_servers
+        ) -> ext::jtask<> {
             auto signalfd = netcore::signalfd::create(signals);
 
             while (true) {
@@ -35,6 +39,7 @@ namespace {
                 );
 
                 servers.close();
+                http_servers.close();
             }
         }
 
@@ -69,6 +74,14 @@ namespace {
                     .version = std::string(app.version)
                 };
 
+                auto routes = fstore::server::http::router(info, store);
+                auto http = co_await fstore::server::http::listen(
+                    routes,
+                    settings.http.cert,
+                    settings.http.key,
+                    settings.http.listen
+                );
+
                 auto router = fstore::server::make_router(store, info);
                 auto servers = co_await fstore::server::listen(
                     router,
@@ -81,8 +94,9 @@ namespace {
                     timber::level::notice
                 );
 
-                const auto sigtask = handle_signals(servers);
+                const auto sigtask = handle_signals(servers, http);
                 co_await servers.join();
+                co_await http.join();
 
                 uptime_timer.stop();
             });
