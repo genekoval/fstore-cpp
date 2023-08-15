@@ -1,8 +1,3 @@
-DROP SCHEMA IF EXISTS fstore CASCADE;
-CREATE SCHEMA fstore;
-
-SET search_path TO fstore;
-
 CREATE VIEW bucket AS
 SELECT
     bucket_id,

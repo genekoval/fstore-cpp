@@ -8,13 +8,16 @@ namespace {
     namespace internal {
         auto init(
             const app& app,
-            std::string_view confpath
+            std::string_view confpath,
+            bool overwrite
         ) -> void {
             const auto settings = fstore::conf::settings::load_file(confpath);
 
-            netcore::run([&app, &settings]() -> ext::task<> {
+            netcore::run([&app, &settings, overwrite]() -> ext::task<> {
                 auto db = fstore::cli::database(settings);
-                co_await db.init(app.version);
+
+                if (overwrite) co_await db.reset(app.version);
+                else co_await db.init(app.version);
             }());
         }
     }
@@ -28,7 +31,8 @@ namespace fstore::cli {
             "init",
             "Initialize the database",
             options(
-                opts::config(confpath)
+                opts::config(confpath),
+                flag({"o", "overwrite"}, "Delete existing data if necessary")
             ),
             arguments(),
             internal::init

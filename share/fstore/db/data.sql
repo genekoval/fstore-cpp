@@ -1,8 +1,3 @@
-DROP SCHEMA IF EXISTS data CASCADE;
-CREATE SCHEMA data;
-
-SET search_path TO data;
-
 CREATE TABLE bucket (
     -- The bucket's unique internal identifier.
     bucket_id       uuid DEFAULT gen_random_uuid() PRIMARY KEY,
