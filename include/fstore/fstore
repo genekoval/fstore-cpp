@@ -1,5 +1,6 @@
 #include "except.hpp"
 #include "model/model.hpp"
 #include "object_store.hpp"
+#include "sync/http/bucket.hpp"
 
 // vim: ft=cpp
