@@ -10,6 +10,7 @@ namespace fstore::sync::http {
         const UUID::uuid& object_id,
         const std::filesystem::path& location
     ) -> void {
+        store.download_object(id, object_id, location);
     }
 
     auto bucket::get_object(
