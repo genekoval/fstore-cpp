@@ -16,6 +16,10 @@ namespace fstore {
     public:
         part(client_type& out);
 
+        auto await_write() -> ext::task<>;
+
+        auto try_write(std::span<const std::byte> data) -> std::size_t;
+
         auto write(std::span<const std::byte> data) -> ext::task<>;
     };
 
