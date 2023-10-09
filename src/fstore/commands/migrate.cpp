@@ -1,6 +1,6 @@
-#include "commands.hpp"
 #include "../db/db.hpp"
 #include "../options/opts.hpp"
+#include "commands.hpp"
 
 #include <internal/cli.hpp>
 
@@ -25,16 +25,11 @@ namespace {
 }
 
 namespace fstore::cli {
-    auto migrate(
-        std::string_view confpath
-    ) -> std::unique_ptr<command_node> {
+    auto migrate(std::string_view confpath) -> std::unique_ptr<command_node> {
         return command(
             __FUNCTION__,
             "Update schemas to the current program version",
-            options(
-                opts::config(confpath),
-                opts::log_level()
-            ),
+            options(opts::config(confpath), opts::log_level()),
             arguments(),
             internal::migrate
         );

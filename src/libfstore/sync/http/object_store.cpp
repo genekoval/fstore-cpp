@@ -7,9 +7,7 @@ namespace fstore::sync::http {
         const UUID::uuid& bucket_id,
         const std::filesystem::path& path
     ) -> object {
-        return client
-            .add_object(bucket_id, path)
-            .json<object>();
+        return client.add_object(bucket_id, path).json<object>();
     }
 
     auto object_store::download_object(
@@ -17,24 +15,18 @@ namespace fstore::sync::http {
         const UUID::uuid& object_id,
         const std::filesystem::path& location
     ) -> void {
-        client
-            .get_object(bucket_id, object_id)
-            .download(location);
+        client.get_object(bucket_id, object_id).download(location);
     }
 
     auto object_store::fetch_bucket(std::string_view name) -> bucket {
-        return client
-            .fetch_bucket(name)
-            .json<bucket>();
+        return client.fetch_bucket(name).json<bucket>();
     }
 
     auto object_store::get_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
     ) -> std::string {
-        return client
-            .get_object(bucket_id, object_id)
-            .data();
+        return client.get_object(bucket_id, object_id).data();
     }
 
     auto object_store::get_object(
@@ -42,41 +34,31 @@ namespace fstore::sync::http {
         const UUID::uuid& object_id,
         FILE* file
     ) -> void {
-        client
-            .get_object(bucket_id, object_id)
-            .pipe(file);
+        client.get_object(bucket_id, object_id).pipe(file);
     }
 
     auto object_store::get_object_metadata(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
     ) -> object {
-        return client
-            .get_object_metadata(bucket_id, object_id)
-            .json<object>();
+        return client.get_object_metadata(bucket_id, object_id).json<object>();
     }
 
     auto object_store::get_server_info() -> server_info {
-        return client
-            .get_server_info()
-            .json<server_info>();
+        return client.get_server_info().json<server_info>();
     }
 
     auto object_store::remove_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
     ) -> object {
-        return client
-            .remove_object(bucket_id, object_id)
-            .json<object>();
+        return client.remove_object(bucket_id, object_id).json<object>();
     }
 
     auto object_store::remove_objects(
         const UUID::uuid& bucket_id,
         std::span<const UUID::uuid> objects
     ) -> remove_result {
-        return client
-            .remove_objects(bucket_id, objects)
-            .json<remove_result>();
+        return client.remove_objects(bucket_id, objects).json<remove_result>();
     }
 }

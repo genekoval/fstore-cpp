@@ -24,9 +24,7 @@ namespace {
 
         temp_directory() : path(make_temp_directory()) {}
 
-        ~temp_directory() {
-            std::filesystem::remove_all(path);
-        }
+        ~temp_directory() { std::filesystem::remove_all(path); }
     };
 }
 
@@ -36,7 +34,5 @@ namespace fstore::test {
         return directory.path;
     }
 
-    auto FilesystemEnvironment::SetUp() -> void {
-        path();
-    }
+    auto FilesystemEnvironment::SetUp() -> void { path(); }
 }

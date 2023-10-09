@@ -7,8 +7,7 @@ namespace fstore::server {
         const server_info& info
     ) :
         info(&info),
-        store(&store)
-    {}
+        store(&store) {}
 
     auto router_context::add_object(
         UUID::uuid bucket_id,
@@ -29,16 +28,13 @@ namespace fstore::server {
         co_return co_await store->commit_part(bucket_id, part_id);
     }
 
-    auto router_context::fetch_bucket(
-        std::string bucket_name
-    ) -> ext::task<bucket> {
+    auto router_context::fetch_bucket(std::string bucket_name)
+        -> ext::task<bucket> {
         co_return co_await store->fetch_bucket(bucket_name);
     }
 
-    auto router_context::get_object(
-        UUID::uuid bucket_id,
-        UUID::uuid object_id
-    ) -> ext::task<file> {
+    auto router_context::get_object(UUID::uuid bucket_id, UUID::uuid object_id)
+        -> ext::task<file> {
         co_return co_await store->get_object(bucket_id, object_id);
     }
 

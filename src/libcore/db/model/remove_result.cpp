@@ -4,8 +4,7 @@ namespace fstore::core::db {
     remove_result::operator fstore::remove_result() const {
         return fstore::remove_result {
             .objects_removed = static_cast<size_t>(objects_removed),
-            .space_freed = static_cast<uintmax_t>(space_freed)
-        };
+            .space_freed = static_cast<uintmax_t>(space_freed)};
     }
 }
 

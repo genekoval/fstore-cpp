@@ -2,9 +2,7 @@
 
 #include <fstream>
 
-FilesystemTest::~FilesystemTest() {
-    std::filesystem::remove_all(home);
-}
+FilesystemTest::~FilesystemTest() { std::filesystem::remove_all(home); }
 
 auto FilesystemTest::SetUpTestSuite() -> void {
     auto file = std::ofstream(fstore::test::file::path);

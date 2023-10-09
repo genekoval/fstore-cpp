@@ -11,10 +11,9 @@ auto DatabaseTest::connect() -> ext::task<pg::client> {
 }
 
 auto DatabaseTest::count(std::string_view table) -> ext::task<std::int64_t> {
-    co_return co_await client->fetch<std::int64_t>(fmt::format(
-        "SELECT count(*) FROM data.{}",
-        table
-    ));
+    co_return co_await client->fetch<std::int64_t>(
+        fmt::format("SELECT count(*) FROM data.{}", table)
+    );
 }
 
 auto DatabaseTest::database() -> fstore::core::db::database {

@@ -3,9 +3,7 @@
 using namespace commline;
 
 namespace fstore::cli::opts {
-    auto config(
-        std::string_view confpath
-    ) -> option<std::string_view> {
+    auto config(std::string_view confpath) -> option<std::string_view> {
         return option<std::string_view>(
             {"c", "config"},
             "Path to configuration file",

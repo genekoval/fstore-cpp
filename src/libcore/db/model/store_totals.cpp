@@ -5,8 +5,7 @@ namespace fstore::core::db {
         return fstore::store_totals {
             .buckets = static_cast<size_t>(buckets),
             .objects = static_cast<size_t>(objects),
-            .space_used = static_cast<uintmax_t>(space_used)
-        };
+            .space_used = static_cast<uintmax_t>(space_used)};
     }
 }
 

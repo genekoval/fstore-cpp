@@ -18,11 +18,9 @@ namespace fstore {
             fmt::format_string<Args...> format_string,
             Args&&... args
         ) :
-            runtime_error(fmt::format(
-                format_string,
-                std::forward<Args>(args)...
-            ))
-        {}
+            runtime_error(
+                fmt::format(format_string, std::forward<Args>(args)...)
+            ) {}
     };
 
     struct not_found : fstore_error, http::server::error {
@@ -30,11 +28,9 @@ namespace fstore {
 
         template <typename... Args>
         not_found(fmt::format_string<Args...> format_string, Args&&... args) :
-            runtime_error(fmt::format(
-                format_string,
-                std::forward<Args>(args)...
-            ))
-        {}
+            runtime_error(
+                fmt::format(format_string, std::forward<Args>(args)...)
+            ) {}
 
         auto http_code() const noexcept -> int override;
     };
@@ -44,25 +40,20 @@ namespace fstore {
     public:
         unique_bucket_violation(std::string_view name);
 
-        auto encode(
-            zipline::io::abstract_writer& writer
-        ) const -> ext::task<> override;
+        auto encode(zipline::io::abstract_writer& writer) const
+            -> ext::task<> override;
 
         auto name() const -> std::string_view;
     };
 
-    using error_list = zipline::error_list<
-        invalid_data,
-        not_found,
-        unique_bucket_violation
-    >;
+    using error_list =
+        zipline::error_list<invalid_data, not_found, unique_bucket_violation>;
 }
 
 namespace zipline {
     template <>
     struct decoder<fstore::unique_bucket_violation, io::abstract_reader> {
-        static auto decode(
-            io::abstract_reader& reader
-        ) -> ext::task<fstore::unique_bucket_violation>;
+        static auto decode(io::abstract_reader& reader)
+            -> ext::task<fstore::unique_bucket_violation>;
     };
 }

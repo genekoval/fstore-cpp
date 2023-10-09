@@ -1,5 +1,5 @@
-#include "../table.hpp"
 #include "ObjectTest.test.hpp"
+#include "../table.hpp"
 
 UUID::uuid ObjectTest::bucket_id;
 
@@ -42,7 +42,5 @@ auto ObjectTest::bucket_size() -> ext::task<std::size_t> {
 }
 
 auto ObjectTest::tables() -> std::vector<std::string_view> {
-    return {
-        fstore::test::table::object
-    };
+    return {fstore::test::table::object};
 }

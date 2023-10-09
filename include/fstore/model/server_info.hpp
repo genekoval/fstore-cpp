@@ -8,15 +8,9 @@ namespace fstore {
         std::string version;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-        server_info,
-        version
-    );
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(server_info, version);
 }
 
 namespace zipline {
-    ZIPLINE_OBJECT(
-        fstore::server_info,
-        &fstore::server_info::version
-    );
+    ZIPLINE_OBJECT(fstore::server_info, &fstore::server_info::version);
 }

@@ -6,35 +6,25 @@ namespace fstore {
         client(new client_type(
             error_list::thrower(),
             std::forward<net::socket>(socket)
-        ))
-    {}
+        )) {}
 
-    auto object_store::connected() -> bool {
-        return client->inner.connected();
-    }
+    auto object_store::connected() -> bool { return client->inner.connected(); }
 
     auto object_store::failed() const noexcept -> bool {
         return client->inner.failed();
     }
 
-    auto object_store::fetch_bucket(
-        std::string_view name
-    ) -> ext::task<bucket> {
-        co_return co_await client->send<bucket>(
-            event::fetch_bucket,
-            name
-        );
+    auto object_store::fetch_bucket(std::string_view name)
+        -> ext::task<bucket> {
+        co_return co_await client->send<bucket>(event::fetch_bucket, name);
     }
 
     auto object_store::get_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
     ) -> ext::task<blob> {
-        co_return co_await client->send<blob>(
-            event::get_object,
-            bucket_id,
-            object_id
-        );
+        co_return co_await client
+            ->send<blob>(event::get_object, bucket_id, object_id);
     }
 
     auto object_store::get_object(
@@ -82,38 +72,27 @@ namespace fstore {
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
     ) -> ext::task<object> {
-        co_return co_await client->send<object>(
-            event::get_object_metadata,
-            bucket_id,
-            object_id
-        );
+        co_return co_await client
+            ->send<object>(event::get_object_metadata, bucket_id, object_id);
     }
 
     auto object_store::get_server_info() -> ext::task<server_info> {
-        co_return co_await client->send<server_info>(
-            event::get_server_info
-        );
+        co_return co_await client->send<server_info>(event::get_server_info);
     }
 
     auto object_store::remove_object(
         const UUID::uuid& bucket_id,
         const UUID::uuid& object_id
     ) -> ext::task<object> {
-        co_return co_await client->send<object>(
-            event::remove_object,
-            bucket_id,
-            object_id
-        );
+        co_return co_await client
+            ->send<object>(event::remove_object, bucket_id, object_id);
     }
 
     auto object_store::remove_objects(
         const UUID::uuid& bucket_id,
         std::span<const UUID::uuid> objects
     ) -> ext::task<remove_result> {
-        co_return co_await client->send<remove_result>(
-            event::remove_objects,
-            bucket_id,
-            objects
-        );
+        co_return co_await client
+            ->send<remove_result>(event::remove_objects, bucket_id, objects);
     }
 }

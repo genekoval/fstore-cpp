@@ -1,10 +1,10 @@
-#include "commands.hpp"
 #include "../api/api.hpp"
 #include "../options/opts.hpp"
+#include "commands.hpp"
 
 #include <internal/cli.hpp>
-#include <internal/server/server.hpp>
 #include <internal/server/http/server.hpp>
+#include <internal/server/server.hpp>
 
 #include <dmon/dmon>
 #include <timber/timber>
@@ -15,7 +15,7 @@ using fstore::server::server_list;
 
 namespace {
     namespace internal {
-        constexpr auto signals = std::array { SIGINT, SIGTERM };
+        constexpr auto signals = std::array {SIGINT, SIGTERM};
 
         auto default_pidfile(std::string_view name) -> fs::path {
             auto path = fs::temp_directory_path() / name;
@@ -50,56 +50,56 @@ namespace {
             std::optional<fs::path> pidfile,
             timber::level log_level
         ) -> void {
-            auto startup_timer = timber::timer(
-                "Server started in",
-                timber::level::info
-            );
+            auto startup_timer =
+                timber::timer("Server started in", timber::level::info);
 
             const auto settings = fstore::conf::settings::load_file(conf);
             timber::reporting_level = log_level;
 
-            if (daemon && !dmon::daemonize({
-                .group = settings.daemon.group,
-                .identifier = app.name,
-                .pidfile = pidfile.value_or(default_pidfile(app.name)),
-                .user = settings.daemon.user
-            })) return;
+            if (daemon &&
+                !dmon::daemonize(
+                    {.group = settings.daemon.group,
+                     .identifier = app.name,
+                     .pidfile = pidfile.value_or(default_pidfile(app.name)),
+                     .user = settings.daemon.user}
+                ))
+                return;
 
             TIMBER_NOTICE("{} version {} starting up", app.name, app.version);
 
-            fstore::cli::object_store(settings, [&](
-                fstore::core::object_store& store
-            ) -> ext::task<> {
-                const auto info = fstore::server_info {
-                    .version = std::string(app.version)
-                };
+            fstore::cli::object_store(
+                settings,
+                [&](fstore::core::object_store& store) -> ext::task<> {
+                    const auto info = fstore::server_info {
+                        .version = std::string(app.version)};
 
-                auto routes = fstore::server::http::router(info, store);
-                auto http = co_await fstore::server::http::listen(
-                    routes,
-                    settings.http.cert,
-                    settings.http.key,
-                    settings.http.listen
-                );
+                    auto routes = fstore::server::http::router(info, store);
+                    auto http = co_await fstore::server::http::listen(
+                        routes,
+                        settings.http.cert,
+                        settings.http.key,
+                        settings.http.listen
+                    );
 
-                auto router = fstore::server::make_router(store, info);
-                auto servers = co_await fstore::server::listen(
-                    router,
-                    settings.server
-                );
+                    auto router = fstore::server::make_router(store, info);
+                    auto servers = co_await fstore::server::listen(
+                        router,
+                        settings.server
+                    );
 
-                startup_timer.stop();
-                auto uptime_timer = timber::timer(
-                    "Server shutting down. Up",
-                    timber::level::notice
-                );
+                    startup_timer.stop();
+                    auto uptime_timer = timber::timer(
+                        "Server shutting down. Up",
+                        timber::level::notice
+                    );
 
-                const auto sigtask = handle_signals(servers, http);
-                co_await servers.join();
-                co_await http.join();
+                    const auto sigtask = handle_signals(servers, http);
+                    co_await servers.join();
+                    co_await http.join();
 
-                uptime_timer.stop();
-            });
+                    uptime_timer.stop();
+                }
+            );
         }
     }
 }
@@ -107,18 +107,13 @@ namespace {
 namespace fstore::cli {
     using namespace commline;
 
-    auto start(
-        std::string_view confpath
-    ) -> std::unique_ptr<command_node> {
+    auto start(std::string_view confpath) -> std::unique_ptr<command_node> {
         return command(
             "start",
             "Start the server",
             options(
                 opts::config(confpath),
-                flag(
-                    {"d", "daemon"},
-                    "Run the program as a daemon"
-                ),
+                flag({"d", "daemon"}, "Run the program as a daemon"),
                 option<std::optional<fs::path>>(
                     {"p", "pidfile"},
                     "Path to the pidfile",

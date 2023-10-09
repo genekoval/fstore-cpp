@@ -46,9 +46,8 @@ namespace fstore::core::db {
 
         VIRTUAL auto fetch_buckets() -> ext::task<std::vector<bucket>>;
 
-        VIRTUAL auto fetch_buckets(
-            std::span<const std::string> names
-        ) -> ext::task<std::vector<bucket>>;
+        VIRTUAL auto fetch_buckets(std::span<const std::string> names)
+            -> ext::task<std::vector<bucket>>;
 
         VIRTUAL auto fetch_store_totals() -> ext::task<store_totals>;
 
@@ -59,10 +58,8 @@ namespace fstore::core::db {
             const UUID::uuid& object_id
         ) -> ext::task<object>;
 
-        VIRTUAL auto get_objects(
-            std::string_view portal,
-            int batch_size
-        ) -> ext::task<pg::portal<object>>;
+        VIRTUAL auto get_objects(std::string_view portal, int batch_size)
+            -> ext::task<pg::portal<object>>;
 
         VIRTUAL auto remove_bucket(const UUID::uuid& id) -> ext::task<>;
 
@@ -78,13 +75,10 @@ namespace fstore::core::db {
 
         VIRTUAL auto remove_orphan_objects() -> ext::task<std::vector<object>>;
 
-        VIRTUAL auto rename_bucket(
-            const UUID::uuid& id,
-            std::string_view name
-        ) -> ext::task<>;
+        VIRTUAL auto rename_bucket(const UUID::uuid& id, std::string_view name)
+            -> ext::task<>;
 
-        VIRTUAL auto update_object_errors(
-            std::span<const object_error> records
-        ) -> ext::task<>;
+        VIRTUAL auto update_object_errors(std::span<const object_error> records)
+            -> ext::task<>;
     };
 }

@@ -4,10 +4,8 @@ using conftools::endpoint;
 using http::server::server_list;
 
 namespace {
-    auto on_error(
-        const endpoint& endpoint,
-        std::exception_ptr exception
-    ) -> void {
+    auto on_error(const endpoint& endpoint, std::exception_ptr exception)
+        -> void {
         try {
             if (exception) std::rethrow_exception(exception);
         }

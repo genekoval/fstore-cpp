@@ -24,10 +24,9 @@ namespace fstore {
     };
 
     template <typename F>
-    concept add_object_fn =
-        requires(const F& f, part& p) {
-            { f(p) } -> std::same_as<ext::task<>>;
-        };
+    concept add_object_fn = requires(const F& f, part& p) {
+        { f(p) } -> std::same_as<ext::task<>>;
+    };
 
     class object_store {
         std::unique_ptr<client_type> client;
@@ -42,12 +41,8 @@ namespace fstore {
             std::size_t stream_size,
             const add_object_fn auto& pipe
         ) -> ext::task<object> {
-            co_await client->start(
-                event::add_object,
-                bucket_id,
-                part_id,
-                stream_size
-            );
+            co_await client
+                ->start(event::add_object, bucket_id, part_id, stream_size);
 
             auto part = fstore::part(*client);
             co_await pipe(part);

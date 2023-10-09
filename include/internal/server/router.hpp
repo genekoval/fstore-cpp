@@ -28,22 +28,16 @@ namespace fstore::server {
 
         auto fetch_bucket(std::string bucket_name) -> ext::task<bucket>;
 
-        auto get_object(
-            UUID::uuid bucket_id,
-            UUID::uuid object_id
-        ) -> ext::task<file>;
+        auto get_object(UUID::uuid bucket_id, UUID::uuid object_id)
+            -> ext::task<file>;
 
-        auto get_object_metadata(
-            UUID::uuid bucket_id,
-            UUID::uuid object_id
-        ) -> ext::task<object>;
+        auto get_object_metadata(UUID::uuid bucket_id, UUID::uuid object_id)
+            -> ext::task<object>;
 
         auto get_server_info() -> ext::task<server_info>;
 
-        auto remove_object(
-            UUID::uuid bucket_id,
-            UUID::uuid object_id
-        ) -> ext::task<object>;
+        auto remove_object(UUID::uuid bucket_id, UUID::uuid object_id)
+            -> ext::task<object>;
 
         auto remove_objects(
             UUID::uuid bucket_id,

@@ -54,21 +54,19 @@ TEST_F(BucketTest, FetchWorks) {
 }
 
 TEST_F(BucketTest, FetchMultipleWorks) {
-    const auto names = std::vector<std::string> {
-        "one", "two", "three"
-    };
+    const auto names = std::vector<std::string> {"one", "two", "three"};
 
     auto test = [&names](const auto& buckets) -> void {
         EXPECT_EQ(names.size(), buckets.size());
 
         for (const auto& name : names) {
-            EXPECT_TRUE(std::find_if(
-                buckets.begin(),
-                buckets.end(),
-                [&name](auto bucket) -> bool {
-                    return bucket.name == name;
-                }
-            ) != buckets.end());
+            EXPECT_TRUE(
+                std::find_if(
+                    buckets.begin(),
+                    buckets.end(),
+                    [&name](auto bucket) -> bool { return bucket.name == name; }
+                ) != buckets.end()
+            );
         }
     };
 

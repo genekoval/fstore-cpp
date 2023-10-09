@@ -1,6 +1,6 @@
-#include "commands.hpp"
 #include "../api/api.hpp"
 #include "../options/opts.hpp"
+#include "commands.hpp"
 
 #include <internal/cli.hpp>
 
@@ -74,16 +74,18 @@ namespace {
 
             auto progress = check_progress();
 
-            fstore::cli::object_store(settings, [&](
-                fstore::core::object_store& store
-            ) -> ext::task<> {
-                const auto task = store.check(batch_size, jobs, progress);
-                const auto printer = quiet ? ext::jtask<>() :
-                    run_progress_printer(progress, task);
+            fstore::cli::object_store(
+                settings,
+                [&](fstore::core::object_store& store) -> ext::task<> {
+                    const auto task = store.check(batch_size, jobs, progress);
+                    const auto printer =
+                        quiet ? ext::jtask<>()
+                              : run_progress_printer(progress, task);
 
-                co_await task;
-                if (printer.joinable()) co_await printer;
-            });
+                    co_await task;
+                    if (printer.joinable()) co_await printer;
+                }
+            );
 
             const auto completed = progress.completed();
 
@@ -91,8 +93,8 @@ namespace {
                 "Checked {:L} object{}: {} valid",
                 completed,
                 completed == 1 ? "" : "s",
-                progress.errors == 0 ? "all" :
-                    fmt::format("{:L}", progress.success)
+                progress.errors == 0 ? "all"
+                                     : fmt::format("{:L}", progress.success)
             );
 
             if (progress.errors > 0) {
@@ -112,9 +114,7 @@ namespace {
 }
 
 namespace fstore::cli {
-    auto check(
-        std::string_view confpath
-    ) -> std::unique_ptr<command_node> {
+    auto check(std::string_view confpath) -> std::unique_ptr<command_node> {
         return command(
             __FUNCTION__,
             "Check integrity of objects",

@@ -2,9 +2,9 @@
 
 #include <internal/test.hpp>
 
-#include <functional>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <netcore/netcore>
 #include <span>
 
@@ -15,9 +15,8 @@ namespace fstore::core::fs {
     };
 
     class filesystem {
-        VIRTUAL auto create_directories(
-            const std::filesystem::path& path
-        ) const -> void;
+        VIRTUAL auto create_directories(const std::filesystem::path& path) const
+            -> void;
 
         VIRTUAL auto make_object(
             std::string_view object_id,
@@ -40,29 +39,23 @@ namespace fstore::core::fs {
 
         VIRTUAL auto get_part(std::string_view id) const -> std::ofstream;
 
-        VIRTUAL auto hash(
-            std::span<const std::byte> buffer
-        ) const -> std::string;
+        VIRTUAL auto hash(std::span<const std::byte> buffer) const
+            -> std::string;
 
-        VIRTUAL auto hash(
-            const std::filesystem::path& path
-        ) const -> std::string;
+        VIRTUAL auto hash(const std::filesystem::path& path) const
+            -> std::string;
 
         VIRTUAL auto make_object(std::string_view part_id) const -> void;
 
-        VIRTUAL auto mime_type(
-            const std::filesystem::path& path
-        ) const -> mime;
+        VIRTUAL auto mime_type(const std::filesystem::path& path) const -> mime;
 
-        VIRTUAL auto object_path(
-            std::string_view id
-        ) const -> std::filesystem::path;
+        VIRTUAL auto object_path(std::string_view id) const
+            -> std::filesystem::path;
 
         VIRTUAL auto open(std::string_view id) const -> netcore::fd;
 
-        VIRTUAL auto part_path(
-            std::string_view id
-        ) const -> std::filesystem::path;
+        VIRTUAL auto part_path(std::string_view id) const
+            -> std::filesystem::path;
 
         VIRTUAL auto remove(std::string_view id) const -> void;
 

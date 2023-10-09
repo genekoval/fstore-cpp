@@ -16,12 +16,12 @@ namespace zipline {
 
             auto blob = fstore::blob(co_await stream.size());
 
-            co_await stream.read([&blob](
-                std::span<const std::byte> chunk
-            ) -> ext::task<> {
-                blob.copy(chunk);
-                co_return;
-            });
+            co_await stream.read(
+                [&blob](std::span<const std::byte> chunk) -> ext::task<> {
+                    blob.copy(chunk);
+                    co_return;
+                }
+            );
 
             co_return blob;
         }

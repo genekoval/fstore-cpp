@@ -6,10 +6,10 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/sha.h>
 
-using CryptoPP::SHA256;
+using CryptoPP::FileSource;
 using CryptoPP::HashFilter;
 using CryptoPP::HexEncoder;
-using CryptoPP::FileSource;
+using CryptoPP::SHA256;
 using CryptoPP::StringSink;
 using CryptoPP::StringSource;
 
@@ -25,14 +25,15 @@ namespace fstore::core::fs::crypto {
             data,
             buffer.size(),
             true,
-            new HashFilter(
-                hash,
-                new HexEncoder(new StringSink(sum))
-            )
+            new HashFilter(hash, new HexEncoder(new StringSink(sum)))
         );
 
-        std::transform(sum.begin(), sum.end(), sum.begin(),
-            [](unsigned char c) -> unsigned char { return std::tolower(c); });
+        std::transform(
+            sum.begin(),
+            sum.end(),
+            sum.begin(),
+            [](unsigned char c) -> unsigned char { return std::tolower(c); }
+        );
 
         return sum;
     }
@@ -44,14 +45,15 @@ namespace fstore::core::fs::crypto {
         FileSource(
             path.c_str(),
             true,
-            new HashFilter(
-                hash,
-                new HexEncoder(new StringSink(sum))
-            )
+            new HashFilter(hash, new HexEncoder(new StringSink(sum)))
         );
 
-        std::transform(sum.begin(), sum.end(), sum.begin(),
-            [](unsigned char c) -> unsigned char { return std::tolower(c); });
+        std::transform(
+            sum.begin(),
+            sum.end(),
+            sum.begin(),
+            [](unsigned char c) -> unsigned char { return std::tolower(c); }
+        );
 
         return sum;
     }

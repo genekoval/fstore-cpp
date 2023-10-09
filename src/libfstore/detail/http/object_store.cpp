@@ -7,8 +7,7 @@ namespace fstore::detail::http {
         std::string_view base_url,
         ::http::session& session
     ) :
-        client(base_url, session)
-    {}
+        client(base_url, session) {}
 
     auto object_store::add_object(
         const UUID::uuid& bucket_id,

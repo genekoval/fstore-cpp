@@ -28,7 +28,10 @@ namespace fstore::cli {
             os.fill(' ');
         }
 
-        void print_line(std::ostream& os, char padding, char divider,
+        void print_line(
+            std::ostream& os,
+            char padding,
+            char divider,
             std::function<std::string(int)> field
         ) const {
             int i = 0;
@@ -69,7 +72,9 @@ namespace fstore::cli {
         }
     public:
         table() {
-            std::generate(column_widths.begin(), column_widths.end(),
+            std::generate(
+                column_widths.begin(),
+                column_widths.end(),
                 [i = 0]() mutable { return Derived::headers[i++].size(); }
             );
         }

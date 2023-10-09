@@ -7,9 +7,7 @@
 #include <ext/string.h>
 
 namespace {
-    auto generate_random_uuid() -> UUID::uuid {
-        return UUID::generate();
-    }
+    auto generate_random_uuid() -> UUID::uuid { return UUID::generate(); }
 
     auto process_bucket_name(std::string_view name) -> std::string_view {
         const auto trimmed = ext::trim(name);
@@ -29,8 +27,7 @@ namespace fstore::core {
     ) :
         database(&database),
         filesystem(&filesystem),
-        generate_uuid(generate_random_uuid)
-    {}
+        generate_uuid(generate_random_uuid) {}
 
     object_store::object_store(
         db::database& database,
@@ -39,23 +36,17 @@ namespace fstore::core {
     ) :
         database(&database),
         filesystem(&filesystem),
-        generate_uuid(generate_uuid)
-    {}
+        generate_uuid(generate_uuid) {}
 
-    auto object_store::check(
-        int batch_size,
-        int jobs,
-        check_progress& progress
-    ) -> ext::task<> {
+    auto object_store::check(int batch_size, int jobs, check_progress& progress)
+        -> ext::task<> {
         auto db = co_await database->connect();
 
         progress.total = (co_await db.fetch_store_totals()).objects;
 
         const auto threshold = batch_size / 2;
-        const auto reserve = std::min(
-            static_cast<std::size_t>(batch_size),
-            progress.total
-        );
+        const auto reserve =
+            std::min(static_cast<std::size_t>(batch_size), progress.total);
 
         auto in = std::vector<object_error>();
         auto out = std::vector<object_error>();
@@ -71,13 +62,7 @@ namespace fstore::core {
 
         while (objects) {
             for (const auto& obj : co_await objects.next()) {
-                check_object_task(
-                    obj,
-                    workers,
-                    in,
-                    progress,
-                    counter
-                );
+                check_object_task(obj, workers, in, progress, counter);
             }
 
             co_await counter.await(objects ? threshold : 0);
@@ -90,9 +75,8 @@ namespace fstore::core {
         co_await tx.commit();
     }
 
-    auto object_store::check_object(
-        const db::object& obj
-    ) noexcept -> std::string {
+    auto object_store::check_object(const db::object& obj) noexcept
+        -> std::string {
         try {
             const auto path = filesystem->object_path(obj.id);
             if (!std::filesystem::exists(path)) return "file missing";
@@ -126,10 +110,9 @@ namespace fstore::core {
         if (message.empty()) ++progress.success;
         else ++progress.errors;
 
-        records.push_back(object_error {
-            .id = obj.id,
-            .message = std::move(message)
-        });
+        records.push_back(
+            object_error {.id = obj.id, .message = std::move(message)}
+        );
     }
 
     auto object_store::commit_part(
@@ -157,18 +140,16 @@ namespace fstore::core {
         co_return obj;
     }
 
-    auto object_store::create_bucket(
-        std::string_view name
-    ) -> ext::task<bucket> {
+    auto object_store::create_bucket(std::string_view name)
+        -> ext::task<bucket> {
         auto db = co_await database->connect();
 
         const auto processed_name = process_bucket_name(name);
         co_return co_await db.create_bucket(processed_name);
     }
 
-    auto object_store::fetch_bucket(
-        std::string_view name
-    ) -> ext::task<bucket> {
+    auto object_store::fetch_bucket(std::string_view name)
+        -> ext::task<bucket> {
         auto db = co_await database->connect();
         co_return co_await db.fetch_bucket(name);
     }
@@ -182,9 +163,8 @@ namespace fstore::core {
         co_return result;
     }
 
-    auto object_store::fetch_buckets(
-        std::span<const std::string> names
-    ) -> ext::task<std::vector<bucket>> {
+    auto object_store::fetch_buckets(std::span<const std::string> names)
+        -> ext::task<std::vector<bucket>> {
         auto db = co_await database->connect();
         auto buckets = co_await db.fetch_buckets(names);
 
@@ -208,7 +188,7 @@ namespace fstore::core {
         const UUID::uuid& object_id
     ) -> ext::task<file> {
         auto meta = co_await get_object_metadata(bucket_id, object_id);
-        co_return file { std::move(meta), filesystem->open(object_id) };
+        co_return file {std::move(meta), filesystem->open(object_id)};
     }
 
     auto object_store::get_object_metadata(
@@ -219,9 +199,7 @@ namespace fstore::core {
         co_return co_await db.get_object(bucket_id, object_id);
     }
 
-    auto object_store::get_part(
-        std::optional<UUID::uuid> part_id
-    ) -> fs::part {
+    auto object_store::get_part(std::optional<UUID::uuid> part_id) -> fs::part {
         const auto id = part_id.value_or(generate_uuid());
         return fs::part(id, filesystem->get_part(id));
     }
@@ -239,9 +217,8 @@ namespace fstore::core {
         co_return result;
     }
 
-    auto object_store::remove_bucket(
-        const UUID::uuid& bucket_id
-    ) -> ext::task<> {
+    auto object_store::remove_bucket(const UUID::uuid& bucket_id)
+        -> ext::task<> {
         auto db = co_await database->connect();
         co_await db.remove_bucket(bucket_id);
     }

@@ -12,17 +12,16 @@ namespace fstore::core::db {
         co_await client.prepare_fn("fetch_bucket", &connection::fetch_bucket);
         co_await client.prepare_fn(
             "fetch_buckets",
-            static_cast<
-                ext::task<std::vector<bucket>> (connection::*)(
-                    std::span<const std::string>
-                )
-            >(&connection::fetch_buckets)
+            static_cast<ext::task<std::vector<
+                bucket>> (connection::*)(std::span<const std::string>)>(
+                &connection::fetch_buckets
+            )
         );
         co_await client.prepare_fn(
             "fetch_buckets_all",
-            static_cast<
-                ext::task<std::vector<bucket>> (connection::*)()
-            >(&connection::fetch_buckets)
+            static_cast<ext::task<std::vector<bucket>> (connection::*)()>(
+                &connection::fetch_buckets
+            )
         );
         co_await client.prepare_fn(
             "fetch_store_totals",
@@ -42,7 +41,8 @@ namespace fstore::core::db {
             &connection::remove_orphan_objects
         );
         co_await client.prepare_fn("rename_bucket", &connection::rename_bucket);
-        co_await client.prepare_fn("update_object_errors",
+        co_await client.prepare_fn(
+            "update_object_errors",
             &connection::update_object_errors
         );
 

@@ -11,15 +11,11 @@
 #include <vector>
 
 namespace {
-    constexpr auto object_permmissions =
-        std::filesystem::perms::owner_read |
-        std::filesystem::perms::owner_write |
-        std::filesystem::perms::group_read;
+    constexpr auto object_permmissions = std::filesystem::perms::owner_read |
+                                         std::filesystem::perms::owner_write |
+                                         std::filesystem::perms::group_read;
 
-    constexpr auto sync_options = std::array {
-        "--archive",
-        "--delete"
-    };
+    constexpr auto sync_options = std::array {"--archive", "--delete"};
 
     constexpr auto object_dir = "objects";
     constexpr auto parts_dir = "parts";
@@ -31,9 +27,8 @@ namespace {
 
 namespace fstore::core::fs {
     filesystem::filesystem(const std::filesystem::path& home) :
-        objects(home/object_dir),
-        parts(home/parts_dir)
-    {
+        objects(home / object_dir),
+        parts(home / parts_dir) {
         create_directories(objects);
         create_directories(parts);
     }
@@ -44,18 +39,17 @@ namespace fstore::core::fs {
     ) const -> void {
         make_object(id, [&source](const auto& dest) {
             if (std::filesystem::copy_file(
-                source,
-                dest,
-                std::filesystem::copy_options::skip_existing
-            )) {
+                    source,
+                    dest,
+                    std::filesystem::copy_options::skip_existing
+                )) {
                 TIMBER_DEBUG("Copied file: {} -> {}", source, dest);
             }
         });
     }
 
-    auto filesystem::create_directories(
-        const std::filesystem::path& path
-    ) const -> void {
+    auto filesystem::create_directories(const std::filesystem::path& path) const
+        -> void {
         if (std::filesystem::create_directories(path)) {
             TIMBER_DEBUG("Created directories: {}", path);
         }
@@ -69,15 +63,13 @@ namespace fstore::core::fs {
         );
     }
 
-    auto filesystem::hash(
-        std::span<const std::byte> buffer
-    ) const -> std::string {
+    auto filesystem::hash(std::span<const std::byte> buffer) const
+        -> std::string {
         return crypto::sha256sum(buffer);
     }
 
-    auto filesystem::hash(
-        const std::filesystem::path& path
-    ) const -> std::string {
+    auto filesystem::hash(const std::filesystem::path& path) const
+        -> std::string {
         return crypto::sha256sum(path);
     }
 
@@ -102,21 +94,18 @@ namespace fstore::core::fs {
         std::filesystem::permissions(path, object_permmissions);
     }
 
-    auto filesystem::mime_type(
-        const std::filesystem::path& path
-    ) const -> mime {
+    auto filesystem::mime_type(const std::filesystem::path& path) const
+        -> mime {
         const auto type = magic_mime_type().file(path);
         const auto index = type.find("/");
 
         return {
             .type = type.substr(0, index),
-            .subtype = type.substr(index + 1)
-        };
+            .subtype = type.substr(index + 1)};
     }
 
-    auto filesystem::object_path(
-        std::string_view id
-    ) const -> std::filesystem::path {
+    auto filesystem::object_path(std::string_view id) const
+        -> std::filesystem::path {
         return objects / id.substr(0, 2) / id.substr(2, 2) / id;
     }
 
@@ -125,10 +114,9 @@ namespace fstore::core::fs {
         return netcore::open(path, O_RDONLY);
     }
 
-    auto filesystem::part_path(
-        std::string_view id
-    ) const -> std::filesystem::path {
-        return parts/id;
+    auto filesystem::part_path(std::string_view id) const
+        -> std::filesystem::path {
+        return parts / id;
     }
 
     auto filesystem::remove(std::string_view id) const -> void {
@@ -141,14 +129,11 @@ namespace fstore::core::fs {
         if (std::filesystem::remove(part)) {
             TIMBER_DEBUG("Removed part: {}", part);
         }
-        else {
-            TIMBER_WARNING("Tried to remove nonexistent file: {}", part);
-        }
+        else { TIMBER_WARNING("Tried to remove nonexistent file: {}", part); }
     }
 
-    auto filesystem::size(
-        const std::filesystem::path& path
-    ) const -> uintmax_t {
+    auto filesystem::size(const std::filesystem::path& path) const
+        -> uintmax_t {
         return std::filesystem::file_size(path);
     }
 
@@ -173,15 +158,14 @@ namespace fstore::core::fs {
 
         const auto exit = ext::wait_exec(program, args);
 
-        if (exit.code != CLD_EXITED) throw std::runtime_error(fmt::format(
-            "{} did not exit properly",
-            program
-        ));
+        if (exit.code != CLD_EXITED)
+            throw std::runtime_error(
+                fmt::format("{} did not exit properly", program)
+            );
 
-        if (exit.status != 0) throw std::runtime_error(fmt::format(
-            "{} exited with code {}",
-            program,
-            exit.status
-        ));
+        if (exit.status != 0)
+            throw std::runtime_error(
+                fmt::format("{} exited with code {}", program, exit.status)
+            );
     }
 }

@@ -4,8 +4,7 @@
 
 namespace fstore::core::db {
     connection::connection(pool::item&& client) :
-        client(std::forward<pool::item>(client))
-    {}
+        client(std::forward<pool::item>(client)) {}
 
     auto connection::add_object(
         const UUID::uuid& bucket_id,
@@ -63,9 +62,8 @@ namespace fstore::core::db {
         );
     }
 
-    auto connection::fetch_buckets(
-        std::span<const std::string> names
-    ) -> ext::task<std::vector<bucket>> {
+    auto connection::fetch_buckets(std::span<const std::string> names)
+        -> ext::task<std::vector<bucket>> {
         co_return co_await client->fetch_rows_prepared<bucket>(
             __FUNCTION__,
             names
@@ -87,11 +85,8 @@ namespace fstore::core::db {
         const UUID::uuid& object_id
     ) -> ext::task<object> {
         try {
-            co_return co_await client->fetch_prepared<object>(
-                __FUNCTION__,
-                bucket_id,
-                object_id
-            );
+            co_return co_await client
+                ->fetch_prepared<object>(__FUNCTION__, bucket_id, object_id);
         }
         catch (const pg::unexpected_data&) {
             throw not_found(
@@ -102,15 +97,10 @@ namespace fstore::core::db {
         }
     }
 
-    auto connection::get_objects(
-        std::string_view portal,
-        int batch_size
-    ) -> ext::task<pg::portal<object>> {
-        co_return co_await client->stream_prepared<object>(
-            portal,
-            __FUNCTION__,
-            batch_size
-        );
+    auto connection::get_objects(std::string_view portal, int batch_size)
+        -> ext::task<pg::portal<object>> {
+        co_return co_await client
+            ->stream_prepared<object>(portal, __FUNCTION__, batch_size);
     }
 
     auto connection::remove_bucket(const UUID::uuid& id) -> ext::task<> {
@@ -122,11 +112,8 @@ namespace fstore::core::db {
         const UUID::uuid& object_id
     ) -> ext::task<object> {
         try {
-            co_return co_await client->fetch_prepared<object>(
-                __FUNCTION__,
-                bucket_id,
-                object_id
-            );
+            co_return co_await client
+                ->fetch_prepared<object>(__FUNCTION__, bucket_id, object_id);
         }
         catch (const pg::unexpected_data&) {
             throw not_found(
@@ -141,21 +128,16 @@ namespace fstore::core::db {
         const UUID::uuid& bucket_id,
         const std::vector<UUID::uuid>& objects
     ) -> ext::task<remove_result> {
-        co_return co_await client->fetch_prepared<remove_result>(
-            __FUNCTION__,
-            bucket_id,
-            objects
-        );
+        co_return co_await client
+            ->fetch_prepared<remove_result>(__FUNCTION__, bucket_id, objects);
     }
 
     auto connection::remove_orphan_objects() -> ext::task<std::vector<object>> {
         co_return co_await client->fetch_rows_prepared<object>(__FUNCTION__);
     }
 
-    auto connection::rename_bucket(
-        const UUID::uuid& id,
-        std::string_view name
-    ) -> ext::task<> {
+    auto connection::rename_bucket(const UUID::uuid& id, std::string_view name)
+        -> ext::task<> {
         try {
             co_await client->query_prepared(__FUNCTION__, id, name);
         }
@@ -167,9 +149,8 @@ namespace fstore::core::db {
         }
     }
 
-    auto connection::update_object_errors(
-        std::span<const object_error> records
-    ) -> ext::task<> {
+    auto connection::update_object_errors(std::span<const object_error> records)
+        -> ext::task<> {
         co_await client->query_prepared(__FUNCTION__, records);
     }
 }

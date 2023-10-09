@@ -57,16 +57,11 @@ namespace fstore::core {
             uuid_generator generate_uuid
         );
 
-        auto check(
-            int batch_size,
-            int jobs,
-            check_progress& progress
-        ) -> ext::task<>;
+        auto check(int batch_size, int jobs, check_progress& progress)
+            -> ext::task<>;
 
-        auto commit_part(
-            const UUID::uuid& bucket_id,
-            const UUID::uuid& part_id
-        ) -> ext::task<object>;
+        auto commit_part(const UUID::uuid& bucket_id, const UUID::uuid& part_id)
+            -> ext::task<object>;
 
         auto create_bucket(std::string_view name) -> ext::task<bucket>;
 
@@ -74,9 +69,8 @@ namespace fstore::core {
 
         auto fetch_buckets() -> ext::task<std::vector<bucket>>;
 
-        auto fetch_buckets(
-            std::span<const std::string> names
-        ) -> ext::task<std::vector<bucket>>;
+        auto fetch_buckets(std::span<const std::string> names)
+            -> ext::task<std::vector<bucket>>;
 
         auto fetch_store_totals() -> ext::task<store_totals>;
 

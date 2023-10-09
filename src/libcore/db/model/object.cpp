@@ -8,8 +8,7 @@ namespace fstore::core::db {
             .size = static_cast<uintmax_t>(size),
             .type = std::move(type),
             .subtype = std::move(subtype),
-            .date_added = date_added
-        };
+            .date_added = date_added};
     }
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mock_connection.test.hpp"
 #include "database.hpp"
+#include "mock_connection.test.hpp"
 
 namespace fstore::test::db {
     class database final : public core::db::database {

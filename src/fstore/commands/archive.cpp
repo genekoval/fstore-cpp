@@ -1,7 +1,7 @@
-#include "commands.hpp"
 #include "../api/api.hpp"
 #include "../db/db.hpp"
 #include "../options/opts.hpp"
+#include "commands.hpp"
 
 #include <internal/cli.hpp>
 
@@ -22,9 +22,8 @@ namespace {
             const auto settings = fstore::conf::settings::load_file(confpath);
 
             const auto archive = output.value_or(settings.archive.path);
-            if (archive.empty()) throw std::runtime_error(
-                "archive location not specified"
-            );
+            if (archive.empty())
+                throw std::runtime_error("archive location not specified");
 
             const auto dump_file = fstore::cli::dump_file(settings);
 
@@ -42,11 +41,7 @@ namespace {
 
             options.push_back(dump_file);
 
-            fs.sync(
-                settings.archive.sync,
-                options,
-                archive
-            );
+            fs.sync(settings.archive.sync, options, archive);
 
             std::filesystem::remove(dump_file);
         }
@@ -54,9 +49,7 @@ namespace {
 }
 
 namespace fstore::cli {
-    auto archive(
-        std::string_view confpath
-    ) -> std::unique_ptr<command_node> {
+    auto archive(std::string_view confpath) -> std::unique_ptr<command_node> {
         return command(
             __FUNCTION__,
             "Create a backup of the database and object files",

@@ -16,25 +16,15 @@ namespace fstore::sync::http {
             const std::filesystem::path& location
         ) -> void;
 
-        auto get_object(
-            const UUID::uuid& object_id
-        ) -> std::string;
+        auto get_object(const UUID::uuid& object_id) -> std::string;
 
-        auto get_object(
-            const UUID::uuid& object_id,
-            FILE* file
-        ) -> void;
+        auto get_object(const UUID::uuid& object_id, FILE* file) -> void;
 
-        auto get_object_metadata(
-            const UUID::uuid& object_id
-        ) -> object;
+        auto get_object_metadata(const UUID::uuid& object_id) -> object;
 
-        auto remove_object(
-            const UUID::uuid& object_id
-        ) -> object;
+        auto remove_object(const UUID::uuid& object_id) -> object;
 
-        auto remove_objects(
-            std::span<const UUID::uuid> objects
-        ) -> remove_result;
+        auto remove_objects(std::span<const UUID::uuid> objects)
+            -> remove_result;
     };
 }

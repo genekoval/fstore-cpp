@@ -15,8 +15,6 @@ namespace fstore::server::http {
         std::span<const conftools::endpoint> endpoints
     ) -> ext::task<::http::server::server_list>;
 
-    auto router(
-        const server_info& info,
-        core::object_store& store
-    ) -> ::http::server::router;
+    auto router(const server_info& info, core::object_store& store)
+        -> ::http::server::router;
 }

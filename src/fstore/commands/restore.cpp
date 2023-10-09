@@ -1,6 +1,6 @@
-#include "commands.hpp"
 #include "../db/db.hpp"
 #include "../options/opts.hpp"
+#include "commands.hpp"
 
 #include <internal/cli.hpp>
 
@@ -10,10 +10,7 @@ using namespace commline;
 
 namespace {
     namespace internal {
-        constexpr auto sync_options = std::array {
-            "--archive",
-            "--delete"
-        };
+        constexpr auto sync_options = std::array {"--archive", "--delete"};
 
         auto restore(
             const app& app,
@@ -28,9 +25,8 @@ namespace {
 
             auto archive = filename.value_or(settings.archive.path);
 
-            if (archive.empty()) throw std::runtime_error(
-                "archive location not specified"
-            );
+            if (archive.empty())
+                throw std::runtime_error("archive location not specified");
             archive += "/";
 
             auto options = std::vector<std::string_view>();
@@ -47,16 +43,18 @@ namespace {
 
             const auto exit = ext::wait_exec(settings.archive.sync, options);
 
-            if (exit.code != CLD_EXITED) throw std::runtime_error(fmt::format(
-                "{} did not exit properly",
-                settings.archive.sync
-            ));
+            if (exit.code != CLD_EXITED)
+                throw std::runtime_error(fmt::format(
+                    "{} did not exit properly",
+                    settings.archive.sync
+                ));
 
-            if (exit.status != 0) throw std::runtime_error(fmt::format(
-                "{} exited with code {}",
-                settings.archive.sync,
-                exit.status
-            ));
+            if (exit.status != 0)
+                throw std::runtime_error(fmt::format(
+                    "{} exited with code {}",
+                    settings.archive.sync,
+                    exit.status
+                ));
 
             if (user) settings.database.connection.parameters["user"] = *user;
 
@@ -71,9 +69,7 @@ namespace {
 }
 
 namespace fstore::cli {
-    auto restore(
-        std::string_view confpath
-    ) -> std::unique_ptr<command_node> {
+    auto restore(std::string_view confpath) -> std::unique_ptr<command_node> {
         return command(
             __FUNCTION__,
             "Restore database data and object files from a backup",
@@ -86,9 +82,7 @@ namespace fstore::cli {
                 ),
                 opts::log_level()
             ),
-            arguments(
-                optional<std::string>("filename")
-            ),
+            arguments(optional<std::string>("filename")),
             internal::restore
         );
     }

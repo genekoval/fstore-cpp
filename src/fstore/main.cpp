@@ -12,10 +12,7 @@ namespace {
         constexpr auto crash_log_level = timber::level::critical;
         const auto default_config = fs::path(CONFDIR) / "fstore.yml";
 
-        auto main(
-            const commline::app& app,
-            bool version
-        ) -> void {
+        auto main(const commline::app& app, bool version) -> void {
             if (version) {
                 commline::print_version(std::cout, app);
                 return;
@@ -49,11 +46,7 @@ auto main(int argc, char** argv) -> int {
         NAME,
         VERSION,
         DESCRIPTION,
-        options(
-            flag(
-                {"v", "version"},
-                "Print the program version information"
-            )
+        options(flag({"v", "version"}, "Print the program version information")
         ),
         arguments(),
         internal::main

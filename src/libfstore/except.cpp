@@ -9,20 +9,14 @@ namespace fstore {
 
     not_found::not_found(const std::string& what) : runtime_error(what) {}
 
-    auto not_found::http_code() const noexcept -> int {
-        return 404;
-    }
+    auto not_found::http_code() const noexcept -> int { return 404; }
 
     unique_bucket_violation::unique_bucket_violation(std::string_view name) :
-        runtime_error(fmt::format(
-            "Bucket with name '{}' already exists",
-            name
-        )),
-        bucket_name(name)
-    {}
+        runtime_error(fmt::format("Bucket with name '{}' already exists", name)
+        ),
+        bucket_name(name) {}
 
-    auto unique_bucket_violation::encode(
-        zipline::io::abstract_writer& writer
+    auto unique_bucket_violation::encode(zipline::io::abstract_writer& writer
     ) const -> ext::task<> {
         return zipline::encode(name(), writer);
     }

@@ -4,8 +4,7 @@
 
 namespace fstore::core::db {
     database::database(const pg::parameters& params) :
-        pool(ext::pool_options(), params)
-    {}
+        pool(ext::pool_options(), params) {}
 
 #ifdef TEST
     auto database::connect() -> ext::task<connection_wrapper> {

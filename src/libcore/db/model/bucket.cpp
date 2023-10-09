@@ -7,8 +7,7 @@ namespace fstore::core::db {
             .name = std::move(name),
             .date_created = date_created,
             .size = static_cast<size_t>(size),
-            .space_used = static_cast<uintmax_t>(space_used)
-        };
+            .space_used = static_cast<uintmax_t>(space_used)};
     }
 }
 

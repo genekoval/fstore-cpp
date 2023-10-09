@@ -14,8 +14,7 @@ namespace fstore::server {
                 net::socket,
                 std::underlying_type_t<event>,
                 router_context,
-                Routes...
-            >(
+                Routes...>(
                 std::forward<router_context>(context),
                 error_list::codes(),
                 std::forward<Routes>(routes)...
@@ -42,8 +41,7 @@ namespace fstore::server {
     using router_type = std::invoke_result_t<
         decltype(make_router),
         core::object_store&,
-        const server_info&
-    >;
+        const server_info&>;
 
     class server_context {
         router_type* router;

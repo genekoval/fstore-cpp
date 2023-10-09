@@ -10,10 +10,9 @@ using fstore::not_found;
 namespace std {
     template <>
     struct hash<fstore::core::db::object> {
-        auto operator()(
-            const fstore::core::db::object& object
-        ) const noexcept -> size_t {
-            return hash<decltype(fstore::core::db::object::id)>{}(object.id);
+        auto operator()(const fstore::core::db::object& object) const noexcept
+            -> size_t {
+            return hash<decltype(fstore::core::db::object::id)> {}(object.id);
         }
     };
 }
@@ -67,10 +66,8 @@ TEST_F(ObjectTest, GetObject) {
         const auto& object = objects.front();
         co_await add_object(object);
 
-        const auto result = co_await connection->get_object(
-            bucket_id,
-            object.id
-        );
+        const auto result =
+            co_await connection->get_object(bucket_id, object.id);
 
         EXPECT_EQ(object.id, result.id);
         EXPECT_EQ(object.hash, result.hash);
@@ -107,10 +104,8 @@ TEST_F(ObjectTest, GetObjects) {
 }
 
 TEST_F(ObjectTest, RemoveObjectsEmptyList) {
-    constexpr auto expected = fstore::remove_result {
-        .objects_removed = 0,
-        .space_freed = 0
-    };
+    constexpr auto expected =
+        fstore::remove_result {.objects_removed = 0, .space_freed = 0};
 
     run([&]() -> ext::task<> {
         const auto result = co_await connection->remove_objects(bucket_id, {});
@@ -123,15 +118,12 @@ TEST_F(ObjectTest, RemoveObjectsSingle) {
         const auto& object = objects.front();
         const auto expected = fstore::remove_result {
             .objects_removed = 1,
-            .space_freed = object.size
-        };
+            .space_freed = object.size};
 
         co_await add_object(object);
 
-        const auto result = co_await connection->remove_objects(
-            bucket_id,
-            {object.id}
-        );
+        const auto result =
+            co_await connection->remove_objects(bucket_id, {object.id});
 
         EXPECT_EQ(expected, result);
         EXPECT_EQ(0, co_await bucket_size());
@@ -149,17 +141,14 @@ TEST_F(ObjectTest, RemoveObjectsMultiple) {
 
         const auto expected = fstore::remove_result {
             .objects_removed = objects.size(),
-            .space_freed = size
-        };
+            .space_freed = size};
 
         auto ids = std::vector<UUID::uuid>();
         std::transform(
             objects.begin(),
             objects.end(),
             std::back_inserter(ids),
-            [](const auto& object) -> UUID::uuid {
-                return object.id;
-            }
+            [](const auto& object) -> UUID::uuid { return object.id; }
         );
 
         const auto result = co_await connection->remove_objects(bucket_id, ids);
@@ -183,20 +172,16 @@ TEST_F(ObjectTest, RemoveObjectsSubset) {
 }
 
 TEST_F(ObjectTest, RemoveObjectsNonexistent) {
-    constexpr auto expected = fstore::remove_result {
-        .objects_removed = 0,
-        .space_freed = 0
-    };
+    constexpr auto expected =
+        fstore::remove_result {.objects_removed = 0, .space_freed = 0};
 
     run([&]() -> ext::task<> {
         for (const auto& object : {objects.at(0), objects.at(1)}) {
             co_await add_object(object);
         }
 
-        const auto result = co_await connection->remove_objects(
-            bucket_id,
-            {objects.at(2).id}
-        );
+        const auto result =
+            co_await connection->remove_objects(bucket_id, {objects.at(2).id});
         EXPECT_EQ(expected, result);
 
         EXPECT_EQ(2, co_await bucket_size());

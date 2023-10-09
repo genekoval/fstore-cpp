@@ -23,10 +23,7 @@ namespace fstore::cli {
     requires requires(const F& f, core::object_store& object_store) {
         { f(object_store) } -> std::same_as<ext::task<>>;
     }
-    auto object_store(
-        const conf::settings& settings,
-        const F& action
-    ) -> void {
+    auto object_store(const conf::settings& settings, const F& action) -> void {
         netcore::run([&]() -> ext::task<> {
             auto container = api_container(settings);
             co_await action(container.object_store());
