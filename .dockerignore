@@ -1,0 +1,13 @@
+# Use as a whitelist
+*
+
+!.clang-format
+!cmake
+!CMakeLists.txt
+!CMakePresets.json
+!.git
+!.gitmodules
+!include
+!packages.cmake
+!share
+!src
